@@ -1,0 +1,55 @@
+{
+  "id": "recruitment-system-env",
+  "name": "Recruitment System - Local",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081",
+      "description": "Base URL for the recruitment system API",
+      "enabled": true
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT token for authentication (will be set after login)",
+      "enabled": true
+    },
+    {
+      "key": "applicant_email",
+      "value": "john.doe@example.com",
+      "description": "Test applicant email",
+      "enabled": true
+    },
+    {
+      "key": "applicant_password",
+      "value": "password123",
+      "description": "Test applicant password",
+      "enabled": true
+    },
+    {
+      "key": "employer_email",
+      "value": "employer@company.com",
+      "description": "Test employer email",
+      "enabled": true
+    },
+    {
+      "key": "employer_password",
+      "value": "employer123",
+      "description": "Test employer password",
+      "enabled": true
+    },
+    {
+      "key": "admin_email",
+      "value": "admin@system.com",
+      "description": "Test admin email",
+      "enabled": true
+    },
+    {
+      "key": "admin_password",
+      "value": "admin123",
+      "description": "Test admin password",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}
