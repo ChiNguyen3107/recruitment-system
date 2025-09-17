@@ -3,6 +3,7 @@ package com.recruitment.system.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -67,13 +68,20 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/debug/**").permitAll() // Debug endpoints
-                .requestMatchers("/api/jobs/search", "/api/jobs/public/**").permitAll()
+                .requestMatchers("/api/jobs/search/**").permitAll()
+                .requestMatchers("/api/jobs/public/**").permitAll()
                 .requestMatchers("/api/companies/public/**").permitAll()
+                .requestMatchers("/api/profile/public/**").permitAll() // Public profile endpoints
+                .requestMatchers(HttpMethod.GET, "/api/jobs/*").permitAll() // Get job details is public
                 
                 // Admin only endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
-                // Employer/Recruiter endpoints
+                // Employer/Recruiter endpoints - Specific endpoints first
+                .requestMatchers("/api/jobs/my-jobs").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/jobs").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN") // Create jobs
+                .requestMatchers(HttpMethod.PUT, "/api/jobs/*").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN") // Update jobs
+                .requestMatchers(HttpMethod.DELETE, "/api/jobs/*").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN") // Delete jobs
                 .requestMatchers("/api/employer/**").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
                 .requestMatchers("/api/jobs/manage/**").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
                 .requestMatchers("/api/applications/manage/**").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")

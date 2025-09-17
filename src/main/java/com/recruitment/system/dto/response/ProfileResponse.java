@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class ProfileResponse {
 
     private Long id;
+    private Long userId;
     private LocalDate dateOfBirth;
     private String gender;
     private String address;
@@ -37,4 +38,9 @@ public class ProfileResponse {
     private Boolean isComplete;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // Thông tin user
+    private String userFullName;
+    private String userEmail;
+    private String userPhone;
 }

@@ -1,5 +1,6 @@
 package com.recruitment.system.repository;
 
+import com.recruitment.system.entity.Company;
 import com.recruitment.system.entity.JobPosting;
 import com.recruitment.system.enums.JobStatus;
 import com.recruitment.system.enums.JobType;
@@ -21,14 +22,17 @@ import java.util.List;
 public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     List<JobPosting> findByStatus(JobStatus status);
+    Page<JobPosting> findByStatus(JobStatus status, Pageable pageable);
 
     List<JobPosting> findByJobType(JobType jobType);
 
     List<JobPosting> findByCompanyId(Long companyId);
+    
+    Page<JobPosting> findByCompany(Company company, Pageable pageable);
 
     List<JobPosting> findByCreatedById(Long createdById);
-
-    Page<JobPosting> findByStatus(JobStatus status, Pageable pageable);
+    
+    Page<JobPosting> findByTitleContainingIgnoreCaseAndStatus(String title, JobStatus status, Pageable pageable);
 
     Page<JobPosting> findByCompanyId(Long companyId, Pageable pageable);
 
