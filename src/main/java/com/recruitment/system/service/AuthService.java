@@ -3,6 +3,8 @@ package com.recruitment.system.service;
 import com.recruitment.system.config.JwtUtil;
 import com.recruitment.system.dto.request.LoginRequest;
 import com.recruitment.system.dto.request.RegisterRequest;
+import com.recruitment.system.dto.request.VerifyEmailRequest;
+import com.recruitment.system.dto.request.ResendVerificationRequest;
 import com.recruitment.system.dto.response.AuthResponse;
 import com.recruitment.system.dto.response.UserResponse;
 import com.recruitment.system.entity.Company;
@@ -16,11 +18,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -37,6 +39,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
+    private final MailService mailService;
     
     @org.springframework.beans.factory.annotation.Value("${jwt.access.expiration:900000}")
     private long accessExpirationMs;
@@ -60,7 +63,7 @@ public class AuthService {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setRole(request.getRole());
         user.setStatus(UserStatus.ACTIVE);  // Cho phép đăng nhập ngay sau khi đăng ký
-        user.setEmailVerified(true);        // Tạm thời set true để test
+        user.setEmailVerified(false);       // Cần xác minh email
         user.setVerificationToken(UUID.randomUUID().toString());
 
         // Nếu là employer/recruiter, tạo company
@@ -86,6 +89,14 @@ public class AuthService {
 
         user = userRepository.save(user);
 
+        // Gửi email xác minh
+        try {
+            mailService.sendVerificationEmail(user, user.getVerificationToken());
+        } catch (Exception e) {
+            log.error("Failed to send verification email during registration", e);
+            // Không throw exception để không làm gián đoạn quá trình đăng ký
+        }
+
         // Tạo token truy cập và làm mới
         String accessToken = jwtUtil.generateAccessToken(user);
         var refresh = refreshTokenService.issueRefreshToken(user);
@@ -103,6 +114,15 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Kiểm tra email đã được xác minh chưa
+        if (!user.getEmailVerified()) {
+            throw new RuntimeException("Vui lòng xác minh email trước khi đăng nhập. Kiểm tra hộp thư của bạn hoặc yêu cầu gửi lại email xác minh.");
+        }
+
+        // Cập nhật thời gian đăng nhập cuối
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
 
         String accessToken = jwtUtil.generateAccessToken(user);
         
@@ -134,6 +154,66 @@ public class AuthService {
 
     public void logout(User user) {
         refreshTokenService.revokeAll(user);
+    }
+
+    /**
+     * Xác minh email với token
+     */
+    @Transactional
+    public void verifyEmail(VerifyEmailRequest request) {
+        User user = userRepository.findByVerificationToken(request.getToken())
+                .orElseThrow(() -> new RuntimeException("Token xác minh không hợp lệ hoặc đã hết hạn"));
+
+        // Kiểm tra token đã hết hạn chưa (24 giờ)
+        if (user.getCreatedAt().plusHours(24).isBefore(LocalDateTime.now())) {
+            // Xóa token hết hạn
+            user.setVerificationToken(null);
+            userRepository.save(user);
+            throw new RuntimeException("Token xác minh đã hết hạn. Vui lòng yêu cầu gửi lại email xác minh.");
+        }
+
+        // Xác minh thành công
+        user.setEmailVerified(true);
+        user.setVerificationToken(null); // Xóa token sau khi xác minh
+        userRepository.save(user);
+
+        // Gửi email thông báo xác minh thành công
+        try {
+            mailService.sendVerificationSuccessEmail(user);
+        } catch (Exception e) {
+            log.error("Failed to send verification success email", e);
+            // Không throw exception vì xác minh đã thành công
+        }
+
+        log.info("Email verified successfully for user: {}", user.getEmail());
+    }
+
+    /**
+     * Gửi lại email xác minh
+     */
+    @Transactional
+    public void resendVerificationEmail(ResendVerificationRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản với email này"));
+
+        // Kiểm tra email đã được xác minh chưa
+        if (user.getEmailVerified()) {
+            throw new RuntimeException("Email này đã được xác minh");
+        }
+
+        // Tạo token mới
+        String newToken = UUID.randomUUID().toString();
+        user.setVerificationToken(newToken);
+        userRepository.save(user);
+
+        // Gửi email xác minh mới
+        try {
+            mailService.sendVerificationEmail(user, newToken);
+            log.info("Verification email resent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to resend verification email to: {}", user.getEmail(), e);
+            throw new RuntimeException("Không thể gửi email xác minh. Vui lòng thử lại sau.");
+        }
     }
 
     private UserResponse convertToUserResponse(User user) {

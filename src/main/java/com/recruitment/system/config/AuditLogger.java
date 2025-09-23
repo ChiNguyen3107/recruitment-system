@@ -120,7 +120,44 @@ public class AuditLogger {
         log.info("{} {} SECURITY_EVENT - Type: {}, Description: {}, IP: {}, UserAgent: {}", 
                 AUDIT_PREFIX, timestamp, eventType, description, ipAddress, userAgent);
     }
+
+    /**
+     * Ghi log xác minh email
+     */
+    public void logEmailVerification(String token, String ipAddress, String userAgent, boolean success) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        String action = success ? "EMAIL_VERIFICATION_SUCCESS" : "EMAIL_VERIFICATION_FAILURE";
+        
+        if (success) {
+            log.info("{} {} {} - Token: {}, IP: {}, UserAgent: {}", 
+                    AUDIT_PREFIX, timestamp, action, token, ipAddress, userAgent);
+        } else {
+            log.warn("{} {} {} - Token: {}, IP: {}, UserAgent: {}", 
+                    AUDIT_PREFIX, timestamp, action, token, ipAddress, userAgent);
+        }
+    }
+
+    /**
+     * Ghi log gửi lại email xác minh
+     */
+    public void logResendVerification(String email, String ipAddress, String userAgent, boolean success) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        String action = success ? "RESEND_VERIFICATION_SUCCESS" : "RESEND_VERIFICATION_FAILURE";
+        
+        if (success) {
+            log.info("{} {} {} - Email: {}, IP: {}, UserAgent: {}", 
+                    AUDIT_PREFIX, timestamp, action, email, ipAddress, userAgent);
+        } else {
+            log.warn("{} {} {} - Email: {}, IP: {}, UserAgent: {}", 
+                    AUDIT_PREFIX, timestamp, action, email, ipAddress, userAgent);
+        }
+    }
 }
+
+
+
+
+
 
 
 

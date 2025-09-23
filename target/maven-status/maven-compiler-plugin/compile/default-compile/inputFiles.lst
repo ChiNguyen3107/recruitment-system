@@ -2,6 +2,8 @@ D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\enums\JobStatus.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\config\AuditLogger.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\enums\ApplicationStatus.java
+D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\service\MailService.java
+D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\dto\request\ResendVerificationRequest.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\dto\response\CompanyResponse.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\dto\request\LoginRequest.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\service\UserDetailsServiceImpl.java
@@ -38,6 +40,7 @@ D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\service\AuthService.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\entity\RefreshToken.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\service\RefreshTokenService.java
+D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\dto\request\VerifyEmailRequest.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\repository\CompanyRepository.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\enums\JobType.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\controller\DebugAuthController.java
