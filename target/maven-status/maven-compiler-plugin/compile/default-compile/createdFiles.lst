@@ -1,3 +1,4 @@
+com\recruitment\system\dto\request\ResendVerificationRequest.class
 com\recruitment\system\config\RateLimitConfig.class
 com\recruitment\system\repository\RefreshTokenRepository.class
 com\recruitment\system\enums\UserStatus.class
@@ -8,9 +9,11 @@ com\recruitment\system\dto\request\ApplicationRequest.class
 com\recruitment\system\dto\request\JobPostingRequest.class
 com\recruitment\system\entity\User.class
 com\recruitment\system\dto\response\PageResponse.class
+com\recruitment\system\dto\request\VerifyEmailRequest.class
 com\recruitment\system\RecruitmentSystemApplication.class
 com\recruitment\system\config\JwtAuthenticationEntryPoint.class
 com\recruitment\system\config\JpaConfig.class
+com\recruitment\system\service\MailService.class
 com\recruitment\system\entity\Company.class
 com\recruitment\system\enums\JobType.class
 com\recruitment\system\service\AuthService.class

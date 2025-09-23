@@ -181,4 +181,73 @@ public class DebugAuthController {
         
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/verification-token/{email}")
+    public ResponseEntity<Map<String, Object>> getVerificationToken(@PathVariable String email) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            var userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                result.put("userFound", true);
+                result.put("email", user.getEmail());
+                result.put("emailVerified", user.getEmailVerified());
+                result.put("verificationToken", user.getVerificationToken());
+                result.put("hasVerificationToken", user.getVerificationToken() != null);
+                result.put("createdAt", user.getCreatedAt());
+                
+                // Check if token is expired (24 hours)
+                if (user.getVerificationToken() != null && user.getCreatedAt() != null) {
+                    boolean isExpired = user.getCreatedAt().plusHours(24).isBefore(java.time.LocalDateTime.now());
+                    result.put("tokenExpired", isExpired);
+                }
+                
+            } else {
+                result.put("userFound", false);
+                result.put("message", "User not found");
+            }
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            log.error("Error getting verification token: ", e);
+        }
+        
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/email-status/{email}")
+    public ResponseEntity<Map<String, Object>> getEmailStatus(@PathVariable String email) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            var userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                result.put("userFound", true);
+                result.put("email", user.getEmail());
+                result.put("emailVerified", user.getEmailVerified());
+                result.put("status", user.getStatus());
+                result.put("canLogin", user.getEmailVerified() && user.isEnabled());
+                result.put("createdAt", user.getCreatedAt());
+                result.put("lastLogin", user.getLastLogin());
+                
+                // Verification details
+                result.put("hasVerificationToken", user.getVerificationToken() != null);
+                if (user.getVerificationToken() != null) {
+                    result.put("verificationToken", user.getVerificationToken());
+                    boolean isExpired = user.getCreatedAt().plusHours(24).isBefore(java.time.LocalDateTime.now());
+                    result.put("tokenExpired", isExpired);
+                }
+                
+            } else {
+                result.put("userFound", false);
+                result.put("message", "User not found");
+            }
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            log.error("Error getting email status: ", e);
+        }
+        
+        return ResponseEntity.ok(result);
+    }
 }

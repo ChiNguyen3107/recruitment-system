@@ -4,11 +4,12 @@ import com.recruitment.system.config.AuditLogger;
 import com.recruitment.system.config.RateLimitConfig;
 import com.recruitment.system.dto.request.LoginRequest;
 import com.recruitment.system.dto.request.RegisterRequest;
+import com.recruitment.system.dto.request.VerifyEmailRequest;
+import com.recruitment.system.dto.request.ResendVerificationRequest;
 import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.response.AuthResponse;
 import com.recruitment.system.dto.response.UserResponse;
 import com.recruitment.system.entity.User;
-import com.recruitment.system.exception.RateLimitExceededException;
 import com.recruitment.system.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -138,6 +139,49 @@ public class AuthController {
         resp.setLastLogin(user.getLastLogin());
         resp.setCreatedAt(user.getCreatedAt());
         return ResponseEntity.ok(ApiResponse.success("Thông tin người dùng", resp));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(
+            @Valid @RequestBody VerifyEmailRequest request,
+            HttpServletRequest httpRequest) {
+        
+        String clientIp = getClientIpAddress(httpRequest);
+        
+        try {
+            authService.verifyEmail(request);
+            auditLogger.logEmailVerification(request.getToken(), clientIp, httpRequest.getHeader("User-Agent"), true);
+            return ResponseEntity.ok(ApiResponse.success("Email đã được xác minh thành công", null));
+        } catch (Exception e) {
+            auditLogger.logEmailVerification(request.getToken(), clientIp, httpRequest.getHeader("User-Agent"), false);
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<ApiResponse<Void>> resendVerification(
+            @Valid @RequestBody ResendVerificationRequest request,
+            HttpServletRequest httpRequest) {
+        
+        String clientIp = getClientIpAddress(httpRequest);
+        String rateLimitKey = "resend-verification:" + clientIp;
+        
+        // Kiểm tra rate limit cho resend verification (5 requests per hour)
+        if (!rateLimitConfig.tryConsumeRegister(rateLimitKey)) {
+            long waitTime = rateLimitConfig.getWaitTimeRegister(rateLimitKey);
+            log.warn("Rate limit exceeded for resend verification from IP: {}", clientIp);
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(ApiResponse.error("Quá nhiều yêu cầu gửi lại email. Vui lòng thử lại sau " + waitTime + " giây."));
+        }
+        
+        try {
+            authService.resendVerificationEmail(request);
+            auditLogger.logResendVerification(request.getEmail(), clientIp, httpRequest.getHeader("User-Agent"), true);
+            return ResponseEntity.ok(ApiResponse.success("Email xác minh đã được gửi lại", null));
+        } catch (Exception e) {
+            auditLogger.logResendVerification(request.getEmail(), clientIp, httpRequest.getHeader("User-Agent"), false);
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
     
     /**
