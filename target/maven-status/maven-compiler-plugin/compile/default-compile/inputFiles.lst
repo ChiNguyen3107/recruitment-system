@@ -30,6 +30,7 @@ D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\dto\request\ApplicationStatusRequest.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\config\SecurityConfig.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\controller\JobController.java
+D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\controller\ManageJobController.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\repository\ApplicationRepository.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\dto\response\ProfileResponse.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\config\SecurityHeadersFilter.java
@@ -41,6 +42,7 @@ D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\dto\response\JobPostingResponse.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\service\AuthService.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\entity\RefreshToken.java
+D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\dto\request\JobStatusRequest.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\service\RefreshTokenService.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\dto\request\VerifyEmailRequest.java
 D:\xampp\htdocs\HTQL_TuyenDung\recruitment-system\src\main\java\com\recruitment\system\repository\CompanyRepository.java

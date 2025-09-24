@@ -19,6 +19,7 @@ com\recruitment\system\enums\JobType.class
 com\recruitment\system\service\AuthService.class
 com\recruitment\system\service\RefreshTokenService.class
 com\recruitment\system\dto\request\ForgotPasswordRequest.class
+com\recruitment\system\dto\request\JobStatusRequest.class
 com\recruitment\system\config\SecurityConfig.class
 com\recruitment\system\config\SecurityHeadersFilter.class
 com\recruitment\system\controller\JobController.class
@@ -40,6 +41,7 @@ com\recruitment\system\controller\AuthController.class
 com\recruitment\system\repository\ApplicationRepository.class
 com\recruitment\system\entity\JobPosting.class
 com\recruitment\system\dto\response\ProfileResponse.class
+com\recruitment\system\controller\ManageJobController.class
 com\recruitment\system\dto\response\UserResponse.class
 com\recruitment\system\enums\ApplicationStatus.class
 com\recruitment\system\entity\Application$1.class

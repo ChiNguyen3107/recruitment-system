@@ -4,6 +4,7 @@ import com.recruitment.system.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -104,6 +105,18 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponse.error("Token không hợp lệ."));
+    }
+
+    /**
+     * Xử lý lỗi vi phạm ràng buộc dữ liệu (DB constraints)
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, HttpServletRequest request) {
+        String rootMessage = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+        log.warn("Data integrity violation from IP: {} - {}", getClientIp(request), rootMessage);
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Dữ liệu không hợp lệ: " + rootMessage));
     }
 
     @ExceptionHandler(io.jsonwebtoken.SignatureException.class)
