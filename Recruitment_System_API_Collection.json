@@ -1,0 +1,330 @@
+{
+  "info": {
+    "name": "Recruitment System API",
+    "_postman_id": "6c1a8a3f-7d1e-4f4b-9f2a-123456789abc",
+    "description": "Endpoints for Auth, Public Jobs, and Debug",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password@123\",\n  \"firstName\": \"First\",\n  \"lastName\": \"Last\",\n  \"phoneNumber\": \"0900000000\",\n  \"role\": \"APPLICANT\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password@123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "forgot-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"your-reset-token-here\",\n  \"newPassword\": \"NewPassword@123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh?refresh_token={{refreshToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"],
+              "query": [
+                { "key": "refresh_token", "value": "{{refreshToken}}" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me (Current User)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Public Jobs",
+      "item": [
+        {
+          "name": "Search (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/public/jobs/search?keyword=java&location=Hanoi&jobType=FULL_TIME&page=0&size=10&sortBy=createdAt&sortDir=DESC",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "public", "jobs", "search"],
+              "query": [
+                { "key": "keyword", "value": "java" },
+                { "key": "location", "value": "Hanoi" },
+                { "key": "jobType", "value": "FULL_TIME" },
+                { "key": "minSalary", "value": "" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" },
+                { "key": "sortBy", "value": "createdAt" },
+                { "key": "sortDir", "value": "DESC" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detail (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/public/jobs/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "public", "jobs", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Latest (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/public/jobs/latest?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "public", "jobs", "latest"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Jobs Test (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/jobs/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jobs", "test"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search (Jobs)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/jobs/search?keyword=java&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jobs", "search"],
+              "query": [
+                { "key": "keyword", "value": "java" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Latest (Jobs)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/jobs/latest?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jobs", "latest"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detail (Jobs Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/jobs/public/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jobs", "public", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Debug",
+      "item": [
+        {
+          "name": "Get User by Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/debug/auth/user/user@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "debug", "auth", "user", "user@example.com"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/debug/auth/test-password?email=user@example.com&password=Password@123",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "debug", "auth", "test-password"],
+              "query": [
+                { "key": "email", "value": "user@example.com" },
+                { "key": "password", "value": "Password@123" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Refresh Token by Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/debug/auth/test-refresh-token/user@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "debug", "auth", "test-refresh-token", "user@example.com"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Test User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/debug/auth/create-test-user?email=test2@example.com&password=Password@123&firstName=Test&lastName=User",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "debug", "auth", "create-test-user"],
+              "query": [
+                { "key": "email", "value": "test2@example.com" },
+                { "key": "password", "value": "Password@123" },
+                { "key": "firstName", "value": "Test" },
+                { "key": "lastName", "value": "User" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
+  ]
+}
+
+

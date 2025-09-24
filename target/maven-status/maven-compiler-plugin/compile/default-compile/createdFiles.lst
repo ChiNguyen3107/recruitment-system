@@ -18,6 +18,7 @@ com\recruitment\system\entity\Company.class
 com\recruitment\system\enums\JobType.class
 com\recruitment\system\service\AuthService.class
 com\recruitment\system\service\RefreshTokenService.class
+com\recruitment\system\dto\request\ForgotPasswordRequest.class
 com\recruitment\system\config\SecurityConfig.class
 com\recruitment\system\config\SecurityHeadersFilter.class
 com\recruitment\system\controller\JobController.class
@@ -51,3 +52,4 @@ com\recruitment\system\dto\request\RegisterRequest.class
 com\recruitment\system\repository\UserRepository.class
 com\recruitment\system\exception\RateLimitExceededException.class
 com\recruitment\system\dto\request\ProfileRequest.class
+com\recruitment\system\dto\request\ResetPasswordRequest.class

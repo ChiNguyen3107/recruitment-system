@@ -5,6 +5,8 @@ import com.recruitment.system.dto.request.LoginRequest;
 import com.recruitment.system.dto.request.RegisterRequest;
 import com.recruitment.system.dto.request.VerifyEmailRequest;
 import com.recruitment.system.dto.request.ResendVerificationRequest;
+import com.recruitment.system.dto.request.ForgotPasswordRequest;
+import com.recruitment.system.dto.request.ResetPasswordRequest;
 import com.recruitment.system.dto.response.AuthResponse;
 import com.recruitment.system.dto.response.UserResponse;
 import com.recruitment.system.entity.Company;
@@ -214,6 +216,76 @@ public class AuthService {
             log.error("Failed to resend verification email to: {}", user.getEmail(), e);
             throw new RuntimeException("Không thể gửi email xác minh. Vui lòng thử lại sau.");
         }
+    }
+
+    /**
+     * Xử lý yêu cầu quên mật khẩu
+     */
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        // Tìm user theo email
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElse(null);
+
+        // Không tiết lộ thông tin về việc email có tồn tại hay không
+        if (user == null) {
+            log.info("Password reset requested for non-existent email: {}", request.getEmail());
+            return;
+        }
+
+        // Kiểm tra user có đang hoạt động không
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            log.info("Password reset requested for inactive user: {}", request.getEmail());
+            return;
+        }
+
+        // Tạo token reset password với thời hạn 1 giờ
+        String resetToken = UUID.randomUUID().toString();
+        LocalDateTime expiresAt = LocalDateTime.now().plusHours(1);
+
+        // Lưu token vào database
+        user.setPasswordResetToken(resetToken);
+        user.setPasswordResetExpires(expiresAt);
+        userRepository.save(user);
+
+        // Gửi email reset password
+        try {
+            mailService.sendPasswordResetEmail(user, resetToken);
+            log.info("Password reset email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to: {}", user.getEmail(), e);
+            // Xóa token nếu gửi email thất bại
+            user.setPasswordResetToken(null);
+            user.setPasswordResetExpires(null);
+            userRepository.save(user);
+            throw new RuntimeException("Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau.");
+        }
+    }
+
+    /**
+     * Xử lý reset password với token
+     */
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        // Tìm user với token hợp lệ và chưa hết hạn
+        User user = userRepository.findByValidPasswordResetToken(request.getToken(), LocalDateTime.now())
+                .orElseThrow(() -> new RuntimeException("Token không hợp lệ hoặc đã hết hạn"));
+
+        // Kiểm tra user có đang hoạt động không
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new RuntimeException("Tài khoản không thể đặt lại mật khẩu");
+        }
+
+        // Mã hóa mật khẩu mới
+        String hashedPassword = passwordEncoder.encode(request.getNewPassword());
+
+        // Cập nhật mật khẩu và xóa token
+        user.setPassword(hashedPassword);
+        user.setPasswordResetToken(null);
+        user.setPasswordResetExpires(null);
+        userRepository.save(user);
+
+        log.info("Password reset successfully for user: {}", user.getEmail());
     }
 
     private UserResponse convertToUserResponse(User user) {

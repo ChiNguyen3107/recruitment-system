@@ -200,4 +200,107 @@ public class MailService {
             "Chào mừng bạn đến với {appName}! Bạn có thể bắt đầu sử dụng tài khoản ngay bây giờ."
         );
     }
+
+    /**
+     * Gửi email reset password
+     */
+    public void sendPasswordResetEmail(User user, String resetToken) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(user.getEmail());
+            helper.setSubject("Đặt lại mật khẩu - Hệ thống Tuyển dụng");
+
+            // Tạo nội dung email bằng HTML template
+            String htmlContent = createPasswordResetEmailContent(user, resetToken);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Password reset email sent successfully to: {}", user.getEmail());
+
+        } catch (MessagingException e) {
+            log.error("Failed to send password reset email to: {}", user.getEmail(), e);
+            throw new RuntimeException("Không thể gửi email đặt lại mật khẩu", e);
+        }
+    }
+
+    /**
+     * Tạo nội dung HTML cho email reset password
+     */
+    private String createPasswordResetEmailContent(User user, String resetToken) {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("userName", user.getFullName());
+        variables.put("resetLink", frontendUrl + "/reset-password?token=" + resetToken);
+        variables.put("expirationHours", 1); // Token hết hạn sau 1 giờ
+        variables.put("currentYear", LocalDateTime.now().getYear());
+        variables.put("appName", "Hệ thống Tuyển dụng");
+
+        return createPasswordResetHtmlTemplate(variables);
+    }
+
+    /**
+     * Template HTML cho email reset password
+     */
+    private String createPasswordResetHtmlTemplate(Map<String, Object> variables) {
+        return """
+            <!DOCTYPE html>
+            <html lang="vi">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Đặt lại mật khẩu</title>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: #dc3545; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                    .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+                    .button { display: inline-block; background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
+                    .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                    .security { background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🔒 Đặt lại mật khẩu</h1>
+                    </div>
+                    <div class="content">
+                        <h2>Xin chào {userName}!</h2>
+                        <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn tại <strong>{appName}</strong>.</p>
+                        
+                        <div style="text-align: center;">
+                            <a href="{resetLink}" class="button">Đặt lại mật khẩu</a>
+                        </div>
+                        
+                        <div class="warning">
+                            <strong>⚠️ Lưu ý quan trọng:</strong> Link đặt lại mật khẩu sẽ hết hạn sau {expirationHours} giờ. Vui lòng thực hiện đặt lại mật khẩu trong thời gian này.
+                        </div>
+                        
+                        <div class="security">
+                            <strong>🔐 Bảo mật:</strong> Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này. Mật khẩu hiện tại của bạn sẽ không bị thay đổi.
+                        </div>
+                        
+                        <p>Nếu nút không hoạt động, bạn có thể sao chép và dán link sau vào trình duyệt:</p>
+                        <p style="word-break: break-all; background: #e9ecef; padding: 10px; border-radius: 5px; font-family: monospace;">
+                            {resetLink}
+                        </p>
+                        
+                        <p>Nếu bạn gặp vấn đề hoặc cần hỗ trợ, vui lòng liên hệ với chúng tôi.</p>
+                        <p>Trân trọng,<br>Đội ngũ {appName}</p>
+                    </div>
+                    <div class="footer">
+                        <p>&copy; {currentYear} {appName}. Tất cả quyền được bảo lưu.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.replace("{userName}", (String) variables.get("userName"))
+              .replace("{appName}", (String) variables.get("appName"))
+              .replace("{resetLink}", (String) variables.get("resetLink"))
+              .replace("{expirationHours}", String.valueOf(variables.get("expirationHours")))
+              .replace("{currentYear}", String.valueOf(variables.get("currentYear")));
+    }
 }

@@ -152,6 +152,47 @@ public class AuditLogger {
                     AUDIT_PREFIX, timestamp, action, email, ipAddress, userAgent);
         }
     }
+
+    /**
+     * Ghi log yêu cầu reset password
+     */
+    public void logPasswordResetRequest(String email, String ipAddress, String userAgent, boolean success) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        String action = success ? "PASSWORD_RESET_REQUEST_SUCCESS" : "PASSWORD_RESET_REQUEST_FAILURE";
+        
+        if (success) {
+            log.info("{} {} {} - Email: {}, IP: {}, UserAgent: {}", 
+                    AUDIT_PREFIX, timestamp, action, email, ipAddress, userAgent);
+        } else {
+            log.warn("{} {} {} - Email: {}, IP: {}, UserAgent: {}", 
+                    AUDIT_PREFIX, timestamp, action, email, ipAddress, userAgent);
+        }
+    }
+
+    /**
+     * Ghi log thực hiện reset password
+     */
+    public void logPasswordReset(String token, String ipAddress, String userAgent, boolean success) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        String action = success ? "PASSWORD_RESET_SUCCESS" : "PASSWORD_RESET_FAILURE";
+        
+        if (success) {
+            log.info("{} {} {} - Token: {}, IP: {}, UserAgent: {}", 
+                    AUDIT_PREFIX, timestamp, action, token, ipAddress, userAgent);
+        } else {
+            log.warn("{} {} {} - Token: {}, IP: {}, UserAgent: {}", 
+                    AUDIT_PREFIX, timestamp, action, token, ipAddress, userAgent);
+        }
+    }
+
+    /**
+     * Ghi log token reset password không hợp lệ hoặc hết hạn
+     */
+    public void logInvalidPasswordResetToken(String token, String ipAddress, String userAgent, String reason) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        log.warn("{} {} INVALID_PASSWORD_RESET_TOKEN - Token: {}, IP: {}, UserAgent: {}, Reason: {}", 
+                AUDIT_PREFIX, timestamp, token, ipAddress, userAgent, reason);
+    }
 }
 
 
