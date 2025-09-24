@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 23, 2025 lúc 10:35 AM
+-- Thời gian đã tạo: Th9 22, 2025 lúc 08:25 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -46,6 +46,13 @@ CREATE TABLE `applications` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `applications`
+--
+
+INSERT INTO `applications` (`id`, `job_posting_id`, `applicant_id`, `status`, `cover_letter`, `resume_url`, `additional_documents`, `interview_date`, `interview_location`, `interview_notes`, `feedback`, `rejection_reason`, `offer_details`, `reviewed_at`, `reviewed_by`, `created_at`, `updated_at`) VALUES
+(1, 1, 3, 'RECEIVED', 'I am very interested in this position and believe my skills match your requirements.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-16 08:20:18', '2025-09-16 08:20:18');
 
 -- --------------------------------------------------------
 
@@ -97,9 +104,7 @@ CREATE TABLE `companies` (
 INSERT INTO `companies` (`id`, `name`, `description`, `business_license`, `tax_code`, `website`, `industry`, `company_size`, `address`, `city`, `country`, `phone_number`, `contact_email`, `logo_url`, `is_verified`, `created_at`, `updated_at`) VALUES
 (1, 'Tech Innovate Co.', 'Leading technology company specializing in software development', NULL, NULL, 'https://techinnovate.com', 'Technology', NULL, NULL, 'Ho Chi Minh City', NULL, NULL, 'hr@techinnovate.com', NULL, 1, '2025-09-16 08:20:18', '2025-09-16 08:20:18'),
 (2, 'Digital Solutions Ltd.', 'Digital transformation and consulting services', NULL, NULL, 'https://digitalsolutions.vn', 'Consulting', NULL, NULL, 'Hanoi', NULL, NULL, 'jobs@digitalsolutions.vn', NULL, 1, '2025-09-16 08:20:18', '2025-09-16 08:20:18'),
-(3, 'StartUp Hub', 'Innovative startup focusing on mobile applications', NULL, NULL, 'https://startuphub.vn', 'Technology', NULL, NULL, 'Da Nang', NULL, NULL, 'careers@startuphub.vn', NULL, 0, '2025-09-16 08:20:18', '2025-09-16 08:20:18'),
-(4, 'Tech Company Ltd', 'Leading technology company', NULL, NULL, 'https://techcompany.com', 'Technology', NULL, '123 Tech Street, Ho Chi Minh City', NULL, NULL, NULL, NULL, NULL, 0, '2025-09-22 07:38:10', '2025-09-22 07:38:10'),
-(5, 'Tech Company Ltd', 'Leading technology company', NULL, NULL, 'https://techcompany.com', 'Technology', NULL, '123 Tech Street, Ho Chi Minh City', NULL, NULL, NULL, NULL, NULL, 0, '2025-09-22 07:41:38', '2025-09-22 07:41:38');
+(3, 'StartUp Hub', 'Innovative startup focusing on mobile applications', NULL, NULL, 'https://startuphub.vn', 'Technology', NULL, NULL, 'Da Nang', NULL, NULL, 'careers@startuphub.vn', NULL, 0, '2025-09-16 08:20:18', '2025-09-16 08:20:18');
 
 -- --------------------------------------------------------
 
@@ -282,6 +287,7 @@ CREATE TABLE `profiles` (
 --
 
 INSERT INTO `profiles` (`id`, `user_id`, `date_of_birth`, `gender`, `address`, `city`, `country`, `summary`, `experience`, `education`, `skills`, `certifications`, `languages`, `resume_url`, `linkedin_url`, `github_url`, `portfolio_url`, `desired_salary_min`, `desired_salary_max`, `desired_job_type`, `desired_location`, `availability`, `is_public`, `created_at`, `updated_at`) VALUES
+(1, 3, NULL, NULL, NULL, NULL, NULL, 'Experienced software developer with 3+ years in web development', '3 years as Full Stack Developer', 'Bachelor in Computer Science', 'Java, Spring Boot, React, MySQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2025-09-16 08:20:18', '2025-09-16 08:20:18'),
 (3, 5, '1990-01-15', NULL, '123 Đường NVL, Quận 1, TP.HCM', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-16 09:16:08', '2025-09-17 06:38:51');
 
 -- --------------------------------------------------------
@@ -295,6 +301,16 @@ CREATE TABLE `profile_skills` (
   `skill_id` int(11) NOT NULL,
   `level` tinyint(4) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `profile_skills`
+--
+
+INSERT INTO `profile_skills` (`profile_id`, `skill_id`, `level`) VALUES
+(1, 1, 4),
+(1, 2, 4),
+(1, 3, 3),
+(1, 4, 3);
 
 -- --------------------------------------------------------
 
@@ -369,10 +385,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password`, `first_name`, `last_name`, `phone_number`, `role`, `status`, `email_verified`, `verification_token`, `password_reset_token`, `password_reset_expires`, `avatar_url`, `last_login`, `company_id`, `created_at`, `updated_at`) VALUES
-(1, 'admin@recruitment.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'Admin', 'System', NULL, 'ADMIN', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-16 08:20:18', '2025-09-22 06:52:01'),
-(2, 'employer@techinnovate.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'John', 'Manager', NULL, 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, 1, '2025-09-16 08:20:18', '2025-09-22 06:52:01'),
-(5, 'john.doe@example.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'John', 'Doe', NULL, 'APPLICANT', 'ACTIVE', 1, '3a9f742d-1c78-4dfa-963b-ce257875b043', NULL, NULL, NULL, NULL, NULL, '2025-09-16 09:16:08', '2025-09-22 06:52:01'),
-(15, 'test2@example.com', '$2a$10$Y4V2I74PnkP1HpPBpijkoeRemaH0hv2Uvcn.NX9g7lLULkhpWYPEe', 'Test', 'User', NULL, 'APPLICANT', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-23 08:21:39', '2025-09-23 08:21:39');
+(1, 'admin@recruitment.com', '$2a$10$LdjS4heeg.BavaGecRZj6O8YXRK7M5aDbld3uboBRYZsWe4Kb1k3a', 'Admin', 'System', NULL, 'ADMIN', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-16 08:20:18', '2025-09-19 05:56:42'),
+(2, 'employer@techinnovate.com', '$2a$10$LdjS4heeg.BavaGecRZj6O8YXRK7M5aDbld3uboBRYZsWe4Kb1k3a', 'John', 'Manager', NULL, 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, 1, '2025-09-16 08:20:18', '2025-09-17 04:41:56'),
+(3, 'applicant@test.com', '$2a$10$LdjS4heeg.BavaGecRZj6O8YXRK7M5aDbld3uboBRYZsWe4Kb1k3a', 'Jane', 'Developer', NULL, 'APPLICANT', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-16 08:20:18', '2025-09-17 04:41:52'),
+(5, 'john.doe@example.com', '$2a$10$LdjS4heeg.BavaGecRZj6O8YXRK7M5aDbld3uboBRYZsWe4Kb1k3a', 'John', 'Doe', NULL, 'APPLICANT', 'ACTIVE', 1, '3a9f742d-1c78-4dfa-963b-ce257875b043', NULL, NULL, NULL, NULL, NULL, '2025-09-16 09:16:08', '2025-09-17 02:36:09');
 
 -- --------------------------------------------------------
 
@@ -548,7 +564,7 @@ ALTER TABLE `attachments`
 -- AUTO_INCREMENT cho bảng `companies`
 --
 ALTER TABLE `companies`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT cho bảng `educations`
@@ -590,7 +606,7 @@ ALTER TABLE `oauth_accounts`
 -- AUTO_INCREMENT cho bảng `profiles`
 --
 ALTER TABLE `profiles`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT cho bảng `skills`
@@ -608,7 +624,7 @@ ALTER TABLE `status_logs`
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT cho bảng `work_experiences`

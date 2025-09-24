@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "57909b9a-7a47-43a5-b0bb-ec2041d92776",
+		"_postman_id": "620cf390-d91c-4369-a620-827dbfa45723",
 		"name": "Recruitment System API",
 		"description": "Endpoints for Auth, Public Jobs, and Debug",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "48481540",
-		"_collection_link": "https://chinguyen3107-7344893.postman.co/workspace/Ch%C3%AD-Nguy%E1%BB%85n's-Workspace~556e17ea-1f12-443b-8df6-d9e40470be85/collection/48481540-57909b9a-7a47-43a5-b0bb-ec2041d92776?action=share&source=collection_link&creator=48481540"
+		"_collection_link": "https://chinguyen3107-7344893.postman.co/workspace/Ch%C3%AD-Nguy%E1%BB%85n's-Workspace~556e17ea-1f12-443b-8df6-d9e40470be85/collection/48481540-620cf390-d91c-4369-a620-827dbfa45723?action=share&source=collection_link&creator=48481540"
 	},
 	"item": [
 		{
@@ -193,6 +193,62 @@
 								"api",
 								"auth",
 								"resend-verification"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/forgot-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"forgot-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"{{passwordResetToken}}\",\n  \"newPassword\": \"NewPassword@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/reset-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"reset-password"
 							]
 						}
 					},
@@ -644,6 +700,10 @@
 		},
 		{
 			"key": "verificationToken",
+			"value": ""
+		},
+		{
+			"key": "passwordResetToken",
 			"value": ""
 		}
 	]

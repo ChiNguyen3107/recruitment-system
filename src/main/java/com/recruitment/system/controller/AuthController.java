@@ -6,6 +6,8 @@ import com.recruitment.system.dto.request.LoginRequest;
 import com.recruitment.system.dto.request.RegisterRequest;
 import com.recruitment.system.dto.request.VerifyEmailRequest;
 import com.recruitment.system.dto.request.ResendVerificationRequest;
+import com.recruitment.system.dto.request.ForgotPasswordRequest;
+import com.recruitment.system.dto.request.ResetPasswordRequest;
 import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.response.AuthResponse;
 import com.recruitment.system.dto.response.UserResponse;
@@ -180,6 +182,51 @@ public class AuthController {
             return ResponseEntity.ok(ApiResponse.success("Email xác minh đã được gửi lại", null));
         } catch (Exception e) {
             auditLogger.logResendVerification(request.getEmail(), clientIp, httpRequest.getHeader("User-Agent"), false);
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request,
+            HttpServletRequest httpRequest) {
+        
+        String clientIp = getClientIpAddress(httpRequest);
+        String rateLimitKey = "forgot-password:" + clientIp;
+        
+        // Kiểm tra rate limit cho forgot password (3 requests per hour)
+        if (!rateLimitConfig.tryConsumeRegister(rateLimitKey)) {
+            long waitTime = rateLimitConfig.getWaitTimeRegister(rateLimitKey);
+            log.warn("Rate limit exceeded for forgot password from IP: {}", clientIp);
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(ApiResponse.error("Quá nhiều yêu cầu đặt lại mật khẩu. Vui lòng thử lại sau " + waitTime + " giây."));
+        }
+        
+        try {
+            authService.forgotPassword(request);
+            auditLogger.logPasswordResetRequest(request.getEmail(), clientIp, httpRequest.getHeader("User-Agent"), true);
+            // Luôn trả về thành công để không tiết lộ thông tin về email có tồn tại hay không
+            return ResponseEntity.ok(ApiResponse.success("Nếu email của bạn tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu", null));
+        } catch (Exception e) {
+            auditLogger.logPasswordResetRequest(request.getEmail(), clientIp, httpRequest.getHeader("User-Agent"), false);
+            // Vẫn trả về thành công để bảo mật
+            return ResponseEntity.ok(ApiResponse.success("Nếu email của bạn tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu", null));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request,
+            HttpServletRequest httpRequest) {
+        
+        String clientIp = getClientIpAddress(httpRequest);
+        
+        try {
+            authService.resetPassword(request);
+            auditLogger.logPasswordReset(request.getToken(), clientIp, httpRequest.getHeader("User-Agent"), true);
+            return ResponseEntity.ok(ApiResponse.success("Mật khẩu đã được đặt lại thành công", null));
+        } catch (Exception e) {
+            auditLogger.logInvalidPasswordResetToken(request.getToken(), clientIp, httpRequest.getHeader("User-Agent"), e.getMessage());
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
