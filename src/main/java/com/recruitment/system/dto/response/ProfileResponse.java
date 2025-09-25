@@ -1,14 +1,21 @@
 package com.recruitment.system.dto.response;
 
+import com.recruitment.system.entity.Profile;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * DTO response cho hồ sơ cá nhân
+ * DTO cho phản hồi hồ sơ cá nhân
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProfileResponse {
 
     private Long id;
@@ -17,7 +24,6 @@ public class ProfileResponse {
     private String address;
     private String city;
     private String country;
-    private String fullAddress;
     private String summary;
     private String experience;
     private String education;
@@ -34,7 +40,38 @@ public class ProfileResponse {
     private String desiredLocation;
     private String availability;
     private Boolean isPublic;
-    private Boolean isComplete;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    /**
+     * Chuyển đổi từ Profile entity sang ProfileResponse
+     */
+    public static ProfileResponse fromProfile(Profile profile) {
+        return ProfileResponse.builder()
+                .id(profile.getId())
+                .dateOfBirth(profile.getDateOfBirth())
+                .gender(profile.getGender())
+                .address(profile.getAddress())
+                .city(profile.getCity())
+                .country(profile.getCountry())
+                .summary(profile.getSummary())
+                .experience(profile.getExperience())
+                .education(profile.getEducation())
+                .skills(profile.getSkills())
+                .certifications(profile.getCertifications())
+                .languages(profile.getLanguages())
+                .resumeUrl(profile.getResumeUrl())
+                .linkedinUrl(profile.getLinkedinUrl())
+                .githubUrl(profile.getGithubUrl())
+                .portfolioUrl(profile.getPortfolioUrl())
+                .desiredSalaryMin(profile.getDesiredSalaryMin())
+                .desiredSalaryMax(profile.getDesiredSalaryMax())
+                .desiredJobType(profile.getDesiredJobType())
+                .desiredLocation(profile.getDesiredLocation())
+                .availability(profile.getAvailability())
+                .isPublic(profile.getIsPublic())
+                .createdAt(profile.getCreatedAt())
+                .updatedAt(profile.getUpdatedAt())
+                .build();
+    }
 }
