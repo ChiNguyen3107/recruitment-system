@@ -93,4 +93,20 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     @Query("SELECT jp FROM JobPosting jp WHERE jp.createdAt >= :startDate")
     Long countJobsCreatedFromDate(@Param("startDate") LocalDateTime startDate);
+
+    /**
+     * Truy vấn hợp nhất cho tìm kiếm public: chỉ trả job ACTIVE và còn hạn, hỗ trợ keyword/location/jobType/minSalary.
+     */
+    @Query("SELECT jp FROM JobPosting jp WHERE " +
+           "jp.status = 'ACTIVE' AND jp.applicationDeadline > :now AND " +
+           "(:location IS NULL OR LOWER(jp.location) LIKE LOWER(CONCAT('%', :location, '%'))) AND " +
+           "(:jobType IS NULL OR jp.jobType = :jobType) AND " +
+           "(:minSalary IS NULL OR ((jp.salaryMin IS NOT NULL AND jp.salaryMin >= :minSalary) OR (jp.salaryMax IS NOT NULL AND jp.salaryMax >= :minSalary))) AND " +
+           "(:keyword IS NULL OR (LOWER(jp.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(jp.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(jp.skillsRequired) LIKE LOWER(CONCAT('%', :keyword, '%'))))")
+    Page<JobPosting> searchPublicJobs(@Param("keyword") String keyword,
+                                      @Param("location") String location,
+                                      @Param("jobType") JobType jobType,
+                                      @Param("minSalary") BigDecimal minSalary,
+                                      @Param("now") LocalDateTime now,
+                                      Pageable pageable);
 }

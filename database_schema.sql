@@ -465,6 +465,19 @@ ALTER TABLE `job_postings`
   ADD KEY `created_by` (`created_by`);
 ALTER TABLE `job_postings` ADD FULLTEXT KEY `idx_search` (`title`,`description`,`skills_required`);
 
+-- Gợi ý thêm chỉ mục tổng hợp tối ưu cho truy vấn public search
+-- Bao phủ điều kiện WHERE và một số cột sắp xếp phổ biến
+-- Lưu ý: với MySQL/InnoDB bạn có thể dùng các chỉ mục sau, cân nhắc thứ tự cột theo workload thực tế
+CREATE INDEX `idx_job_active_deadline_status` ON `job_postings` (`status`, `application_deadline`);
+CREATE INDEX `idx_job_location_ci` ON `job_postings` (`location`);
+CREATE INDEX `idx_job_type` ON `job_postings` (`job_type`);
+CREATE INDEX `idx_job_salary_min` ON `job_postings` (`salary_min`);
+CREATE INDEX `idx_job_salary_max` ON `job_postings` (`salary_max`);
+
+-- Nếu dùng sort theo created_at/published_at thường xuyên
+CREATE INDEX `idx_job_created_at` ON `job_postings` (`created_at`);
+CREATE INDEX `idx_job_published_at` ON `job_postings` (`published_at`);
+
 --
 -- Chỉ mục cho bảng `job_posting_skills`
 --

@@ -49,25 +49,16 @@ public class PublicJobController {
             Pageable pageable = PageRequest.of(page, size, sort);
 
             LocalDateTime now = LocalDateTime.now();
-            Page<JobPosting> jobPostings;
-
-            // Tìm kiếm dựa trên các tham số
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                // Tìm kiếm theo từ khóa
-                jobPostings = jobPostingRepository.searchActiveJobs(keyword.trim(), now, pageable);
-            } else if (location != null && !location.trim().isEmpty()) {
-                // Tìm kiếm theo địa điểm
-                jobPostings = jobPostingRepository.findActiveJobsByLocation(location.trim(), now, pageable);
-            } else if (jobType != null) {
-                // Tìm kiếm theo loại công việc
-                jobPostings = jobPostingRepository.findActiveJobsByType(jobType, now, pageable);
-            } else if (minSalary != null) {
-                // Tìm kiếm theo mức lương
-                jobPostings = jobPostingRepository.findActiveJobsBySalary(minSalary, now, pageable);
-            } else {
-                // Lấy tất cả việc làm đang hoạt động
-                jobPostings = jobPostingRepository.findActiveJobs(now, pageable);
-            }
+            String kw = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
+            String loc = (location != null && !location.trim().isEmpty()) ? location.trim() : null;
+            Page<JobPosting> jobPostings = jobPostingRepository.searchPublicJobs(
+                    kw,
+                    loc,
+                    jobType,
+                    minSalary,
+                    now,
+                    pageable
+            );
 
             // Convert to response DTOs
             List<JobPostingResponse> jobResponses = jobPostings.getContent().stream()

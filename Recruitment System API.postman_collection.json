@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "1a258d19-b716-46c3-b472-89857f4f328c",
 		"name": "Recruitment System API",
-		"description": "Endpoints for Auth, Public Jobs, and Debug",
+		"description": "Endpoints for Auth, Public Jobs, and Debug\n\nHướng dẫn test nhanh với Postman:\n1) Thiết lập biến môi trường:\n   - baseUrl = http://localhost:8081\n2) Test Public Job Search:\n   - Gọi GET {{baseUrl}}/api/public/jobs/search với các query: keyword, location, jobType, minSalary, page, size, sortBy, sortDir\n   - Kỳ vọng 200, body là ApiResponse chứa PageResponse<JobPostingResponse>\n   - Mặc định chỉ trả job status=ACTIVE và applicationDeadline > now\n3) Test Detail (Public):\n   - Gọi GET {{baseUrl}}/api/public/jobs/{id} và kiểm tra job còn hoạt động\n4) Test Latest (Public):\n   - Gọi GET {{baseUrl}}/api/public/jobs/latest?page=0&size=10\n\nGợi ý: Có thể thay đổi sortBy (createdAt, publishedAt, salaryMin, salaryMax, applicationsCount, viewsCount ...) và sortDir (ASC/DESC).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "48481540",
 		"_collection_link": "https://chinguyen3107-7344893.postman.co/workspace/Ch%25C3%25AD-Nguy%25E1%25BB%2585n's-Workspace~556e17ea-1f12-443b-8df6-d9e40470be85/collection/48481540-1a258d19-b716-46c3-b472-89857f4f328c?action=share&source=collection_link&creator=48481540"
@@ -484,9 +484,11 @@
 		},
 		{
 			"name": "Public Jobs",
+			"description": "Hướng dẫn test Public Jobs:\n- Search (Public): lọc theo keyword/title/description/skills, location, jobType, minSalary; chỉ trả job ACTIVE và còn hạn; hỗ trợ phân trang/sắp xếp.\n- Detail (Public): chỉ trả về khi job ACTIVE và applicationDeadline > now.\n- Latest (Public): danh sách job ACTIVE mới nhất.",
 			"item": [
 				{
 					"name": "Search (Public)",
+					"description": "Cách dùng: chỉnh query params để lọc. Ví dụ: keyword=java, location=Hanoi, jobType=FULL_TIME, minSalary=20000000, sortBy=createdAt, sortDir=DESC. Kết quả trả về: ApiResponse chứa PageResponse<JobPostingResponse>.",
 					"request": {
 						"method": "GET",
 						"header": [],
