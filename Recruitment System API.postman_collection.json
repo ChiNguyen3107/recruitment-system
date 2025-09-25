@@ -695,6 +695,301 @@
 			]
 		},
 		{
+			"name": "Profile Management",
+			"description": "Quản lý hồ sơ ứng viên\n- GET /api/profiles/my: Lấy hồ sơ của người dùng hiện tại\n- PUT /api/profiles/my: Cập nhật hồ sơ của người dùng hiện tại\n- Chỉ dành cho role APPLICANT",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dateOfBirth\": \"1995-05-15\",\n  \"gender\": \"Nam\",\n  \"address\": \"123 Đường ABC\",\n  \"city\": \"Hà Nội\",\n  \"country\": \"Việt Nam\",\n  \"summary\": \"Lập trình viên Java với 3 năm kinh nghiệm phát triển web application. Có kinh nghiệm với Spring Boot, MySQL, và các công nghệ frontend.\",\n  \"experience\": \"• Công ty ABC (2021-2024): Lập trình viên Java\\n  - Phát triển RESTful API với Spring Boot\\n  - Thiết kế và quản lý database MySQL\\n  - Làm việc với team 5 người\\n  - Đóng góp vào việc tối ưu hóa hiệu suất hệ thống\\n\\n• Dự án cá nhân (2020-2021)\\n  - Xây dựng ứng dụng quản lý bán hàng\\n  - Sử dụng Java, Spring MVC, JSP\",\n  \"education\": \"• Đại học Bách Khoa Hà Nội (2017-2021)\\n  - Chuyên ngành: Công nghệ thông tin\\n  - GPA: 3.2/4.0\\n  - Đồ án tốt nghiệp: Hệ thống quản lý thư viện\",\n  \"skills\": \"• Lập trình: Java, Spring Boot, Spring Security, JPA/Hibernate\\n• Database: MySQL, PostgreSQL\\n• Frontend: HTML, CSS, JavaScript, React\\n• Tools: Git, Maven, IntelliJ IDEA, Docker\\n• Ngôn ngữ: Tiếng Anh (TOEIC 750)\",\n  \"certifications\": \"• Oracle Certified Professional Java SE 8 Programmer (2022)\\n• AWS Certified Developer Associate (2023)\\n• Scrum Master Certification (2023)\",\n  \"languages\": \"• Tiếng Việt: Bản ngữ\\n• Tiếng Anh: Trung bình khá (TOEIC 750)\\n• Tiếng Nhật: Cơ bản (N4)\",\n  \"linkedinUrl\": \"https://linkedin.com/in/nguyenvana\",\n  \"githubUrl\": \"https://github.com/nguyenvana\",\n  \"portfolioUrl\": \"https://nguyenvana.dev\",\n  \"desiredSalaryMin\": 15000000,\n  \"desiredSalaryMax\": 25000000,\n  \"desiredJobType\": \"FULL_TIME\",\n  \"desiredLocation\": \"Hà Nội\",\n  \"availability\": \"Có thể bắt đầu ngay\",\n  \"isPublic\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile (Partial)",
+					"description": "Cập nhật một phần hồ sơ - chỉ cập nhật các trường được cung cấp",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"summary\": \"Cập nhật tóm tắt mới về kinh nghiệm lập trình Java và Spring Boot\",\n  \"skills\": \"Java, Spring Boot, Spring Security, MySQL, React, Docker\",\n  \"desiredSalaryMin\": 18000000,\n  \"isPublic\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile (Simple Test)",
+					"description": "Test cập nhật hồ sơ với dữ liệu đơn giản",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dateOfBirth\": \"1990-01-01\",\n  \"gender\": \"Nam\",\n  \"city\": \"Hà Nội\",\n  \"summary\": \"Lập trình viên Java với kinh nghiệm phát triển web application\",\n  \"skills\": \"Java, Spring Boot, MySQL\",\n  \"desiredSalaryMin\": 10000000,\n  \"desiredSalaryMax\": 20000000,\n  \"isPublic\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile (Validation Test)",
+					"description": "Test validation - gửi dữ liệu vượt quá giới hạn độ dài",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"summary\": \"Tóm tắt rất dài vượt quá 2000 ký tự...\",\n  \"gender\": \"Giới tính rất dài vượt quá 20 ký tự\",\n  \"linkedinUrl\": \"URL rất dài vượt quá 500 ký tự...\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Security Test - No Token (GET)",
+					"description": "Test bảo mật: Không có token - Kỳ vọng 401 Unauthorized",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Security Test - No Token (PUT)",
+					"description": "Test bảo mật: Không có token - Kỳ vọng 401 Unauthorized",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"summary\": \"Test không có token\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Security Test - Wrong Role (RECRUITER)",
+					"description": "Test bảo mật: Đăng nhập với role RECRUITER - Kỳ vọng 403 Forbidden",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{recruiterToken}}",
+								"type": "text",
+								"description": "Token của user với role RECRUITER"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Security Test - Wrong Role (ADMIN)",
+					"description": "Test bảo mật: Đăng nhập với role ADMIN - Kỳ vọng 403 Forbidden",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text",
+								"description": "Token của user với role ADMIN"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Security Test - Invalid Token",
+					"description": "Test bảo mật: Token không hợp lệ - Kỳ vọng 401 Unauthorized",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid_token_here",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Debug",
 			"item": [
 				{
@@ -871,6 +1166,14 @@
 		},
 		{
 			"key": "passwordResetToken",
+			"value": ""
+		},
+		{
+			"key": "recruiterToken",
+			"value": ""
+		},
+		{
+			"key": "adminToken",
 			"value": ""
 		}
 	]
