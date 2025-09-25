@@ -1172,6 +1172,45 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Applications (My)",
+			"item": [
+				{
+					"name": "Apply to Job (My)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"jobPostingId\": 1,\n  \"coverLetter\": \"Thư xin việc mẫu...\",\n  \"resumeUrl\": \"https://example.com/cv.pdf\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"my"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Nộp đơn ứng tuyển (Applicant). POST /api/applications/my nhận body gồm jobPostingId, coverLetter, resumeUrl. Yêu cầu Bearer token của APPLICANT."
 		}
 	],
 	"variable": [
