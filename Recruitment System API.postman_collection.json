@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "1a258d19-b716-46c3-b472-89857f4f328c",
+		"_postman_id": "8f8bc168-2897-408e-ac62-6c301d4d868b",
 		"name": "Recruitment System API",
 		"description": "Endpoints for Auth, Public Jobs, and Debug\n\nHướng dẫn test nhanh với Postman:\n1) Thiết lập biến môi trường:\n   - baseUrl = http://localhost:8081\n2) Test Public Job Search:\n   - Gọi GET {{baseUrl}}/api/public/jobs/search với các query: keyword, location, jobType, minSalary, page, size, sortBy, sortDir\n   - Kỳ vọng 200, body là ApiResponse chứa PageResponse<JobPostingResponse>\n   - Mặc định chỉ trả job status=ACTIVE và applicationDeadline > now\n3) Test Detail (Public):\n   - Gọi GET {{baseUrl}}/api/public/jobs/{id} và kiểm tra job còn hoạt động\n4) Test Latest (Public):\n   - Gọi GET {{baseUrl}}/api/public/jobs/latest?page=0&size=10\n\nGợi ý: Có thể thay đổi sortBy (createdAt, publishedAt, salaryMin, salaryMax, applicationsCount, viewsCount ...) và sortDir (ASC/DESC).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "48481540",
-		"_collection_link": "https://chinguyen3107-7344893.postman.co/workspace/Ch%25C3%25AD-Nguy%25E1%25BB%2585n's-Workspace~556e17ea-1f12-443b-8df6-d9e40470be85/collection/48481540-1a258d19-b716-46c3-b472-89857f4f328c?action=share&source=collection_link&creator=48481540"
+		"_collection_link": "https://chinguyen3107-7344893.postman.co/workspace/Ch%25C3%25AD-Nguy%25E1%25BB%2585n's-Workspace~556e17ea-1f12-443b-8df6-d9e40470be85/collection/48481540-8f8bc168-2897-408e-ac62-6c301d4d868b?action=share&source=collection_link&creator=48481540"
 	},
 	"item": [
 		{
@@ -253,6 +253,42 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Upload My Resume (PDF)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profiles/my/resume",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"my",
+								"resume"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -484,11 +520,9 @@
 		},
 		{
 			"name": "Public Jobs",
-			"description": "Hướng dẫn test Public Jobs:\n- Search (Public): lọc theo keyword/title/description/skills, location, jobType, minSalary; chỉ trả job ACTIVE và còn hạn; hỗ trợ phân trang/sắp xếp.\n- Detail (Public): chỉ trả về khi job ACTIVE và applicationDeadline > now.\n- Latest (Public): danh sách job ACTIVE mới nhất.",
 			"item": [
 				{
 					"name": "Search (Public)",
-					"description": "Cách dùng: chỉnh query params để lọc. Ví dụ: keyword=java, location=Hanoi, jobType=FULL_TIME, minSalary=20000000, sortBy=createdAt, sortDir=DESC. Kết quả trả về: ApiResponse chứa PageResponse<JobPostingResponse>.",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -692,11 +726,11 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Hướng dẫn test Public Jobs:\n- Search (Public): lọc theo keyword/title/description/skills, location, jobType, minSalary; chỉ trả job ACTIVE và còn hạn; hỗ trợ phân trang/sắp xếp.\n- Detail (Public): chỉ trả về khi job ACTIVE và applicationDeadline > now.\n- Latest (Public): danh sách job ACTIVE mới nhất."
 		},
 		{
 			"name": "Profile Management",
-			"description": "Quản lý hồ sơ ứng viên\n- GET /api/profiles/my: Lấy hồ sơ của người dùng hiện tại\n- PUT /api/profiles/my: Cập nhật hồ sơ của người dùng hiện tại\n- Chỉ dành cho role APPLICANT",
 			"item": [
 				{
 					"name": "Get My Profile",
@@ -758,7 +792,6 @@
 				},
 				{
 					"name": "Update Profile (Partial)",
-					"description": "Cập nhật một phần hồ sơ - chỉ cập nhật các trường được cung cấp",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -792,7 +825,6 @@
 				},
 				{
 					"name": "Update Profile (Simple Test)",
-					"description": "Test cập nhật hồ sơ với dữ liệu đơn giản",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -826,7 +858,6 @@
 				},
 				{
 					"name": "Update Profile (Validation Test)",
-					"description": "Test validation - gửi dữ liệu vượt quá giới hạn độ dài",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -860,7 +891,6 @@
 				},
 				{
 					"name": "Security Test - No Token (GET)",
-					"description": "Test bảo mật: Không có token - Kỳ vọng 401 Unauthorized",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -880,7 +910,6 @@
 				},
 				{
 					"name": "Security Test - No Token (PUT)",
-					"description": "Test bảo mật: Không có token - Kỳ vọng 401 Unauthorized",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -909,15 +938,14 @@
 				},
 				{
 					"name": "Security Test - Wrong Role (RECRUITER)",
-					"description": "Test bảo mật: Đăng nhập với role RECRUITER - Kỳ vọng 403 Forbidden",
 					"request": {
 						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{recruiterToken}}",
-								"type": "text",
-								"description": "Token của user với role RECRUITER"
+								"description": "Token của user với role RECRUITER",
+								"type": "text"
 							}
 						],
 						"url": {
@@ -936,15 +964,14 @@
 				},
 				{
 					"name": "Security Test - Wrong Role (ADMIN)",
-					"description": "Test bảo mật: Đăng nhập với role ADMIN - Kỳ vọng 403 Forbidden",
 					"request": {
 						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{adminToken}}",
-								"type": "text",
-								"description": "Token của user với role ADMIN"
+								"description": "Token của user với role ADMIN",
+								"type": "text"
 							}
 						],
 						"url": {
@@ -963,7 +990,6 @@
 				},
 				{
 					"name": "Security Test - Invalid Token",
-					"description": "Test bảo mật: Token không hợp lệ - Kỳ vọng 401 Unauthorized",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -987,7 +1013,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Quản lý hồ sơ ứng viên\n- GET /api/profiles/my: Lấy hồ sơ của người dùng hiện tại\n- PUT /api/profiles/my: Cập nhật hồ sơ của người dùng hiện tại\n- Chỉ dành cho role APPLICANT"
 		},
 		{
 			"name": "Debug",

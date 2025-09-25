@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -27,6 +28,7 @@ import java.util.Optional;
 public class ProfileController {
 
     private final ProfileRepository profileRepository;
+    private final com.recruitment.system.service.StorageService storageService;
 
     /**
      * Lấy hồ sơ của người dùng hiện tại
@@ -72,6 +74,74 @@ public class ProfileController {
             log.error("Lỗi khi lấy hồ sơ cho user ID: {}", user.getId(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Có lỗi xảy ra khi lấy hồ sơ"));
+        }
+    }
+
+    /**
+     * Upload CV (PDF <= 5MB) cho hồ sơ của người dùng hiện tại
+     * POST /api/profiles/my/resume
+     */
+    @PostMapping(value = "/my/resume", consumes = {"multipart/form-data"})
+    public ResponseEntity<ApiResponse<ProfileResponse>> uploadMyResume(
+            @AuthenticationPrincipal User user,
+            @RequestPart("file") MultipartFile file) {
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Chưa xác thực người dùng"));
+        }
+
+        if (user.getRole() != UserRole.APPLICANT) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Chỉ ứng viên mới có thể tải lên CV"));
+        }
+
+        try {
+            if (file == null || file.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("File không được để trống"));
+            }
+
+            // Validate kích thước: <= 5MB
+            long maxSize = 5L * 1024 * 1024;
+            if (file.getSize() > maxSize) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Kích thước file vượt quá 5MB"));
+            }
+
+            // Validate MIME: application/pdf
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.equalsIgnoreCase("application/pdf")) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Chỉ chấp nhận file PDF (application/pdf)"));
+            }
+
+            // Tạo tên file an toàn: resume-{timestamp}.pdf
+            String safeName = "resume-" + System.currentTimeMillis() + ".pdf";
+            String directory = "resumes/" + user.getId();
+
+            // Lưu file qua StorageService, trả về relative url bắt đầu bằng /uploads
+            String resumeUrl = storageService.save(file, directory, safeName);
+
+            // Lấy hoặc tạo profile
+            Profile profile = profileRepository.findByUserId(user.getId())
+                    .orElseGet(() -> {
+                        Profile p = new Profile();
+                        p.setUser(user);
+                        p.setIsPublic(false);
+                        return p;
+                    });
+
+            profile.setResumeUrl(resumeUrl);
+            Profile saved = profileRepository.save(profile);
+
+            ProfileResponse response = ProfileResponse.fromProfile(saved);
+            return ResponseEntity.ok(ApiResponse.success("Tải lên CV thành công", response));
+
+        } catch (Exception e) {
+            log.error("Lỗi khi upload CV cho user {}", user.getId(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Có lỗi xảy ra khi tải lên CV"));
         }
     }
 
