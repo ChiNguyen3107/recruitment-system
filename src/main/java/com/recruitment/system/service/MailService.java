@@ -303,4 +303,46 @@ public class MailService {
               .replace("{expirationHours}", String.valueOf(variables.get("expirationHours")))
               .replace("{currentYear}", String.valueOf(variables.get("currentYear")));
     }
+
+    /**
+     * Gửi email thông báo cho nhà tuyển dụng khi có đơn ứng tuyển mới
+     */
+    public void sendNewApplicationEmail(User employer, String jobTitle, String applicantName, String applicationDetailLink) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(employer.getEmail());
+            helper.setSubject("Đã nhận đơn ứng tuyển mới cho vị trí: " + jobTitle);
+
+            String html = createNewApplicationHtml(jobTitle, applicantName, applicationDetailLink);
+            helper.setText(html, true);
+
+            mailSender.send(message);
+            log.info("New application email sent to employer: {} for job '{}'", employer.getEmail(), jobTitle);
+        } catch (MessagingException e) {
+            log.error("Failed to send new application email to employer: {}", employer.getEmail(), e);
+            // Không throw để không chặn luồng nộp đơn
+        }
+    }
+
+    private String createNewApplicationHtml(String jobTitle, String applicantName, String detailLink) {
+        String appName = "Hệ thống Tuyển dụng";
+        int year = LocalDateTime.now().getYear();
+        return (
+            "<!DOCTYPE html>" +
+            "<html lang=\"vi\">" +
+            "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Đơn ứng tuyển mới</title>" +
+            "<style>body{font-family:Arial,sans-serif;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#28a745;color:#fff;padding:20px;text-align:center;border-radius:8px 8px 0 0}.content{background:#f8f9fa;padding:30px;border-radius:0 0 8px 8px}.button{display:inline-block;background:#28a745;color:#fff;padding:12px 24px;text-decoration:none;border-radius:5px;margin:20px 0}.footer{text-align:center;margin-top:30px;color:#666;font-size:12px}</style></head>" +
+            "<body><div class=\"container\"><div class=\"header\"><h1>📥 Đơn ứng tuyển mới</h1></div>" +
+            "<div class=\"content\"><p>Bạn vừa nhận một đơn ứng tuyển mới cho vị trí <strong>" + jobTitle + "</strong>.</p>" +
+            "<p><strong>Ứng viên:</strong> " + applicantName + "</p>" +
+            (detailLink != null && !detailLink.isEmpty() ? ("<div style=\"text-align:center;\"><a class=\"button\" href=\"" + detailLink + "\">Xem chi tiết đơn</a></div>") : "") +
+            "<p>Vui lòng đăng nhập hệ thống để xem và xử lý hồ sơ ứng viên.</p>" +
+            "<p>Trân trọng,<br>Đội ngũ " + appName + "</p></div>" +
+            "<div class=\"footer\">&copy; " + year + " " + appName + ". Tất cả quyền được bảo lưu.</div>" +
+            "</div></body></html>"
+        );
+    }
 }
