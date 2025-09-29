@@ -40,6 +40,181 @@
 					"response": []
 				},
 				{
+					"name": "Set Status: REVIEWED",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"REVIEWED\",\n  \"notes\": \"Đã xem hồ sơ\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/manage/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"manage",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Status: INTERVIEW",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"INTERVIEW\",\n  \"notes\": \"Mời phỏng vấn tuần tới\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/manage/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"manage",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Status: OFFER",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"OFFER\",\n  \"notes\": \"Offer 20tr gross\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/manage/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"manage",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Status: HIRED",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"HIRED\",\n  \"notes\": \"Ứng viên nhận offer\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/manage/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"manage",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Status: REJECTED",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"REJECTED\",\n  \"notes\": \"Không phù hợp yêu cầu\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/manage/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"manage",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Login",
 					"request": {
 						"method": "POST",
@@ -291,6 +466,8 @@
 					"response": []
 				}
 			]
+			,
+			"description": "Xác thực và quản lý tài khoản\n- role: Public (register, login, verify-email, resend-verification, forgot-password, reset-password); Authenticated (me, logout); APPLICANT bắt buộc khi upload resume.\n- flow:\n  1) Register → hệ thống tạo user trạng thái PENDING_EMAIL và gửi email xác minh.\n  2) Verify email → đổi sang VERIFIED, có thể đăng nhập đầy đủ.\n  3) Login → nhận accessToken + refreshToken.\n  4) Me/Logout → thao tác với accessToken.\n  5) Refresh token → cấp accessToken mới từ refreshToken hợp lệ.\n  6) Quên mật khẩu → gửi email reset; Reset password → đặt mật khẩu mới.",
 		},
 		{
 			"name": "Jobs Management",
@@ -456,6 +633,8 @@
 					"response": []
 				}
 			]
+			,
+			"description": "Quản lý tin tuyển dụng\n- role: RECRUITER của công ty sở hữu tin, hoặc ADMIN.\n- flow:\n  Draft → ACTIVE → Soft Delete (đánh dấu xóa) hoặc Hard Delete (xóa vĩnh viễn).\n- endpoints: Tạo, Cập nhật, Cập nhật trạng thái, Xóa mềm/cứng.\n- Lưu ý: Job chỉ hiển thị công khai/ứng tuyển khi ACTIVE và trước applicationDeadline.",
 		},
 		{
 			"name": "Email Verification",
@@ -517,6 +696,8 @@
 					"response": []
 				}
 			]
+			,
+			"description": "Luồng xác minh email\n- role: Public.\n- flow: Nhận token từ email (hoặc truy vấn ở mục Debug) → POST verify-email để kích hoạt tài khoản. Có thể yêu cầu gửi lại email xác minh qua resend-verification.\n- Bảo mật: Token dùng 1 lần và có thời hạn theo cấu hình.",
 		},
 		{
 			"name": "Public Jobs",
@@ -727,7 +908,7 @@
 					"response": []
 				}
 			],
-			"description": "Hướng dẫn test Public Jobs:\n- Search (Public): lọc theo keyword/title/description/skills, location, jobType, minSalary; chỉ trả job ACTIVE và còn hạn; hỗ trợ phân trang/sắp xếp.\n- Detail (Public): chỉ trả về khi job ACTIVE và applicationDeadline > now.\n- Latest (Public): danh sách job ACTIVE mới nhất."
+			"description": "Hướng dẫn test Public Jobs (truy cập công khai)\n- role: Public (không cần token).\n- Search: lọc keyword/title/description/skills, location, jobType, minSalary; phân trang & sắp xếp `sortBy`/`sortDir`.\n- Detail: chỉ trả về khi job ACTIVE và còn hạn (`applicationDeadline` > now).\n- Latest: danh sách job ACTIVE mới nhất.\n- Lưu ý: Có thể sắp xếp theo các trường như createdAt, publishedAt, salaryMin/Max, applicationsCount, viewsCount (nếu backend hỗ trợ)."
 		},
 		{
 			"name": "Profile Management",
@@ -1014,7 +1195,7 @@
 					"response": []
 				}
 			],
-			"description": "Quản lý hồ sơ ứng viên\n- GET /api/profiles/my: Lấy hồ sơ của người dùng hiện tại\n- PUT /api/profiles/my: Cập nhật hồ sơ của người dùng hiện tại\n- Chỉ dành cho role APPLICANT"
+			"description": "Quản lý hồ sơ ứng viên (APPLICANT)\n- role: Chỉ APPLICANT đã đăng nhập.\n- GET /api/profiles/my: Lấy hồ sơ người dùng hiện tại.\n- PUT /api/profiles/my: Cập nhật hồ sơ; có kiểm tra/giới hạn độ dài các trường; chỉ các trường hợp lệ mới được lưu.\n- Bảo mật: Yêu cầu Bearer token hợp lệ; từ chối khi sai role/thiếu token."
 		},
 		{
 			"name": "Debug",
@@ -1172,6 +1353,8 @@
 					"response": []
 				}
 			]
+			,
+			"description": "Các endpoint Debug chỉ dùng trong môi trường DEV\n- role: Public (không yêu cầu token) — TUYỆT ĐỐI không bật ở production.\n- Chức năng: tra cứu user theo email, kiểm tra mật khẩu, tạo user test, lấy refresh token/verification token, kiểm tra trạng thái xác minh email.\n- Cảnh báo: Có thể lộ dữ liệu nhạy cảm; dùng để hỗ trợ kiểm thử luồng Auth/Email.",
 		},
 		{
 			"name": "Applications (My)",
@@ -1210,7 +1393,119 @@
 					"response": []
 				}
 			],
-			"description": "Nộp đơn ứng tuyển (Applicant). POST /api/applications/my nhận body gồm jobPostingId, coverLetter, resumeUrl. Yêu cầu Bearer token của APPLICANT."
+			"description": "Nộp đơn ứng tuyển bởi ứng viên\n- role: APPLICANT đã đăng nhập (nên có email VERIFIED).\n- POST /api/applications/my: Gửi đơn với `jobPostingId`, `coverLetter`, `resumeUrl`.\n- Điều kiện: Job phải ACTIVE và còn hạn nộp, không bị xóa.\n- Kết quả: Lưu hồ sơ ứng tuyển và có thể thông báo tới nhà tuyển dụng."
+		},
+		{
+			"name": "Applications Management",
+			"item": [
+				{
+					"name": "List Applications (Manage)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/manage?page=0&size=10&status=RECEIVED&jobPostingId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"manage"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "RECEIVED",
+									"description": "Tùy chọn: RECEIVED, REVIEWED, INTERVIEW, OFFER, HIRED, REJECTED"
+								},
+								{
+									"key": "jobPostingId",
+									"value": "1",
+									"description": "Tùy chọn: lọc theo tin tuyển dụng"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Application Detail (Manage)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/manage/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"manage",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Application Status (Manage)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"INTERVIEW\",\n  \"notes\": \"Mời phỏng vấn vào tuần tới\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/manage/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"manage",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Quản lý đơn ứng tuyển cho nhà tuyển dụng\n- role: RECRUITER (giới hạn trong công ty của mình) hoặc ADMIN (toàn hệ thống).\n- Danh sách: phân trang, lọc theo `status` và `jobPostingId`.\n- Chi tiết: chỉ xem được khi đơn thuộc công ty của user.\n- Cập nhật trạng thái: flow RECEIVED → REVIEWED → INTERVIEW → OFFER → (HIRED | REJECTED). Khi chuyển từ RECEIVED ghi `reviewedAt/by` và gửi email cho ứng viên."
 		}
 	],
 	"variable": [

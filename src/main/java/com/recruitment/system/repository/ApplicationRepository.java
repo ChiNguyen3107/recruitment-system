@@ -39,6 +39,17 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
                                               @Param("status") ApplicationStatus status, 
                                               Pageable pageable);
 
+    @Query("SELECT a FROM Application a WHERE a.jobPosting.company.id = :companyId AND a.jobPosting.id = :jobPostingId")
+    Page<Application> findByCompanyIdAndJobPostingId(@Param("companyId") Long companyId,
+                                                    @Param("jobPostingId") Long jobPostingId,
+                                                    Pageable pageable);
+
+    @Query("SELECT a FROM Application a WHERE a.jobPosting.company.id = :companyId AND a.jobPosting.id = :jobPostingId AND a.status = :status")
+    Page<Application> findByCompanyIdAndJobPostingIdAndStatus(@Param("companyId") Long companyId,
+                                                             @Param("jobPostingId") Long jobPostingId,
+                                                             @Param("status") ApplicationStatus status,
+                                                             Pageable pageable);
+
     Optional<Application> findByApplicantIdAndJobPostingId(Long applicantId, Long jobPostingId);
 
     boolean existsByApplicantIdAndJobPostingId(Long applicantId, Long jobPostingId);

@@ -150,6 +150,54 @@ public class MailService {
     }
 
     /**
+     * Gửi email thông báo thay đổi trạng thái đơn ứng tuyển cho ứng viên
+     */
+    public void sendApplicationStatusChangedEmail(User applicant,
+                                                  String jobTitle,
+                                                  String newStatusDisplay,
+                                                  String notes) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(applicant.getEmail());
+            helper.setSubject("Cập nhật trạng thái đơn ứng tuyển - " + jobTitle);
+
+            String html = buildStatusChangedHtml(applicant.getFullName(), jobTitle, newStatusDisplay, notes);
+            helper.setText(html, true);
+
+            mailSender.send(message);
+            log.info("Status change email sent to applicant: {} for job '{}'", applicant.getEmail(), jobTitle);
+        } catch (MessagingException e) {
+            log.error("Failed to send status change email to applicant: {}", applicant.getEmail(), e);
+            // Không throw để không chặn luồng xử lý
+        }
+    }
+
+    private String buildStatusChangedHtml(String userName, String jobTitle, String statusDisplay, String notes) {
+        String appName = "Hệ thống Tuyển dụng";
+        int year = LocalDateTime.now().getYear();
+        String notesBlock = (notes != null && !notes.isBlank())
+            ? ("<div style=\"background:#f1f3f5;padding:12px;border-radius:6px;margin-top:12px;\"><strong>Ghi chú:</strong> " +
+               notes.replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</div>")
+            : "";
+        return (
+            "<!DOCTYPE html>" +
+            "<html lang=\"vi\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Cập nhật trạng thái</title>" +
+            "<style>body{font-family:Arial,sans-serif;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#0069d9;color:#fff;padding:20px;text-align:center;border-radius:8px 8px 0 0}.content{background:#f8f9fa;padding:30px;border-radius:0 0 8px 8px}.footer{text-align:center;margin-top:30px;color:#666;font-size:12px}</style></head>" +
+            "<body><div class=\"container\"><div class=\"header\"><h1>📣 Cập nhật trạng thái</h1></div>" +
+            "<div class=\"content\"><p>Xin chào <strong>" + userName + "</strong>,</p>" +
+            "<p>Trạng thái đơn ứng tuyển cho vị trí <strong>" + jobTitle + "</strong> đã được cập nhật thành: <strong>" + statusDisplay + "</strong>.</p>" +
+            notesBlock +
+            "<p>Vui lòng đăng nhập hệ thống để xem chi tiết.</p>" +
+            "<p>Trân trọng,<br>Đội ngũ " + appName + "</p></div>" +
+            "<div class=\"footer\">&copy; " + year + " " + appName + ". Tất cả quyền được bảo lưu.</div>" +
+            "</div></body></html>"
+        );
+    }
+
+    /**
      * Gửi email thông báo xác minh thành công
      */
     public void sendVerificationSuccessEmail(User user) {
