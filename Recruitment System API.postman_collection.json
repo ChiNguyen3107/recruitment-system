@@ -467,7 +467,7 @@
 				}
 			]
 			,
-			"description": "Xác thực và quản lý tài khoản\n- role: Public (register, login, verify-email, resend-verification, forgot-password, reset-password); Authenticated (me, logout); APPLICANT bắt buộc khi upload resume.\n- flow:\n  1) Register → hệ thống tạo user trạng thái PENDING_EMAIL và gửi email xác minh.\n  2) Verify email → đổi sang VERIFIED, có thể đăng nhập đầy đủ.\n  3) Login → nhận accessToken + refreshToken.\n  4) Me/Logout → thao tác với accessToken.\n  5) Refresh token → cấp accessToken mới từ refreshToken hợp lệ.\n  6) Quên mật khẩu → gửi email reset; Reset password → đặt mật khẩu mới.",
+			"description": "Xác thực và quản lý tài khoản\n- role: Public (register, login, verify-email, resend-verification, forgot-password, reset-password); Authenticated (me, logout); APPLICANT bắt buộc khi upload resume.\n- flow:\n  1) Register → hệ thống tạo user trạng thái PENDING_EMAIL và gửi email xác minh.\n  2) Verify email → đổi sang VERIFIED, có thể đăng nhập đầy đủ.\n  3) Login → nhận accessToken + refreshToken.\n  4) Me/Logout → thao tác với accessToken.\n  5) Refresh token → cấp accessToken mới từ refreshToken hợp lệ.\n  6) Quên mật khẩu → gửi email reset; Reset password → đặt mật khẩu mới."
 		},
 		{
 			"name": "Jobs Management",
@@ -634,7 +634,7 @@
 				}
 			]
 			,
-			"description": "Quản lý tin tuyển dụng\n- role: RECRUITER của công ty sở hữu tin, hoặc ADMIN.\n- flow:\n  Draft → ACTIVE → Soft Delete (đánh dấu xóa) hoặc Hard Delete (xóa vĩnh viễn).\n- endpoints: Tạo, Cập nhật, Cập nhật trạng thái, Xóa mềm/cứng.\n- Lưu ý: Job chỉ hiển thị công khai/ứng tuyển khi ACTIVE và trước applicationDeadline.",
+			"description": "Quản lý tin tuyển dụng\n- role: RECRUITER của công ty sở hữu tin, hoặc ADMIN.\n- flow:\n  Draft → ACTIVE → Soft Delete (đánh dấu xóa) hoặc Hard Delete (xóa vĩnh viễn).\n- endpoints: Tạo, Cập nhật, Cập nhật trạng thái, Xóa mềm/cứng.\n- Lưu ý: Job chỉ hiển thị công khai/ứng tuyển khi ACTIVE và trước applicationDeadline."
 		},
 		{
 			"name": "Email Verification",
@@ -697,7 +697,7 @@
 				}
 			]
 			,
-			"description": "Luồng xác minh email\n- role: Public.\n- flow: Nhận token từ email (hoặc truy vấn ở mục Debug) → POST verify-email để kích hoạt tài khoản. Có thể yêu cầu gửi lại email xác minh qua resend-verification.\n- Bảo mật: Token dùng 1 lần và có thời hạn theo cấu hình.",
+			"description": "Luồng xác minh email\n- role: Public.\n- flow: Nhận token từ email (hoặc truy vấn ở mục Debug) → POST verify-email để kích hoạt tài khoản. Có thể yêu cầu gửi lại email xác minh qua resend-verification.\n- Bảo mật: Token dùng 1 lần và có thời hạn theo cấu hình."
 		},
 		{
 			"name": "Public Jobs",
@@ -1354,7 +1354,7 @@
 				}
 			]
 			,
-			"description": "Các endpoint Debug chỉ dùng trong môi trường DEV\n- role: Public (không yêu cầu token) — TUYỆT ĐỐI không bật ở production.\n- Chức năng: tra cứu user theo email, kiểm tra mật khẩu, tạo user test, lấy refresh token/verification token, kiểm tra trạng thái xác minh email.\n- Cảnh báo: Có thể lộ dữ liệu nhạy cảm; dùng để hỗ trợ kiểm thử luồng Auth/Email.",
+			"description": "Các endpoint Debug chỉ dùng trong môi trường DEV\n- role: Public (không yêu cầu token) — TUYỆT ĐỐI không bật ở production.\n- Chức năng: tra cứu user theo email, kiểm tra mật khẩu, tạo user test, lấy refresh token/verification token, kiểm tra trạng thái xác minh email.\n- Cảnh báo: Có thể lộ dữ liệu nhạy cảm; dùng để hỗ trợ kiểm thử luồng Auth/Email."
 		},
 		{
 			"name": "Applications (My)",
@@ -1506,6 +1506,116 @@
 				}
 			],
 			"description": "Quản lý đơn ứng tuyển cho nhà tuyển dụng\n- role: RECRUITER (giới hạn trong công ty của mình) hoặc ADMIN (toàn hệ thống).\n- Danh sách: phân trang, lọc theo `status` và `jobPostingId`.\n- Chi tiết: chỉ xem được khi đơn thuộc công ty của user.\n- Cập nhật trạng thái: flow RECEIVED → REVIEWED → INTERVIEW → OFFER → (HIRED | REJECTED). Khi chuyển từ RECEIVED ghi `reviewedAt/by` và gửi email cho ứng viên."
+		},
+		{
+			"name": "Dashboards",
+			"item": [
+				{
+					"name": "Admin Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/dashboard",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"dashboard"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"Body has ApiResponse shape\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('data');",
+									"});",
+									"pm.test(\"Data contains totalUsers and status maps\", function () {",
+									"  pm.expect(json.data).to.have.property('totalUsers');",
+									"  pm.expect(json.data).to.have.property('jobsByStatus');",
+									"  pm.expect(json.data).to.have.property('applicationsByStatus');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Employer Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{recruiterToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/employer/dashboard",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"employer",
+								"dashboard"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"Body has ApiResponse shape\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('data');",
+									"});",
+									"pm.test(\"Data contains activeJobs and conversionRate\", function () {",
+									"  pm.expect(json.data).to.have.property('activeJobs');",
+									"  pm.expect(json.data).to.have.property('conversionRate');",
+									"});",
+									"if (Array.isArray(json.data.activeJobs) && json.data.activeJobs.length > 0) {",
+									"  const item = json.data.activeJobs[0];",
+									"  pm.test(\"activeJobs item shape\", function () {",
+									"    pm.expect(item).to.have.property('jobId');",
+									"    pm.expect(item).to.have.property('title');",
+									"    pm.expect(item).to.have.property('status');",
+									"    pm.expect(item).to.have.property('applications');",
+									"  });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				}
+			],
+			"description": "Bảng điều khiển (Dashboards)\n\n1) Admin Dashboard\n- Endpoint: GET /api/admin/dashboard\n- Quyền: Chỉ ADMIN (Authorization: Bearer {{adminToken}}).\n- Dữ liệu trả về: tổng số người dùng (totalUsers), số lượng tin tuyển dụng theo trạng thái (jobsByStatus), số lượng đơn ứng tuyển theo trạng thái (applicationsByStatus).\n- Mục đích: Thống kê nhanh toàn hệ thống để theo dõi hoạt động.\n\n2) Employer Dashboard\n- Endpoint: GET /api/employer/dashboard\n- Quyền: EMPLOYER/RECRUITER thuộc công ty hoặc ADMIN (Authorization: Bearer {{recruiterToken}} hoặc {{adminToken}}).\n- Dữ liệu trả về: danh sách tin đang ACTIVE của công ty kèm số đơn ứng tuyển cho mỗi tin (activeJobs), tỷ lệ chuyển đổi cơ bản (conversionRate = HIRED / tổng đơn).\n- Mục đích: Giúp nhà tuyển dụng theo dõi hiệu quả tuyển dụng theo từng tin và tổng quan."
 		}
 	],
 	"variable": [

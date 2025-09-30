@@ -66,6 +66,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Query("SELECT COUNT(a) FROM Application a WHERE a.applicant.id = :applicantId")
     Long countByApplicantId(@Param("applicantId") Long applicantId);
 
+    Long countByJobPostingId(Long jobPostingId);
+
     @Query("SELECT a FROM Application a WHERE a.interviewDate BETWEEN :startDate AND :endDate")
     List<Application> findApplicationsWithInterviewBetween(@Param("startDate") LocalDateTime startDate, 
                                                           @Param("endDate") LocalDateTime endDate);
