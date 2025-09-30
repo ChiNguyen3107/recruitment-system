@@ -36,6 +36,41 @@ public class MailService {
     @Value("${app.mail.verification.expiration:24}")
     private int verificationExpirationHours;
 
+    @Value("${app.mail.enabled:true}")
+    private boolean mailEnabled;
+
+    @Value("${app.mail.retry.attempts:2}")
+    private int retryAttempts;
+
+    private void sendWithRetry(MimeMessage message, String to, String subject) {
+        if (!mailEnabled) {
+            log.debug("Mail disabled. Skipping send to {} subject '{}'", to, subject);
+            return;
+        }
+        int attempts = Math.max(1, retryAttempts);
+        int tryNo = 0;
+        while (true) {
+            try {
+                mailSender.send(message);
+                if (tryNo > 0) {
+                    log.info("Mail sent after retry {} to {} subject '{}'", tryNo, to, subject);
+                }
+                return;
+            } catch (Exception ex) {
+                tryNo++;
+                if (tryNo >= attempts) {
+                    log.warn("Mail send failed to {} subject '{}': {}", to, subject, ex.getMessage());
+                    throw new RuntimeException("Không thể gửi email");
+                }
+                try {
+                    Thread.sleep(300L);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
     /**
      * Gửi email xác minh địa chỉ email
      */
@@ -52,12 +87,12 @@ public class MailService {
             String htmlContent = createVerificationEmailContent(user, verificationToken);
             helper.setText(htmlContent, true);
 
-            mailSender.send(message);
-            log.info("Verification email sent successfully to: {}", user.getEmail());
+            sendWithRetry(message, user.getEmail(), helper.getMimeMessage().getSubject());
+            log.info("Verification email sent to: {}", user.getEmail());
 
         } catch (MessagingException e) {
-            log.error("Failed to send verification email to: {}", user.getEmail(), e);
-            throw new RuntimeException("Không thể gửi email xác minh", e);
+            log.warn("Send verification email failed {}: {}", user.getEmail(), e.getMessage());
+            throw new RuntimeException("Không thể gửi email xác minh");
         }
     }
 
@@ -167,10 +202,10 @@ public class MailService {
             String html = buildStatusChangedHtml(applicant.getFullName(), jobTitle, newStatusDisplay, notes);
             helper.setText(html, true);
 
-            mailSender.send(message);
+            sendWithRetry(message, applicant.getEmail(), helper.getMimeMessage().getSubject());
             log.info("Status change email sent to applicant: {} for job '{}'", applicant.getEmail(), jobTitle);
         } catch (MessagingException e) {
-            log.error("Failed to send status change email to applicant: {}", applicant.getEmail(), e);
+            log.warn("Send status change email failed {}: {}", applicant.getEmail(), e.getMessage());
             // Không throw để không chặn luồng xử lý
         }
     }
@@ -212,11 +247,11 @@ public class MailService {
             String htmlContent = createVerificationSuccessContent(user);
             helper.setText(htmlContent, true);
 
-            mailSender.send(message);
+            sendWithRetry(message, user.getEmail(), helper.getMimeMessage().getSubject());
             log.info("Verification success email sent to: {}", user.getEmail());
 
         } catch (MessagingException e) {
-            log.error("Failed to send verification success email to: {}", user.getEmail(), e);
+            log.warn("Send verification success email failed {}: {}", user.getEmail(), e.getMessage());
             // Không throw exception vì đây chỉ là thông báo
         }
     }
@@ -265,12 +300,12 @@ public class MailService {
             String htmlContent = createPasswordResetEmailContent(user, resetToken);
             helper.setText(htmlContent, true);
 
-            mailSender.send(message);
-            log.info("Password reset email sent successfully to: {}", user.getEmail());
+            sendWithRetry(message, user.getEmail(), helper.getMimeMessage().getSubject());
+            log.info("Password reset email sent to: {}", user.getEmail());
 
         } catch (MessagingException e) {
-            log.error("Failed to send password reset email to: {}", user.getEmail(), e);
-            throw new RuntimeException("Không thể gửi email đặt lại mật khẩu", e);
+            log.warn("Send password reset email failed {}: {}", user.getEmail(), e.getMessage());
+            throw new RuntimeException("Không thể gửi email đặt lại mật khẩu");
         }
     }
 
@@ -362,15 +397,15 @@ public class MailService {
 
             helper.setFrom(fromEmail);
             helper.setTo(employer.getEmail());
-            helper.setSubject("Đã nhận đơn ứng tuyển mới cho vị trí: " + jobTitle);
+            helper.setSubject("New application for " + jobTitle);
 
             String html = createNewApplicationHtml(jobTitle, applicantName, applicationDetailLink);
             helper.setText(html, true);
 
-            mailSender.send(message);
+            sendWithRetry(message, employer.getEmail(), helper.getMimeMessage().getSubject());
             log.info("New application email sent to employer: {} for job '{}'", employer.getEmail(), jobTitle);
         } catch (MessagingException e) {
-            log.error("Failed to send new application email to employer: {}", employer.getEmail(), e);
+            log.warn("Send new application email failed {}: {}", employer.getEmail(), e.getMessage());
             // Không throw để không chặn luồng nộp đơn
         }
     }
