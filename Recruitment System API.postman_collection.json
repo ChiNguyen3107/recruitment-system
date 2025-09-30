@@ -399,6 +399,28 @@
 							]
 						}
 					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse shape\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('message');",
+									"});",
+									"pm.test(\"Message masks email existence\", function () {",
+									"  pm.expect(String(json.message)).to.include(\"Nếu email của bạn tồn tại\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"description": "Quên mật khẩu: Gửi email của bạn. Luôn trả 200 để tránh lộ thông tin. Kiểm tra hộp thư/sandbox mail để nhận link đặt lại mật khẩu hoặc lấy token từ DB và gán vào biến {{passwordResetToken}}."
 					"response": []
 				},
 				{
@@ -427,6 +449,28 @@
 							]
 						}
 					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse shape\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('message');",
+									"});",
+									"pm.test(\"Message indicates success\", function () {",
+									"  pm.expect(String(json.message)).to.include(\"Mật khẩu đã được đặt lại thành công\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"description": "Đặt lại mật khẩu: Dán token vào {{passwordResetToken}} (lấy từ email/sandbox/DB). Mật khẩu mới phải đạt chuẩn: ≥8 ký tự, có chữ hoa/thường/số/ký tự đặc biệt."
 					"response": []
 				},
 				{
