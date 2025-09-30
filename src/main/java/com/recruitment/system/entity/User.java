@@ -62,6 +62,9 @@ public class User implements UserDetails {
     @Column(name = "verification_token")
     private String verificationToken;
 
+    @Column(name = "verification_token_issued_at")
+    private LocalDateTime verificationTokenIssuedAt;
+
     @Column(name = "password_reset_token")
     private String passwordResetToken;
 

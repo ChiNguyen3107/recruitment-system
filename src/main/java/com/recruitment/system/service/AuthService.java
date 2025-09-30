@@ -43,6 +43,12 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final MailService mailService;
     
+    @org.springframework.beans.factory.annotation.Value("${app.auth.require-email-verified:true}")
+    private boolean requireEmailVerifiedToLogin;
+    
+    @org.springframework.beans.factory.annotation.Value("${app.mail.verification.expiration:24}")
+    private int verificationExpirationHours;
+    
     @org.springframework.beans.factory.annotation.Value("${jwt.access.expiration:900000}")
     private long accessExpirationMs;
     
@@ -67,6 +73,7 @@ public class AuthService {
         user.setStatus(UserStatus.ACTIVE);  // Cho phép đăng nhập ngay sau khi đăng ký
         user.setEmailVerified(false);       // Cần xác minh email
         user.setVerificationToken(UUID.randomUUID().toString());
+        user.setVerificationTokenIssuedAt(LocalDateTime.now());
 
         // Nếu là employer/recruiter, tạo company
         if (request.getRole() == UserRole.EMPLOYER || request.getRole() == UserRole.RECRUITER) {
@@ -117,8 +124,8 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Kiểm tra email đã được xác minh chưa
-        if (!user.getEmailVerified()) {
+        // Kiểm tra email đã được xác minh chưa (tùy theo cấu hình)
+        if (requireEmailVerifiedToLogin && !user.getEmailVerified()) {
             throw new RuntimeException("Vui lòng xác minh email trước khi đăng nhập. Kiểm tra hộp thư của bạn hoặc yêu cầu gửi lại email xác minh.");
         }
 
@@ -166,10 +173,12 @@ public class AuthService {
         User user = userRepository.findByVerificationToken(request.getToken())
                 .orElseThrow(() -> new RuntimeException("Token xác minh không hợp lệ hoặc đã hết hạn"));
 
-        // Kiểm tra token đã hết hạn chưa (24 giờ)
-        if (user.getCreatedAt().plusHours(24).isBefore(LocalDateTime.now())) {
+        // Kiểm tra token đã hết hạn chưa theo cấu hình
+        LocalDateTime issuedAt = user.getVerificationTokenIssuedAt() != null ? user.getVerificationTokenIssuedAt() : user.getCreatedAt();
+        if (issuedAt.plusHours(verificationExpirationHours).isBefore(LocalDateTime.now())) {
             // Xóa token hết hạn
             user.setVerificationToken(null);
+            user.setVerificationTokenIssuedAt(null);
             userRepository.save(user);
             throw new RuntimeException("Token xác minh đã hết hạn. Vui lòng yêu cầu gửi lại email xác minh.");
         }
@@ -177,6 +186,7 @@ public class AuthService {
         // Xác minh thành công
         user.setEmailVerified(true);
         user.setVerificationToken(null); // Xóa token sau khi xác minh
+        user.setVerificationTokenIssuedAt(null);
         userRepository.save(user);
 
         // Gửi email thông báo xác minh thành công
@@ -196,16 +206,24 @@ public class AuthService {
     @Transactional
     public void resendVerificationEmail(ResendVerificationRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản với email này"));
+                .orElse(null);
 
-        // Kiểm tra email đã được xác minh chưa
+        // Không tiết lộ sự tồn tại của email
+        if (user == null) {
+            log.info("Resend verification requested for non-existent email: {}", request.getEmail());
+            return;
+        }
+
+        // Nếu đã xác minh thì coi như thành công (không gửi lại)
         if (user.getEmailVerified()) {
-            throw new RuntimeException("Email này đã được xác minh");
+            log.info("Resend verification requested but already verified: {}", request.getEmail());
+            return;
         }
 
         // Tạo token mới
         String newToken = UUID.randomUUID().toString();
         user.setVerificationToken(newToken);
+        user.setVerificationTokenIssuedAt(LocalDateTime.now());
         userRepository.save(user);
 
         // Gửi email xác minh mới
