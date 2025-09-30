@@ -1,5 +1,6 @@
 package com.recruitment.system.controller;
 
+import com.recruitment.system.config.AuditLogger;
 import com.recruitment.system.dto.request.ApplicationStatusUpdateRequest;
 import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.response.ApplicationResponse;
@@ -12,6 +13,7 @@ import com.recruitment.system.enums.ApplicationStatus;
 import com.recruitment.system.enums.UserRole;
 import com.recruitment.system.repository.ApplicationRepository;
 import com.recruitment.system.service.MailService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,7 @@ public class ManageApplicationController {
 
     private final ApplicationRepository applicationRepository;
     private final MailService mailService;
+    private final AuditLogger auditLogger;
 
     private boolean isEmployerOfCompany(User user) {
         return user != null && (user.getRole() == UserRole.EMPLOYER || user.getRole() == UserRole.RECRUITER) && user.getCompany() != null;
@@ -101,7 +104,8 @@ public class ManageApplicationController {
     public ResponseEntity<ApiResponse<ApplicationResponse>> updateStatus(
             @AuthenticationPrincipal User currentUser,
             @PathVariable Long id,
-            @Valid @RequestBody ApplicationStatusUpdateRequest req
+            @Valid @RequestBody ApplicationStatusUpdateRequest req,
+            HttpServletRequest httpRequest
     ) {
         if (!isEmployerOfCompany(currentUser)) {
             return ResponseEntity.status(403).body(ApiResponse.error("Chỉ employer/recruiter mới được cập nhật"));
@@ -119,6 +123,10 @@ public class ManageApplicationController {
         ApplicationStatus current = application.getStatus();
         ApplicationStatus next = req.getStatus();
 
+        if (next == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Trạng thái mới không được để trống"));
+        }
+
         if (!isValidTransition(current, next)) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Trạng thái không hợp lệ theo flow"));
         }
@@ -127,6 +135,20 @@ public class ManageApplicationController {
         application.setReviewedBy(currentUser.getId());
 
         Application saved = applicationRepository.save(application);
+
+        // Audit log
+        String clientIp = getClientIpAddress(httpRequest);
+        Long companyId = saved.getJobPosting() != null && saved.getJobPosting().getCompany() != null
+                ? saved.getJobPosting().getCompany().getId() : null;
+        auditLogger.logApplicationStatusChanged(
+                saved.getId(),
+                companyId,
+                current != null ? current.name() : null,
+                next != null ? next.name() : null,
+                currentUser != null ? currentUser.getEmail() : null,
+                clientIp,
+                httpRequest.getHeader("User-Agent")
+        );
 
         // Gửi email cho ứng viên
         try {
@@ -219,6 +241,15 @@ public class ManageApplicationController {
         resp.setIsCompleted(application.isCompleted());
 
         return resp;
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedForHeader = request.getHeader("X-Forwarded-For");
+        if (xForwardedForHeader == null) {
+            return request.getRemoteAddr();
+        } else {
+            return xForwardedForHeader.split(",")[0];
+        }
     }
 }
 

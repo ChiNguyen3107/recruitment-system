@@ -122,6 +122,52 @@ public class AuditLogger {
     }
 
     /**
+     * Ghi log tạo mới tin tuyển dụng
+     */
+    public void logJobCreated(Long jobId, Long companyId, String performedByEmail, String ipAddress, String userAgent) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        log.info("{} {} JOB_CREATED - JobId: {}, CompanyId: {}, By: {}, IP: {}, UserAgent: {}",
+                AUDIT_PREFIX, timestamp, jobId, companyId, performedByEmail, ipAddress, userAgent);
+    }
+
+    /**
+     * Ghi log cập nhật tin tuyển dụng
+     */
+    public void logJobUpdated(Long jobId, Long companyId, String performedByEmail, String ipAddress, String userAgent) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        log.info("{} {} JOB_UPDATED - JobId: {}, CompanyId: {}, By: {}, IP: {}, UserAgent: {}",
+                AUDIT_PREFIX, timestamp, jobId, companyId, performedByEmail, ipAddress, userAgent);
+    }
+
+    /**
+     * Ghi log xóa tin tuyển dụng
+     */
+    public void logJobDeleted(Long jobId, Long companyId, String performedByEmail, boolean hardDelete, String ipAddress, String userAgent) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        String mode = hardDelete ? "HARD" : "SOFT";
+        log.info("{} {} JOB_DELETED - Mode: {}, JobId: {}, CompanyId: {}, By: {}, IP: {}, UserAgent: {}",
+                AUDIT_PREFIX, timestamp, mode, jobId, companyId, performedByEmail, ipAddress, userAgent);
+    }
+
+    /**
+     * Ghi log thay đổi trạng thái tin tuyển dụng
+     */
+    public void logJobStatusChanged(Long jobId, Long companyId, String oldStatus, String newStatus, String performedByEmail, String ipAddress, String userAgent) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        log.info("{} {} JOB_STATUS_CHANGED - JobId: {}, CompanyId: {}, From: {} To: {}, By: {}, IP: {}, UserAgent: {}",
+                AUDIT_PREFIX, timestamp, jobId, companyId, oldStatus, newStatus, performedByEmail, ipAddress, userAgent);
+    }
+
+    /**
+     * Ghi log thay đổi trạng thái đơn ứng tuyển
+     */
+    public void logApplicationStatusChanged(Long applicationId, Long companyId, String oldStatus, String newStatus, String performedByEmail, String ipAddress, String userAgent) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        log.info("{} {} APPLICATION_STATUS_CHANGED - ApplicationId: {}, CompanyId: {}, From: {} To: {}, By: {}, IP: {}, UserAgent: {}",
+                AUDIT_PREFIX, timestamp, applicationId, companyId, oldStatus, newStatus, performedByEmail, ipAddress, userAgent);
+    }
+
+    /**
      * Ghi log xác minh email
      */
     public void logEmailVerification(String token, String ipAddress, String userAgent, boolean success) {
