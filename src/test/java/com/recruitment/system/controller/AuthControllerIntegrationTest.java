@@ -3,6 +3,8 @@ package com.recruitment.system.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recruitment.system.config.AuditLogger;
 import com.recruitment.system.config.RateLimitConfig;
+import com.recruitment.system.dto.request.ForgotPasswordRequest;
+import com.recruitment.system.dto.request.ResetPasswordRequest;
 import com.recruitment.system.dto.request.ResendVerificationRequest;
 import com.recruitment.system.dto.request.VerifyEmailRequest;
 import com.recruitment.system.service.AuthService;
@@ -105,6 +107,69 @@ public class AuthControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
             .andExpect(status().isTooManyRequests())
+            .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void forgotPassword_genericSuccess_evenWhenServiceThrows() throws Exception {
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("someone@example.com");
+
+        // Mặc định rate limit OK
+        when(rateLimitConfig.tryConsumeRegister(anyString())).thenReturn(true);
+        // Service ném lỗi nhưng controller vẫn trả về OK để tránh lộ thông tin
+        doThrow(new RuntimeException("some error")).when(authService).forgotPassword(any());
+
+        mockMvc.perform(post("/api/auth/forgot-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Nếu email của bạn tồn tại")));
+    }
+
+    @Test
+    void forgotPassword_rateLimited() throws Exception {
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("someone@example.com");
+
+        when(rateLimitConfig.tryConsumeRegister(anyString())).thenReturn(false);
+        when(rateLimitConfig.getWaitTimeRegister(anyString())).thenReturn(120L);
+
+        mockMvc.perform(post("/api/auth/forgot-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+            .andExpect(status().isTooManyRequests())
+            .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void resetPassword_happy() throws Exception {
+        ResetPasswordRequest req = new ResetPasswordRequest();
+        req.setToken("good");
+        req.setNewPassword("Valid@1234");
+
+        Mockito.doNothing().when(authService).resetPassword(any());
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void resetPassword_invalidToken_returnsBadRequest() throws Exception {
+        ResetPasswordRequest req = new ResetPasswordRequest();
+        req.setToken("bad");
+        req.setNewPassword("Valid@1234");
+
+        doThrow(new RuntimeException("Token không hợp lệ hoặc đã hết hạn")).when(authService).resetPassword(any());
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+            .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.success").value(false));
     }
 }

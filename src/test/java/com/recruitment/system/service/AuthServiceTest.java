@@ -1,8 +1,11 @@
 package com.recruitment.system.service;
 
 import com.recruitment.system.dto.request.ResendVerificationRequest;
+import com.recruitment.system.dto.request.ForgotPasswordRequest;
+import com.recruitment.system.dto.request.ResetPasswordRequest;
 import com.recruitment.system.dto.request.VerifyEmailRequest;
 import com.recruitment.system.entity.User;
+import com.recruitment.system.enums.UserStatus;
 import com.recruitment.system.repository.CompanyRepository;
 import com.recruitment.system.repository.UserRepository;
 import com.recruitment.system.config.JwtUtil;
@@ -125,6 +128,101 @@ public class AuthServiceTest {
 
         assertDoesNotThrow(() -> authService.resendVerificationEmail(req));
         verify(mailService, never()).sendVerificationEmail(any(), anyString());
+    }
+
+    @Test
+    void forgotPassword_masksWhenEmailNotExist() {
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("noone@example.com");
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        assertDoesNotThrow(() -> authService.forgotPassword(req));
+        verify(mailService, never()).sendPasswordResetEmail(any(), anyString());
+    }
+
+    @Test
+    void forgotPassword_inactiveUser_isSilentlyIgnored() {
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("inactive@example.com");
+
+        User user = new User();
+        user.setEmail("inactive@example.com");
+        user.setStatus(UserStatus.SUSPENDED);
+
+        when(userRepository.findByEmail(eq("inactive@example.com"))).thenReturn(Optional.of(user));
+
+        assertDoesNotThrow(() -> authService.forgotPassword(req));
+        verify(mailService, never()).sendPasswordResetEmail(any(), anyString());
+    }
+
+    @Test
+    void forgotPassword_happyPath_setsToken_and_SendsEmail() {
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("user@example.com");
+
+        User user = new User();
+        user.setEmail("user@example.com");
+        user.setStatus(UserStatus.ACTIVE);
+
+        when(userRepository.findByEmail(eq("user@example.com"))).thenReturn(Optional.of(user));
+
+        assertDoesNotThrow(() -> authService.forgotPassword(req));
+        assertNotNull(user.getPasswordResetToken());
+        assertNotNull(user.getPasswordResetExpires());
+        verify(userRepository, atLeastOnce()).save(any(User.class));
+        verify(mailService, times(1)).sendPasswordResetEmail(eq(user), anyString());
+    }
+
+    @Test
+    void forgotPassword_mailSendingFails_rollsBackToken_andThrows() {
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("user2@example.com");
+
+        User user = new User();
+        user.setEmail("user2@example.com");
+        user.setStatus(UserStatus.ACTIVE);
+
+        when(userRepository.findByEmail(eq("user2@example.com"))).thenReturn(Optional.of(user));
+        doThrow(new RuntimeException("send fail")).when(mailService).sendPasswordResetEmail(any(User.class), anyString());
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> authService.forgotPassword(req));
+        assertTrue(ex.getMessage().toLowerCase().contains("không thể gửi"));
+        assertNull(user.getPasswordResetToken());
+        assertNull(user.getPasswordResetExpires());
+        verify(userRepository, atLeast(2)).save(any(User.class));
+    }
+
+    @Test
+    void resetPassword_invalidToken_throws() {
+        ResetPasswordRequest req = new ResetPasswordRequest();
+        req.setToken("badtoken");
+        req.setNewPassword("Valid@1234");
+
+        when(userRepository.findByValidPasswordResetToken(anyString(), any(LocalDateTime.class)))
+                .thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> authService.resetPassword(req));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void resetPassword_happy_updatesPassword_and_ClearsToken() {
+        ResetPasswordRequest req = new ResetPasswordRequest();
+        req.setToken("goodtoken");
+        req.setNewPassword("Valid@1234");
+
+        User user = new User();
+        user.setStatus(UserStatus.ACTIVE);
+        when(userRepository.findByValidPasswordResetToken(eq("goodtoken"), any(LocalDateTime.class)))
+                .thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(eq("Valid@1234"))).thenReturn("hashed");
+
+        assertDoesNotThrow(() -> authService.resetPassword(req));
+        assertEquals("hashed", user.getPassword());
+        assertNull(user.getPasswordResetToken());
+        assertNull(user.getPasswordResetExpires());
+        verify(userRepository, times(1)).save(any(User.class));
     }
 }
 
