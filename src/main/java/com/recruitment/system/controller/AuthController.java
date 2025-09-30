@@ -162,10 +162,10 @@ public class AuthController {
         
         try {
             authService.verifyEmail(request);
-            auditLogger.logEmailVerification(request.getToken(), clientIp, httpRequest.getHeader("User-Agent"), true);
+            auditLogger.logEmailVerification("***", clientIp, httpRequest.getHeader("User-Agent"), true);
             return ResponseEntity.ok(ApiResponse.success("Email đã được xác minh thành công", null));
         } catch (Exception e) {
-            auditLogger.logEmailVerification(request.getToken(), clientIp, httpRequest.getHeader("User-Agent"), false);
+            auditLogger.logEmailVerification("***", clientIp, httpRequest.getHeader("User-Agent"), false);
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
@@ -188,11 +188,11 @@ public class AuthController {
         
         try {
             authService.resendVerificationEmail(request);
-            auditLogger.logResendVerification(request.getEmail(), clientIp, httpRequest.getHeader("User-Agent"), true);
-            return ResponseEntity.ok(ApiResponse.success("Email xác minh đã được gửi lại", null));
+            auditLogger.logResendVerification("requested", clientIp, httpRequest.getHeader("User-Agent"), true);
+            return ResponseEntity.ok(ApiResponse.success("Nếu email tồn tại, email xác minh sẽ được gửi lại", null));
         } catch (Exception e) {
-            auditLogger.logResendVerification(request.getEmail(), clientIp, httpRequest.getHeader("User-Agent"), false);
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+            auditLogger.logResendVerification("requested", clientIp, httpRequest.getHeader("User-Agent"), false);
+            return ResponseEntity.ok(ApiResponse.success("Nếu email tồn tại, email xác minh sẽ được gửi lại", null));
         }
     }
 
