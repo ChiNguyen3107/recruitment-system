@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -77,6 +78,22 @@ public class SecurityConfig {
                 .requestMatchers("/api/companies/public/**").permitAll()
                 .requestMatchers("/api/auth/refresh").permitAll()
                 .requestMatchers("/api/debug/**").permitAll() // Debug endpoints
+                // Swagger/OpenAPI endpoints
+                .requestMatchers(
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/swagger-ui/**"
+                ).permitAll()
+                // Static resources & root
+                .requestMatchers(
+                    "/",
+                    "/index.html",
+                    "/favicon.ico",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/webjars/**"
+                ).permitAll()
                 
                 // Public job endpoints - specific paths first
                 .requestMatchers("/api/jobs/test").permitAll()
@@ -107,6 +124,23 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /**
+     * Bỏ qua hoàn toàn khỏi Security chain cho tài nguyên tĩnh
+     */
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers(
+                "/",
+                "/index.html",
+                "/favicon.ico",
+                "/static/**",
+                "/css/**",
+                "/js/**",
+                "/images/**",
+                "/webjars/**"
+        );
     }
 
     @Bean

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recruitment System - Test UI</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { margin-bottom: 8px; }
+        .card { border: 1px solid #ddd; padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+        .row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .row > * { flex: 1 1 260px; }
+        input, select, button, textarea { padding: 8px; font-size: 14px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; }
+        pre { background: #f7f7f7; padding: 12px; border-radius: 6px; overflow: auto; }
+        .muted { color: #666; }
+    </style>
+</head>
+<body>
+<h1>Recruitment System - Giao diện test nhanh</h1>
+
+<div class="card">
+    <div class="row">
+        <button onclick="showView('home')">Trang chủ</button>
+        <button onclick="showView('auth')">Auth</button>
+        <button onclick="showView('jobs')">Jobs</button>
+        <button onclick="showView('profile')">Hồ sơ</button>
+    </div>
+    <div class="muted">View hiện tại: <b id="currentView">home</b></div>
+    <script>
+        function showView(name){
+            const sections = ['home','auth','jobs','profile'];
+            sections.forEach(s=>{ const el=document.getElementById('view-'+s); if(el) el.style.display = (s===name?'block':'none'); });
+            const cur=document.getElementById('currentView'); if(cur) cur.textContent=name;
+        }
+        document.addEventListener('DOMContentLoaded',()=>showView('home'));
+    </script>
+</div>
+
+<div id="view-home" class="card">
+    <h2>1) Cấu hình</h2>
+    <div class="row">
+        <div>
+            <label for="baseUrl">Base URL</label>
+            <input id="baseUrl" value="http://localhost:8081" />
+        </div>
+    </div>
+    <p class="muted">Cổng mặc định hiện tại: 8081 (xem trong application.properties)</p>
+    <button onclick="saveBaseUrl()">Lưu Base URL</button>
+    <span id="cfgMsg" class="muted"></span>
+    <script>
+        function get(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch(e) { return fallback; } }
+        function set(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
+        document.getElementById('baseUrl').value = get('baseUrl', 'http://localhost:8081');
+        function saveBaseUrl(){ set('baseUrl', document.getElementById('baseUrl').value.trim()); document.getElementById('cfgMsg').textContent='Đã lưu.'; setTimeout(()=>document.getElementById('cfgMsg').textContent='',1500); }
+        function apiUrl(path){ return (get('baseUrl','').replace(/\/$/,'')) + path; }
+    </script>
+    
+    <h2>2) Nhanh: Đăng nhập & token</h2>
+    <div class="row">
+        <div>
+            <label>Email</label>
+            <input id="email" value="admin@example.com" />
+        </div>
+        <div>
+            <label>Mật khẩu</label>
+            <input id="password" type="password" value="admin123" />
+        </div>
+    </div>
+    <button onclick="login()">Đăng nhập</button>
+    <button onclick="logout()">Xoá token</button>
+    <div class="muted">Token: <span id="tokenPreview">(chưa có)</span></div>
+    <pre id="loginResult"></pre>
+
+</div>
+
+<div id="view-auth" class="card" style="display:none">
+    <h2>Auth</h2>
+    <h3>Đăng ký</h3>
+    <div class="row">
+        <div><label>Email</label><input id="regEmail" placeholder="email" /></div>
+        <div><label>Mật khẩu</label><input id="regPassword" type="password" placeholder="password" /></div>
+        <div><label>Họ</label><input id="regFirst" placeholder="Họ" /></div>
+        <div><label>Tên</label><input id="regLast" placeholder="Tên" /></div>
+        <div><label>Role</label>
+            <select id="regRole">
+                <option value="APPLICANT">APPLICANT</option>
+                <option value="EMPLOYER">EMPLOYER</option>
+                <option value="RECRUITER">RECRUITER</option>
+                <option value="ADMIN">ADMIN</option>
+            </select>
+        </div>
+    </div>
+    <button onclick="registerUser()">Đăng ký</button>
+    <pre id="registerResult"></pre>
+
+    <h3>Quên/Đặt lại mật khẩu</h3>
+    <div class="row">
+        <div><label>Email quên MK</label><input id="fpEmail" placeholder="email" /></div>
+        <div><label>Reset token</label><input id="rpToken" placeholder="token từ email" /></div>
+        <div><label>Mật khẩu mới</label><input id="rpPassword" type="password" placeholder="mật khẩu mới" /></div>
+    </div>
+    <button onclick="forgotPassword()">Gửi yêu cầu quên mật khẩu</button>
+    <button onclick="resetPassword()">Đặt lại mật khẩu</button>
+    <pre id="resetResult"></pre>
+</div>
+
+<div id="view-jobs" class="card" style="display:none">
+    <h2>3) Jobs công khai</h2>
+    <div class="row">
+        <div>
+            <label>Từ khoá</label>
+            <input id="kw" placeholder="keyword" />
+        </div>
+        <div>
+            <label>Địa điểm</label>
+            <input id="loc" placeholder="location" />
+        </div>
+    </div>
+    <button onclick="searchJobs()">Tìm kiếm</button>
+    <button onclick="latestJobs()">Mới nhất</button>
+    <div class="row">
+        <div>
+            <label>ID Job để xem chi tiết</label>
+            <input id="jobIdDetail" placeholder="VD: 1" />
+        </div>
+        <div>
+            <label>ID Job để ứng tuyển</label>
+            <input id="jobIdApply" placeholder="VD: 1" />
+        </div>
+    </div>
+    <button onclick="getJobDetail()">Xem chi tiết job</button>
+    <pre id="jobDetailResult"></pre>
+    <div>
+        <label>Cover letter</label>
+        <textarea id="coverLetter" rows="3" placeholder="Lý do ứng tuyển..."></textarea>
+    </div>
+    <button onclick="applyJob()">Nộp đơn (cần JWT)</button>
+    <pre id="jobsResult"></pre>
+</div>
+
+<div id="view-profile" class="card" style="display:none">
+    <h2>4) Hồ sơ của tôi (cần JWT)</h2>
+    <button onclick="getMyProfile()">Lấy hồ sơ</button>
+    <pre id="profileResult"></pre>
+
+    <h3>4.1) Upload CV (PDF ≤ 5MB)</h3>
+    <input type="file" id="cvFile" accept="application/pdf" />
+    <button onclick="uploadCV()">Upload CV</button>
+    <pre id="cvResult"></pre>
+
+    <h3>4.2) Cập nhật hồ sơ</h3>
+    <div class="row">
+        <div>
+            <label>Tóm tắt</label>
+            <textarea id="summary" rows="3" placeholder="Giới thiệu ngắn"></textarea>
+        </div>
+        <div>
+            <label>Kỹ năng (dạng text)</label>
+            <textarea id="skills" rows="3" placeholder="Java, Spring, SQL"></textarea>
+        </div>
+    </div>
+    <button onclick="updateProfile()">Cập nhật</button>
+    <pre id="updateProfileResult"></pre>
+</div>
+
+<script>
+    async function toDisplayObject(res){
+        const contentType = res.headers.get('content-type') || '';
+        const text = await res.text();
+        try {
+            if (contentType.includes('application/json')) {
+                return { ok: res.ok, status: res.status, data: JSON.parse(text) };
+            }
+            // Try parse JSON anyway
+            return { ok: res.ok, status: res.status, data: JSON.parse(text) };
+        } catch(e) {
+            return { ok: res.ok, status: res.status, data: null, raw: text, contentType };
+        }
+    }
+
+    function setToken(t){ set('accessToken', t || ''); updateTokenPreview(); }
+    function getToken(){ return get('accessToken', ''); }
+    function updateTokenPreview(){ const t=getToken(); document.getElementById('tokenPreview').textContent = t? (t.substring(0,24)+'...') : '(chưa có)'; }
+    updateTokenPreview();
+
+    async function login(){
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        try{
+            const res = await fetch(apiUrl('/api/auth/login'), {
+                method:'POST', headers:{ 'Content-Type':'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const out = await toDisplayObject(res);
+            document.getElementById('loginResult').textContent = JSON.stringify(out, null, 2);
+            if(out.ok && out.data?.data?.accessToken){ setToken(out.data.data.accessToken); }
+        }catch(e){ document.getElementById('loginResult').textContent = 'Lỗi: '+e.message; }
+    }
+
+    function logout(){ setToken(''); document.getElementById('loginResult').textContent='Đã xoá token.'; }
+
+    async function registerUser(){
+        const body = {
+            email: document.getElementById('regEmail').value.trim(),
+            password: document.getElementById('regPassword').value,
+            firstName: document.getElementById('regFirst').value || null,
+            lastName: document.getElementById('regLast').value || null,
+            role: document.getElementById('regRole').value
+        };
+        try{
+            const res = await fetch(apiUrl('/api/auth/register'), { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+            const out = await toDisplayObject(res);
+            document.getElementById('registerResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('registerResult').textContent='Lỗi: '+e.message; }
+    }
+
+    async function forgotPassword(){
+        const body = { email: document.getElementById('fpEmail').value.trim() };
+        try{
+            const res = await fetch(apiUrl('/api/auth/forgot-password'), { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+            const out = await toDisplayObject(res);
+            document.getElementById('resetResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('resetResult').textContent='Lỗi: '+e.message; }
+    }
+
+    async function resetPassword(){
+        const body = { token: document.getElementById('rpToken').value.trim(), newPassword: document.getElementById('rpPassword').value };
+        try{
+            const res = await fetch(apiUrl('/api/auth/reset-password'), { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+            const out = await toDisplayObject(res);
+            document.getElementById('resetResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('resetResult').textContent='Lỗi: '+e.message; }
+    }
+
+    async function searchJobs(){
+        const kw = document.getElementById('kw').value.trim();
+        const loc = document.getElementById('loc').value.trim();
+        const qs = new URLSearchParams();
+        if(kw) qs.append('keyword', kw);
+        if(loc) qs.append('location', loc);
+        try{
+            const res = await fetch(apiUrl('/api/public/jobs/search') + (qs.toString()? ('?'+qs.toString()):''));
+            const out = await toDisplayObject(res);
+            document.getElementById('jobsResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('jobsResult').textContent='Lỗi: '+e.message; }
+    }
+
+    async function latestJobs(){
+        try{
+            const res = await fetch(apiUrl('/api/public/jobs/latest'));
+            const out = await toDisplayObject(res);
+            document.getElementById('jobsResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('jobsResult').textContent='Lỗi: '+e.message; }
+    }
+
+    async function getJobDetail(){
+        const id = document.getElementById('jobIdDetail').value.trim();
+        if(!id){ document.getElementById('jobDetailResult').textContent='Nhập ID job'; return; }
+        try{
+            const res = await fetch(apiUrl('/api/public/jobs/'+encodeURIComponent(id)));
+            const out = await toDisplayObject(res);
+            document.getElementById('jobDetailResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('jobDetailResult').textContent='Lỗi: '+e.message; }
+    }
+
+    async function getMyProfile(){
+        const token = getToken();
+        if(!token){ document.getElementById('profileResult').textContent='Chưa có token. Vui lòng đăng nhập.'; return; }
+        try{
+            const res = await fetch(apiUrl('/api/profiles/my'), { headers: { 'Authorization': 'Bearer '+token } });
+            const out = await toDisplayObject(res);
+            document.getElementById('profileResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('profileResult').textContent='Lỗi: '+e.message; }
+    }
+
+    async function uploadCV(){
+        const token = getToken();
+        if(!token){ document.getElementById('cvResult').textContent='Chưa có token.'; return; }
+        const file = document.getElementById('cvFile').files[0];
+        if(!file){ document.getElementById('cvResult').textContent='Chưa chọn file.'; return; }
+        const fd = new FormData();
+        fd.append('file', file);
+        try{
+            const res = await fetch(apiUrl('/api/profiles/my/resume'), { method:'POST', headers: { 'Authorization': 'Bearer '+token }, body: fd });
+            const out = await toDisplayObject(res);
+            document.getElementById('cvResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('cvResult').textContent='Lỗi: '+e.message; }
+    }
+
+    async function updateProfile(){
+        const token = getToken();
+        if(!token){ document.getElementById('updateProfileResult').textContent='Chưa có token.'; return; }
+        const body = {
+            summary: document.getElementById('summary').value || null,
+            skills: document.getElementById('skills').value || null
+        };
+        try{
+            const res = await fetch(apiUrl('/api/profiles/my'), { method:'PUT', headers: { 'Authorization': 'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+            const out = await toDisplayObject(res);
+            document.getElementById('updateProfileResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('updateProfileResult').textContent='Lỗi: '+e.message; }
+    }
+
+    async function applyJob(){
+        const token = getToken();
+        if(!token){ document.getElementById('jobsResult').textContent='Chưa có token.'; return; }
+        const jobId = parseInt(document.getElementById('jobIdApply').value, 10);
+        if(!jobId){ document.getElementById('jobsResult').textContent='Nhập ID job để ứng tuyển'; return; }
+        const body = {
+            jobPostingId: jobId,
+            coverLetter: document.getElementById('coverLetter').value || null,
+            resumeUrl: null,
+            additionalDocuments: null
+        };
+        try{
+            const res = await fetch(apiUrl('/api/applications/my'), { method:'POST', headers: { 'Authorization': 'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+            const out = await toDisplayObject(res);
+            document.getElementById('jobsResult').textContent = JSON.stringify(out, null, 2);
+        }catch(e){ document.getElementById('jobsResult').textContent='Lỗi: '+e.message; }
+    }
+</script>
+
+</body>
+</html>
+
+
