@@ -93,13 +93,23 @@ public class AuthController {
             HttpServletRequest httpRequest) {
         
         String clientIp = getClientIpAddress(httpRequest);
+        String rateLimitKey = "refresh:" + clientIp;
+        String userAgent = httpRequest.getHeader("User-Agent");
+
+        // Rate limit cho refresh token
+        if (!rateLimitConfig.tryConsumeRefresh(rateLimitKey)) {
+            long waitTime = rateLimitConfig.getWaitTimeRefresh(rateLimitKey);
+            auditLogger.logRateLimitExceeded("TOKEN_REFRESH", clientIp, userAgent);
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(ApiResponse.error("Quá nhiều yêu cầu làm mới token. Vui lòng thử lại sau " + waitTime + " giây."));
+        }
         
         try {
             AuthResponse response = authService.refresh(refreshToken);
-            auditLogger.logTokenRefresh(response.getUser().getEmail(), clientIp, httpRequest.getHeader("User-Agent"), true);
+            auditLogger.logTokenRefresh(response.getUser().getEmail(), clientIp, userAgent, true);
             return ResponseEntity.ok(ApiResponse.success("Làm mới token thành công", response));
         } catch (Exception e) {
-            auditLogger.logTokenRefresh("unknown", clientIp, httpRequest.getHeader("User-Agent"), false);
+            auditLogger.logTokenRefresh("unknown", clientIp, userAgent, false);
             return ResponseEntity.badRequest().body(ApiResponse.error("Token không hợp lệ hoặc đã hết hạn"));
         }
     }

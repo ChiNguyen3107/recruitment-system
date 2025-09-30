@@ -1,5 +1,6 @@
 package com.recruitment.system.controller;
 
+import com.recruitment.system.config.AuditLogger;
 import com.recruitment.system.dto.request.JobPostingRequest;
 import com.recruitment.system.dto.request.JobStatusRequest;
 import com.recruitment.system.dto.response.ApiResponse;
@@ -11,6 +12,7 @@ import com.recruitment.system.entity.JobPosting;
 import com.recruitment.system.entity.User;
 import com.recruitment.system.enums.JobStatus;
 import com.recruitment.system.repository.JobPostingRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,11 +30,13 @@ import java.time.LocalDateTime;
 public class ManageJobController {
 
     private final JobPostingRepository jobPostingRepository;
+    private final AuditLogger auditLogger;
 
     @PostMapping
     public ResponseEntity<ApiResponse<JobPostingResponse>> createJob(
             @Valid @RequestBody JobPostingRequest request,
-            @AuthenticationPrincipal User currentUser
+            @AuthenticationPrincipal User currentUser,
+            HttpServletRequest httpRequest
     ) {
         try {
             validateEmployerContext(currentUser);
@@ -51,6 +55,15 @@ public class ManageJobController {
             }
 
             JobPosting saved = jobPostingRepository.save(job);
+
+            String clientIp = getClientIpAddress(httpRequest);
+            auditLogger.logJobCreated(
+                    saved.getId(),
+                    currentUser.getCompany() != null ? currentUser.getCompany().getId() : null,
+                    currentUser.getEmail(),
+                    clientIp,
+                    httpRequest.getHeader("User-Agent")
+            );
             return ResponseEntity.ok(ApiResponse.success("Tạo tin thành công", convertToResponse(saved)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Lỗi tạo tin: " + e.getMessage()));
@@ -61,7 +74,8 @@ public class ManageJobController {
     public ResponseEntity<ApiResponse<JobPostingResponse>> updateJob(
             @PathVariable Long id,
             @Valid @RequestBody JobPostingRequest request,
-            @AuthenticationPrincipal User currentUser
+            @AuthenticationPrincipal User currentUser,
+            HttpServletRequest httpRequest
     ) {
         try {
             validateEmployerContext(currentUser);
@@ -86,6 +100,15 @@ public class ManageJobController {
             }
 
             JobPosting saved = jobPostingRepository.save(job);
+
+            String clientIp = getClientIpAddress(httpRequest);
+            auditLogger.logJobUpdated(
+                    saved.getId(),
+                    currentUser.getCompany() != null ? currentUser.getCompany().getId() : null,
+                    currentUser.getEmail(),
+                    clientIp,
+                    httpRequest.getHeader("User-Agent")
+            );
             return ResponseEntity.ok(ApiResponse.success("Cập nhật tin thành công", convertToResponse(saved)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Lỗi cập nhật tin: " + e.getMessage()));
@@ -96,7 +119,8 @@ public class ManageJobController {
     public ResponseEntity<ApiResponse<String>> deleteJob(
             @PathVariable Long id,
             @RequestParam(name = "hard", defaultValue = "false") boolean hard,
-            @AuthenticationPrincipal User currentUser
+            @AuthenticationPrincipal User currentUser,
+            HttpServletRequest httpRequest
     ) {
         try {
             validateEmployerContext(currentUser);
@@ -107,10 +131,28 @@ public class ManageJobController {
 
             if (hard) {
                 jobPostingRepository.delete(job);
+                String clientIp = getClientIpAddress(httpRequest);
+                auditLogger.logJobDeleted(
+                        job.getId(),
+                        job.getCompany() != null ? job.getCompany().getId() : null,
+                        currentUser.getEmail(),
+                        true,
+                        clientIp,
+                        httpRequest.getHeader("User-Agent")
+                );
                 return ResponseEntity.ok(ApiResponse.success("Xóa vĩnh viễn thành công", "deleted"));
             } else {
                 job.setStatus(JobStatus.CLOSED);
                 jobPostingRepository.save(job);
+                String clientIp = getClientIpAddress(httpRequest);
+                auditLogger.logJobDeleted(
+                        job.getId(),
+                        job.getCompany() != null ? job.getCompany().getId() : null,
+                        currentUser.getEmail(),
+                        false,
+                        clientIp,
+                        httpRequest.getHeader("User-Agent")
+                );
                 return ResponseEntity.ok(ApiResponse.success("Đã đóng (xóa mềm) tin tuyển dụng", "soft_deleted"));
             }
         } catch (Exception e) {
@@ -122,7 +164,8 @@ public class ManageJobController {
     public ResponseEntity<ApiResponse<JobPostingResponse>> updateStatus(
             @PathVariable Long id,
             @Valid @RequestBody JobStatusRequest request,
-            @AuthenticationPrincipal User currentUser
+            @AuthenticationPrincipal User currentUser,
+            HttpServletRequest httpRequest
     ) {
         try {
             validateEmployerContext(currentUser);
@@ -131,6 +174,7 @@ public class ManageJobController {
 
             enforceOwnershipOrAdmin(job, currentUser);
 
+            JobStatus oldStatus = job.getStatus();
             JobStatus newStatus = request.getStatus();
             if (newStatus == JobStatus.ACTIVE) {
                 ensureActiveConstraints(job);
@@ -141,6 +185,17 @@ public class ManageJobController {
             job.setStatus(newStatus);
 
             JobPosting saved = jobPostingRepository.save(job);
+
+            String clientIp = getClientIpAddress(httpRequest);
+            auditLogger.logJobStatusChanged(
+                    saved.getId(),
+                    currentUser.getCompany() != null ? currentUser.getCompany().getId() : null,
+                    oldStatus != null ? oldStatus.name() : null,
+                    newStatus != null ? newStatus.name() : null,
+                    currentUser.getEmail(),
+                    clientIp,
+                    httpRequest.getHeader("User-Agent")
+            );
             return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái thành công", convertToResponse(saved)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Lỗi cập nhật trạng thái: " + e.getMessage()));
@@ -194,6 +249,15 @@ public class ManageJobController {
         Company company = currentUser.getCompany();
         if (company == null || job.getCompany() == null || !company.getId().equals(job.getCompany().getId())) {
             throw new RuntimeException("Bạn không có quyền thao tác tin này");
+        }
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedForHeader = request.getHeader("X-Forwarded-For");
+        if (xForwardedForHeader == null) {
+            return request.getRemoteAddr();
+        } else {
+            return xForwardedForHeader.split(",")[0];
         }
     }
 
