@@ -46,6 +46,9 @@ public class ApplicationController {
             return ResponseEntity.status(401).body(ApiResponse.error("Chưa xác thực"));
         }
 
+        // Sanitize input để tránh XSS và các vấn đề bảo mật
+        request.sanitize();
+
         // Lấy job và kiểm tra trạng thái còn hạn và ACTIVE
         JobPosting jobPosting = jobPostingRepository.findById(request.getJobPostingId())
                 .orElseThrow(() -> new RuntimeException("Tin tuyển dụng không tồn tại"));
@@ -62,7 +65,7 @@ public class ApplicationController {
                 currentUser.getId(), jobPosting.getId()
         );
         if (alreadyApplied) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Bạn đã nộp đơn cho vị trí này trước đó"));
+            return ResponseEntity.status(409).body(ApiResponse.error("Bạn đã nộp đơn cho vị trí này trước đó"));
         }
 
         // Tạo Application

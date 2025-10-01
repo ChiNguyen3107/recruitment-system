@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 22, 2025 lúc 08:25 AM
+-- Thời gian đã tạo: Th10 01, 2025 lúc 09:27 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -52,7 +52,7 @@ CREATE TABLE `applications` (
 --
 
 INSERT INTO `applications` (`id`, `job_posting_id`, `applicant_id`, `status`, `cover_letter`, `resume_url`, `additional_documents`, `interview_date`, `interview_location`, `interview_notes`, `feedback`, `rejection_reason`, `offer_details`, `reviewed_at`, `reviewed_by`, `created_at`, `updated_at`) VALUES
-(1, 1, 3, 'RECEIVED', 'I am very interested in this position and believe my skills match your requirements.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-16 08:20:18', '2025-09-16 08:20:18');
+(2, 4, 5, 'REVIEWED', 'Thư xin việc mẫu...', 'https://example.com/cv.pdf', NULL, NULL, NULL, NULL, 'Đã xem hồ sơ', NULL, NULL, '2025-09-29 07:53:47', 20, '2025-09-25 09:36:51', '2025-09-29 07:54:15');
 
 -- --------------------------------------------------------
 
@@ -104,7 +104,9 @@ CREATE TABLE `companies` (
 INSERT INTO `companies` (`id`, `name`, `description`, `business_license`, `tax_code`, `website`, `industry`, `company_size`, `address`, `city`, `country`, `phone_number`, `contact_email`, `logo_url`, `is_verified`, `created_at`, `updated_at`) VALUES
 (1, 'Tech Innovate Co.', 'Leading technology company specializing in software development', NULL, NULL, 'https://techinnovate.com', 'Technology', NULL, NULL, 'Ho Chi Minh City', NULL, NULL, 'hr@techinnovate.com', NULL, 1, '2025-09-16 08:20:18', '2025-09-16 08:20:18'),
 (2, 'Digital Solutions Ltd.', 'Digital transformation and consulting services', NULL, NULL, 'https://digitalsolutions.vn', 'Consulting', NULL, NULL, 'Hanoi', NULL, NULL, 'jobs@digitalsolutions.vn', NULL, 1, '2025-09-16 08:20:18', '2025-09-16 08:20:18'),
-(3, 'StartUp Hub', 'Innovative startup focusing on mobile applications', NULL, NULL, 'https://startuphub.vn', 'Technology', NULL, NULL, 'Da Nang', NULL, NULL, 'careers@startuphub.vn', NULL, 0, '2025-09-16 08:20:18', '2025-09-16 08:20:18');
+(3, 'StartUp Hub', 'Innovative startup focusing on mobile applications', NULL, NULL, 'https://startuphub.vn', 'Technology', NULL, NULL, 'Da Nang', NULL, NULL, 'careers@startuphub.vn', NULL, 0, '2025-09-16 08:20:18', '2025-09-16 08:20:18'),
+(4, 'Tech Company Ltd', 'Leading technology company', NULL, NULL, 'https://techcompany.com', 'Technology', NULL, '123 Tech Street, Ho Chi Minh City', NULL, NULL, NULL, NULL, NULL, 0, '2025-09-22 07:38:10', '2025-09-22 07:38:10'),
+(5, 'Tech Company Ltd', 'Leading technology company', NULL, NULL, 'https://techcompany.com', 'Technology', NULL, '123 Tech Street, Ho Chi Minh City', NULL, NULL, NULL, NULL, NULL, 0, '2025-09-22 07:41:38', '2025-09-22 07:41:38');
 
 -- --------------------------------------------------------
 
@@ -165,8 +167,8 @@ CREATE TABLE `job_postings` (
   `education_required` varchar(100) DEFAULT NULL,
   `skills_required` text DEFAULT NULL,
   `number_of_positions` int(11) DEFAULT 1,
-  `application_deadline` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `published_at` timestamp NULL DEFAULT NULL,
+  `application_deadline` datetime NOT NULL,
+  `published_at` datetime DEFAULT NULL,
   `views_count` int(11) DEFAULT 0,
   `applications_count` int(11) DEFAULT 0,
   `status` enum('DRAFT','ACTIVE','PAUSED','CLOSED','EXPIRED') NOT NULL DEFAULT 'DRAFT',
@@ -179,9 +181,9 @@ CREATE TABLE `job_postings` (
 --
 
 INSERT INTO `job_postings` (`id`, `company_id`, `created_by`, `title`, `description`, `requirements`, `benefits`, `location`, `job_type`, `salary_min`, `salary_max`, `salary_currency`, `experience_required`, `education_required`, `skills_required`, `number_of_positions`, `application_deadline`, `published_at`, `views_count`, `applications_count`, `status`, `created_at`, `updated_at`) VALUES
-(1, 1, 2, 'Senior Java Developer (Updated)', 'Updated job description for Java developer.', 'Bachelor degree in Computer Science, 5+ years Java experience, Spring Boot knowledge, MySQL experience', 'Attractive salary, Flexible working hours, Health insurance, Bonus', 'Ho Chi Minh City', 'FULL_TIME', 25000000.00, 35000000.00, 'VND', NULL, NULL, NULL, 2, '2025-12-31 16:59:59', '2025-09-16 08:20:18', 0, 0, 'ACTIVE', '2025-09-16 08:20:18', '2025-09-17 07:02:11'),
-(3, 1, 2, 'Senior Java Developer', 'We are looking for an experienced Java developer to join our dynamic team. You will be responsible for developing high-quality applications using Java and Spring Boot.', 'Bachelor degree in Computer Science, 3+ years Java experience, Spring Boot knowledge, MySQL experience', 'Attractive salary, Flexible working hours, Health insurance', 'Ho Chi Minh City', 'FULL_TIME', 20000000.00, 30000000.00, 'VND', NULL, NULL, NULL, 1, '2025-10-16 08:20:18', NULL, 0, 0, 'ACTIVE', '2025-09-17 07:16:25', '2025-09-17 07:16:25'),
-(4, 1, 2, 'Lập trình viên Java cấp cao', 'Chúng tôi cần tuyển Lập trình viên Java có kinh nghiệm tham gia phát triển các ứng dụng doanh nghiệp với Java và Spring Boot.', 'Tốt nghiệp Đại học ngành CNTT, 3+ năm kinh nghiệm Java, thành thạo Spring Boot, có kinh nghiệm MySQL', 'Lương hấp dẫn, Giờ làm việc linh hoạt, Bảo hiểm sức khỏe', 'TP. Hồ Chí Minh', 'FULL_TIME', 20000000.00, 30000000.00, 'VND', NULL, NULL, NULL, 1, '2025-10-16 08:20:18', NULL, 0, 0, 'ACTIVE', '2025-09-17 07:18:05', '2025-09-17 07:18:05');
+(1, 1, 2, 'Senior Java Developer (Updated)', 'Updated job description for Java developer.', 'Bachelor degree in Computer Science, 5+ years Java experience, Spring Boot knowledge, MySQL experience', 'Attractive salary, Flexible working hours, Health insurance, Bonus', 'Ho Chi Minh City', 'FULL_TIME', 25000000.00, 35000000.00, 'VND', NULL, NULL, NULL, 2, '2025-12-31 23:59:59', '2025-09-16 15:20:18', 0, 0, 'ACTIVE', '2025-09-16 08:20:18', '2025-09-17 07:02:11'),
+(3, 1, 2, 'Senior Java Developer', 'We are looking for an experienced Java developer to join our dynamic team. You will be responsible for developing high-quality applications using Java and Spring Boot.', 'Bachelor degree in Computer Science, 3+ years Java experience, Spring Boot knowledge, MySQL experience', 'Attractive salary, Flexible working hours, Health insurance', 'Ho Chi Minh City', 'FULL_TIME', 20000000.00, 30000000.00, 'VND', NULL, NULL, NULL, 1, '2025-10-16 15:20:18', NULL, 0, 0, 'ACTIVE', '2025-09-17 07:16:25', '2025-09-17 07:16:25'),
+(4, 5, 2, 'Lập trình viên Java cấp cao', 'Chúng tôi cần tuyển Lập trình viên Java có kinh nghiệm tham gia phát triển các ứng dụng doanh nghiệp với Java và Spring Boot.', 'Tốt nghiệp Đại học ngành CNTT, 3+ năm kinh nghiệm Java, thành thạo Spring Boot, có kinh nghiệm MySQL', 'Lương hấp dẫn, Giờ làm việc linh hoạt, Bảo hiểm sức khỏe', 'TP. Hồ Chí Minh', 'FULL_TIME', 20000000.00, 30000000.00, 'VND', NULL, NULL, NULL, 1, '2025-10-16 15:20:18', NULL, 0, 1, 'ACTIVE', '2025-09-17 07:18:05', '2025-09-29 07:43:31');
 
 -- --------------------------------------------------------
 
@@ -287,8 +289,8 @@ CREATE TABLE `profiles` (
 --
 
 INSERT INTO `profiles` (`id`, `user_id`, `date_of_birth`, `gender`, `address`, `city`, `country`, `summary`, `experience`, `education`, `skills`, `certifications`, `languages`, `resume_url`, `linkedin_url`, `github_url`, `portfolio_url`, `desired_salary_min`, `desired_salary_max`, `desired_job_type`, `desired_location`, `availability`, `is_public`, `created_at`, `updated_at`) VALUES
-(1, 3, NULL, NULL, NULL, NULL, NULL, 'Experienced software developer with 3+ years in web development', '3 years as Full Stack Developer', 'Bachelor in Computer Science', 'Java, Spring Boot, React, MySQL', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2025-09-16 08:20:18', '2025-09-16 08:20:18'),
-(3, 5, '1990-01-15', NULL, '123 Đường NVL, Quận 1, TP.HCM', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-16 09:16:08', '2025-09-17 06:38:51');
+(3, 5, '1995-05-15', 'NAM', '123 Đường ABC', 'Hà Nội', 'Việt Nam', 'Lập trình viên Java với 3 năm kinh nghiệm phát triển web application. Có kinh nghiệm với Spring Boot, MySQL, và các công nghệ frontend.', '• Công ty ABC (2021-2024): Lập trình viên Java\n  - Phát triển RESTful API với Spring Boot\n  - Thiết kế và quản lý database MySQL\n  - Làm việc với team 5 người\n  - Đóng góp vào việc tối ưu hóa hiệu suất hệ thống\n\n• Dự án cá nhân (2020-2021)\n  - Xây dựng ứng dụng quản lý bán hàng\n  - Sử dụng Java, Spring MVC, JSP', '• Đại học Bách Khoa Hà Nội (2017-2021)\n  - Chuyên ngành: Công nghệ thông tin\n  - GPA: 3.2/4.0\n  - Đồ án tốt nghiệp: Hệ thống quản lý thư viện', '• Lập trình: Java, Spring Boot, Spring Security, JPA/Hibernate\n• Database: MySQL, PostgreSQL\n• Frontend: HTML, CSS, JavaScript, React\n• Tools: Git, Maven, IntelliJ IDEA, Docker\n• Ngôn ngữ: Tiếng Anh (TOEIC 750)', '• Oracle Certified Professional Java SE 8 Programmer (2022)\n• AWS Certified Developer Associate (2023)\n• Scrum Master Certification (2023)', '• Tiếng Việt: Bản ngữ\n• Tiếng Anh: Trung bình khá (TOEIC 750)\n• Tiếng Nhật: Cơ bản (N4)', '/uploads/resumes/5/resume-1758790857394.pdf', 'https://linkedin.com/in/nguyenvana', 'https://github.com/nguyenvana', 'https://nguyenvana.dev', 15000000, 25000000, 'FULL_TIME', 'Hà Nội', 'Có thể bắt đầu ngay', 1, '2025-09-16 09:16:08', '2025-09-25 09:00:57'),
+(14, 22, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-29 06:56:05', '2025-09-29 06:56:05');
 
 -- --------------------------------------------------------
 
@@ -302,15 +304,55 @@ CREATE TABLE `profile_skills` (
   `level` tinyint(4) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+
 --
--- Đang đổ dữ liệu cho bảng `profile_skills`
+-- Cấu trúc bảng cho bảng `refresh_tokens`
 --
 
-INSERT INTO `profile_skills` (`profile_id`, `skill_id`, `level`) VALUES
-(1, 1, 4),
-(1, 2, 4),
-(1, 3, 3),
-(1, 4, 3);
+CREATE TABLE `refresh_tokens` (
+  `id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
+  `token` varchar(512) NOT NULL,
+  `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `revoked` tinyint(1) NOT NULL DEFAULT 0,
+  `replaced_by_token` varchar(512) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `refresh_tokens`
+--
+
+INSERT INTO `refresh_tokens` (`id`, `user_id`, `token`, `expires_at`, `revoked`, `replaced_by_token`, `created_at`, `updated_at`) VALUES
+(8, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHNkdHVkZW50LmN0dS5lZHUudm4iLCJpYXQiOjE3NTg3MDAzMTYsImV4cCI6MTc2MTI5MjMxNn0.xM1SgpkH90kvsX3aNAlURurJQPXVUYc1hum7LApiPSreMqC-5FZDGMk7LGpUwiAm', '2025-10-24 07:51:56', 1, NULL, '2025-09-24 07:51:56', '2025-09-24 07:55:31'),
+(9, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1ODcwMDUzMSwiZXhwIjoxNzYxMjkyNTMxfQ.-slWou_RkO-s9N4OtofHYO4AbFBmiAnmHk6vvh4BZwFI6PphQls1SX5kqcptfJ22', '2025-10-24 07:55:31', 1, NULL, '2025-09-24 07:55:31', '2025-09-24 08:25:07'),
+(10, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1ODcwMjMwNywiZXhwIjoxNzYxMjk0MzA3fQ.b9L2PxinMv9wuuALrFaSqkLEoy4kgipZLXo-jfhHn1jHA3N5dB_U5Ej2v3cF5WOh', '2025-10-24 08:25:07', 1, NULL, '2025-09-24 08:25:07', '2025-09-24 08:49:36'),
+(15, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1ODcwMzc3NiwiZXhwIjoxNzYxMjk1Nzc2fQ.10bRNSoUkxFT9XQPByZpRMLwd4pbHkl4myXjTWJdURnHCbnXGYU_5tggqrCD4xk2', '2025-10-24 08:49:36', 1, NULL, '2025-09-24 08:49:36', '2025-09-24 08:53:34'),
+(16, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1ODcwNDAxNywiZXhwIjoxNzYxMjk2MDE3fQ.tUfuNNG3mbfOv3uGVn2_ufTMR0Dxjpj1Tc-7EjmkXaJ3aYaEyPWFdeTO-vSRiah4', '2025-10-24 08:53:37', 1, NULL, '2025-09-24 08:53:37', '2025-09-24 08:56:46'),
+(17, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1ODcwNDIwNiwiZXhwIjoxNzYxMjk2MjA2fQ.UWHXlYewrpnAlWsYPedZULCNJXYBIv9Gesf5-tD-Y4t4BqGP0qaLq5deOVXWcbbY', '2025-10-24 08:56:46', 1, NULL, '2025-09-24 08:56:46', '2025-09-29 07:33:04'),
+(18, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU4Nzg0MjU3LCJleHAiOjE3NjEzNzYyNTd9.FifuTyZ_Z9X_zzNvvNBonAl4ViGQwFOFGdbcsZoEAmPmCiuHkZGIzoXEm6TqeRPR', '2025-10-25 07:10:57', 1, NULL, '2025-09-25 07:10:57', '2025-09-25 07:22:29'),
+(19, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU4Nzg0OTQ5LCJleHAiOjE3NjEzNzY5NDl9.yF3-j1ha10He5XPzL2mtsZoEQlariBhZCYZSdmH4bck5_DsYnOUCKUkf6VkP-XYu', '2025-10-25 07:22:29', 1, NULL, '2025-09-25 07:22:29', '2025-09-25 07:26:57'),
+(20, 1, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImFkbWluQHJlY3J1aXRtZW50LmNvbSIsImlhdCI6MTc1ODc4NTI0NSwiZXhwIjoxNzYxMzc3MjQ1fQ.bekrFrOiHpP6sQLKXf16njhGyGRF4nvbcELqqTgh_T4nssADlNmE7iMW-ri12hWv', '2025-10-25 07:27:25', 1, NULL, '2025-09-25 07:27:25', '2025-09-25 07:32:02'),
+(21, 1, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImFkbWluQHJlY3J1aXRtZW50LmNvbSIsImlhdCI6MTc1ODc4NTUyMiwiZXhwIjoxNzYxMzc3NTIyfQ.4FigP97XNNkk9loCviEITZM60C6XM-AU1R3m0zeKt-5imqxJ-y2cZorYPQL1lRWA', '2025-10-25 07:32:02', 1, NULL, '2025-09-25 07:32:02', '2025-09-25 07:42:32'),
+(22, 21, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6InJlY3J1aXRlckBleGFtcGxlLmNvbSIsImlhdCI6MTc1ODc4NTc4NCwiZXhwIjoxNzYxMzc3Nzg0fQ._ht9_B-a--o9gmRcf_iP6444vBSXofOwt4fNbUfnBkmxmXoSplqXb0bn4LQBYfrn', '2025-10-25 07:36:24', 1, NULL, '2025-09-25 07:36:24', '2025-09-25 07:42:11'),
+(24, 21, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6InJlY3J1aXRlckBleGFtcGxlLmNvbSIsImlhdCI6MTc1ODc4NjEzMSwiZXhwIjoxNzYxMzc4MTMxfQ.DmsDhEiRONvB_az9K8tvWrso-zveGGhqrWVSCn9gOH1efIS_OQmcNValzX8YzxnL', '2025-10-25 07:42:11', 1, NULL, '2025-09-25 07:42:11', '2025-09-25 07:46:57'),
+(25, 1, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImFkbWluQHJlY3J1aXRtZW50LmNvbSIsImlhdCI6MTc1ODc4NjE1MiwiZXhwIjoxNzYxMzc4MTUyfQ.SocZNWUU4iXbAABIH6bw5xLNDG2rVN6TFXFrcrmAxCKtcvTxfyBVpxlnjZpacFNn', '2025-10-25 07:42:32', 1, NULL, '2025-09-25 07:42:32', '2025-09-25 07:53:48'),
+(26, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU4Nzg2MzI2LCJleHAiOjE3NjEzNzgzMjZ9.rOe9lQEipBYtQpjYKwPuo8pFVU3M3LqiTZ7L4i_x7UERkdkPBehiLRVL2JhUt1SO', '2025-10-25 07:45:26', 1, NULL, '2025-09-25 07:45:26', '2025-09-25 07:54:19'),
+(27, 21, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6InJlY3J1aXRlckBleGFtcGxlLmNvbSIsImlhdCI6MTc1ODc4NjQxNywiZXhwIjoxNzYxMzc4NDE3fQ.ME0P3oEKEcP2bSEXIE3pXkWJdViLm1WohrNC42AJtXe1Im16UGupESLpWfgM75xO', '2025-10-25 07:46:57', 1, NULL, '2025-09-25 07:46:57', '2025-09-25 07:53:17'),
+(28, 21, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6InJlY3J1aXRlckBleGFtcGxlLmNvbSIsImlhdCI6MTc1ODc4Njc5NywiZXhwIjoxNzYxMzc4Nzk3fQ.A4-kHxpzF4oX_28bO-oINc60zEfg2nhQTBrL6-wCLdnUwArqn1R1HX5YETwZIAij', '2025-10-25 07:53:17', 0, NULL, '2025-09-25 07:53:17', '2025-09-25 07:53:17'),
+(29, 1, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImFkbWluQHJlY3J1aXRtZW50LmNvbSIsImlhdCI6MTc1ODc4NjgyOCwiZXhwIjoxNzYxMzc4ODI4fQ.XKV9_hXjxEN6Ubfu-Tm7TuWQu-QFt4sFb6OE_i1GhmonO7bc3fAW4CMzyTlqclSS', '2025-10-25 07:53:48', 1, NULL, '2025-09-25 07:53:48', '2025-09-30 07:41:03'),
+(30, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU4Nzg2ODU5LCJleHAiOjE3NjEzNzg4NTl9.lRiJyof1ct5DyEEJ4wZud2QOmqZc6ZeeBKQuXpBk_EtiM5DpZO2JvYR4UW7VbU5C', '2025-10-25 07:54:19', 1, NULL, '2025-09-25 07:54:19', '2025-09-25 08:55:46'),
+(31, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU4NzkwNTQ2LCJleHAiOjE3NjEzODI1NDZ9.jAJJ8CRMzIOp64mqoq9y3i64BZdn58I7yiWCLAvWeDdobgJqjwo0cJ8gbFmQxPbk', '2025-10-25 08:55:46', 1, NULL, '2025-09-25 08:55:46', '2025-09-25 09:24:07'),
+(32, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU4NzkyMjQ3LCJleHAiOjE3NjEzODQyNDd9.p8uOIMmR7WrMJQk2QKvbO23-ZMqd2DbOtYmp4stpBXHy0CIrq6ih9KSfd_lPVSXH', '2025-10-25 09:24:07', 1, NULL, '2025-09-25 09:24:07', '2025-09-29 07:47:24'),
+(33, 22, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6InVzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTkxMjkwMDMsImV4cCI6MTc2MTcyMTAwM30.WzhI839vqnrNeWf1RewvG9MPEs2dOAnImLIRqJAmWO4fPIR-n3sqUfQXQ6jNZLGv', '2025-10-29 06:56:43', 1, NULL, '2025-09-29 06:56:43', '2025-09-29 06:58:07'),
+(34, 22, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6InVzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTkxMjkwODcsImV4cCI6MTc2MTcyMTA4N30.Sq_IhXCmztH1oBT_vwJ3p8rrUdcA9vld1qBgASBd90nkcOSK-WH5GSzQ7c0g6iAO', '2025-10-29 06:58:07', 1, NULL, '2025-09-29 06:58:07', '2025-09-29 09:19:48'),
+(35, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTEzMTE4NCwiZXhwIjoxNzYxNzIzMTg0fQ.YZTeXxjji5eGh6Wsdtsiizqb4nCQqdT7PXX2Q8We6znoop-qQ8xNNWTV6FYklkiR', '2025-10-29 07:33:04', 1, NULL, '2025-09-29 07:33:04', '2025-09-29 07:48:33'),
+(36, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU5MTMyMDQ0LCJleHAiOjE3NjE3MjQwNDR9.ZnxFKhO1yi2vcHkYRQtf5udh42bpshMada8hGTaLM7YpwdOZbwbiQoVrKeetlvOI', '2025-10-29 07:47:24', 0, NULL, '2025-09-29 07:47:24', '2025-09-29 07:47:24'),
+(37, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTEzMjExMywiZXhwIjoxNzYxNzI0MTEzfQ.HGOO_Hoc4m_aGNELBTxUde2QOdKGTaESS7sIJpHUTuxMDF4C2g4jXjYglYgK8dIf', '2025-10-29 07:48:33', 0, NULL, '2025-09-29 07:48:33', '2025-09-29 07:48:33'),
+(38, 22, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6InVzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTkxMzc1ODgsImV4cCI6MTc2MTcyOTU4OH0.zHwyqN7-OX-O6rI3MVc_TN-4vrOC25DYbmN_4Bfelwkz7huUfx2J7zkGdwxawlg0', '2025-10-29 09:19:48', 0, NULL, '2025-09-29 09:19:48', '2025-09-29 09:19:48'),
+(39, 1, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImFkbWluQHJlY3J1aXRtZW50LmNvbSIsImlhdCI6MTc1OTIxODA2MywiZXhwIjoxNzYxODEwMDYzfQ.wbVTLtdc8T0wYa_WIN4y_JUxVftzyF3x0N8aSv15K5SwrBUQa541Mn7lKgWOkFxI', '2025-10-30 07:41:03', 0, NULL, '2025-09-30 07:41:03', '2025-09-30 07:41:03');
 
 -- --------------------------------------------------------
 
@@ -385,10 +427,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password`, `first_name`, `last_name`, `phone_number`, `role`, `status`, `email_verified`, `verification_token`, `password_reset_token`, `password_reset_expires`, `avatar_url`, `last_login`, `company_id`, `created_at`, `updated_at`) VALUES
-(1, 'admin@recruitment.com', '$2a$10$LdjS4heeg.BavaGecRZj6O8YXRK7M5aDbld3uboBRYZsWe4Kb1k3a', 'Admin', 'System', NULL, 'ADMIN', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-16 08:20:18', '2025-09-19 05:56:42'),
-(2, 'employer@techinnovate.com', '$2a$10$LdjS4heeg.BavaGecRZj6O8YXRK7M5aDbld3uboBRYZsWe4Kb1k3a', 'John', 'Manager', NULL, 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, 1, '2025-09-16 08:20:18', '2025-09-17 04:41:56'),
-(3, 'applicant@test.com', '$2a$10$LdjS4heeg.BavaGecRZj6O8YXRK7M5aDbld3uboBRYZsWe4Kb1k3a', 'Jane', 'Developer', NULL, 'APPLICANT', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-16 08:20:18', '2025-09-17 04:41:52'),
-(5, 'john.doe@example.com', '$2a$10$LdjS4heeg.BavaGecRZj6O8YXRK7M5aDbld3uboBRYZsWe4Kb1k3a', 'John', 'Doe', NULL, 'APPLICANT', 'ACTIVE', 1, '3a9f742d-1c78-4dfa-963b-ce257875b043', NULL, NULL, NULL, NULL, NULL, '2025-09-16 09:16:08', '2025-09-17 02:36:09');
+(1, 'admin@recruitment.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'Admin', 'System', NULL, 'ADMIN', 'ACTIVE', 1, NULL, NULL, NULL, NULL, '2025-09-30 07:41:02', NULL, '2025-09-16 08:20:18', '2025-09-30 07:41:02'),
+(2, 'employer@techinnovate.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'John', 'Manager', NULL, 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, 1, '2025-09-16 08:20:18', '2025-09-22 06:52:01'),
+(5, 'john.doe@example.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'John', 'Doe', NULL, 'APPLICANT', 'ACTIVE', 1, '3a9f742d-1c78-4dfa-963b-ce257875b043', NULL, NULL, NULL, '2025-09-29 07:47:24', NULL, '2025-09-16 09:16:08', '2025-09-29 07:47:24'),
+(20, 'nguyenb2110051@student.ctu.edu.vn', '$2a$10$HJVAtYuDppZMk1wBjz5GYezvdcTXOYGE5dtk6alnq8RdAoeaRZzxG', 'Doan', 'Chi Nguyen', '0835886837', 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, '2025-09-29 07:48:33', 5, '2025-09-24 07:51:53', '2025-09-29 07:48:33'),
+(21, 'recruiter@example.com', '$2a$10$ioSYxLU09ewJui2Jxk80o.F75xMIQasS54zp3etV84a9tq3qEumla', 'Recruiter', 'User', '0900000001', 'RECRUITER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, '2025-09-25 07:53:17', NULL, '2025-09-25 07:36:18', '2025-09-25 07:53:17'),
+(22, 'user@example.com', '$2a$10$KFIuTaLlXo.Fcc93Gqyal.dnl1DeuB9KGt/SphVrWVFzT2a7OsJpy', 'First', 'Last', '0900000000', 'APPLICANT', 'ACTIVE', 1, NULL, NULL, NULL, NULL, '2025-09-29 09:19:48', NULL, '2025-09-29 06:56:05', '2025-09-29 09:19:48');
 
 -- --------------------------------------------------------
 
@@ -462,21 +506,14 @@ ALTER TABLE `job_postings`
   ADD KEY `idx_job_type` (`job_type`),
   ADD KEY `idx_location` (`location`),
   ADD KEY `idx_deadline` (`application_deadline`),
-  ADD KEY `created_by` (`created_by`);
+  ADD KEY `idx_job_active_deadline_status` (`status`,`application_deadline`),
+  ADD KEY `idx_job_location_ci` (`location`),
+  ADD KEY `idx_created_by` (`created_by`),
+  ADD KEY `idx_job_salary_min` (`salary_min`),
+  ADD KEY `idx_job_salary_max` (`salary_max`),
+  ADD KEY `idx_job_created_at` (`created_at`),
+  ADD KEY `idx_job_published_at` (`published_at`);
 ALTER TABLE `job_postings` ADD FULLTEXT KEY `idx_search` (`title`,`description`,`skills_required`);
-
--- Gợi ý thêm chỉ mục tổng hợp tối ưu cho truy vấn public search
--- Bao phủ điều kiện WHERE và một số cột sắp xếp phổ biến
--- Lưu ý: với MySQL/InnoDB bạn có thể dùng các chỉ mục sau, cân nhắc thứ tự cột theo workload thực tế
-CREATE INDEX `idx_job_active_deadline_status` ON `job_postings` (`status`, `application_deadline`);
-CREATE INDEX `idx_job_location_ci` ON `job_postings` (`location`);
-CREATE INDEX `idx_job_type` ON `job_postings` (`job_type`);
-CREATE INDEX `idx_job_salary_min` ON `job_postings` (`salary_min`);
-CREATE INDEX `idx_job_salary_max` ON `job_postings` (`salary_max`);
-
--- Nếu dùng sort theo created_at/published_at thường xuyên
-CREATE INDEX `idx_job_created_at` ON `job_postings` (`created_at`);
-CREATE INDEX `idx_job_published_at` ON `job_postings` (`published_at`);
 
 --
 -- Chỉ mục cho bảng `job_posting_skills`
@@ -525,6 +562,14 @@ ALTER TABLE `profile_skills`
   ADD KEY `skill_id` (`skill_id`);
 
 --
+-- Chỉ mục cho bảng `refresh_tokens`
+--
+ALTER TABLE `refresh_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_refresh_token_token` (`token`),
+  ADD KEY `idx_refresh_token_user` (`user_id`);
+
+--
 -- Chỉ mục cho bảng `skills`
 --
 ALTER TABLE `skills`
@@ -565,7 +610,7 @@ ALTER TABLE `work_experiences`
 -- AUTO_INCREMENT cho bảng `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `attachments`
@@ -577,7 +622,7 @@ ALTER TABLE `attachments`
 -- AUTO_INCREMENT cho bảng `companies`
 --
 ALTER TABLE `companies`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT cho bảng `educations`
@@ -595,7 +640,7 @@ ALTER TABLE `interview_schedules`
 -- AUTO_INCREMENT cho bảng `job_postings`
 --
 ALTER TABLE `job_postings`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT cho bảng `messages`
@@ -619,7 +664,13 @@ ALTER TABLE `oauth_accounts`
 -- AUTO_INCREMENT cho bảng `profiles`
 --
 ALTER TABLE `profiles`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT cho bảng `refresh_tokens`
+--
+ALTER TABLE `refresh_tokens`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT cho bảng `skills`
@@ -637,7 +688,7 @@ ALTER TABLE `status_logs`
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT cho bảng `work_experiences`
@@ -721,6 +772,12 @@ ALTER TABLE `profiles`
 ALTER TABLE `profile_skills`
   ADD CONSTRAINT `profile_skills_ibfk_1` FOREIGN KEY (`profile_id`) REFERENCES `profiles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `profile_skills_ibfk_2` FOREIGN KEY (`skill_id`) REFERENCES `skills` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Các ràng buộc cho bảng `refresh_tokens`
+--
+ALTER TABLE `refresh_tokens`
+  ADD CONSTRAINT `fk_refresh_token_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `status_logs`
