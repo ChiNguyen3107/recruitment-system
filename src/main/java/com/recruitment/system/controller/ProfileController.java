@@ -116,6 +116,24 @@ public class ProfileController {
                         .body(ApiResponse.error("Chỉ chấp nhận file PDF (application/pdf)"));
             }
 
+            // Kiểm tra phần mở rộng file .pdf (nếu client gửi tên)
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename != null && originalFilename.contains(".")) {
+                String lower = originalFilename.toLowerCase();
+                if (!lower.endsWith(".pdf")) {
+                    return ResponseEntity.badRequest()
+                            .body(ApiResponse.error("Chỉ cho phép tệp có đuôi .pdf"));
+                }
+            }
+
+            // Kiểm tra magic number PDF: bytes đầu phải là "%PDF-"
+            byte[] head = file.getInputStream().readNBytes(5);
+            String signature = new String(head);
+            if (!"%PDF-".equals(signature)) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Nội dung tệp không phải PDF hợp lệ"));
+            }
+
             // Tạo tên file an toàn: resume-{timestamp}.pdf
             String safeName = "resume-" + System.currentTimeMillis() + ".pdf";
             String directory = "resumes/" + user.getId();
@@ -136,7 +154,8 @@ public class ProfileController {
             Profile saved = profileRepository.save(profile);
 
             ProfileResponse response = ProfileResponse.fromProfile(saved);
-            return ResponseEntity.ok(ApiResponse.success("Tải lên CV thành công", response));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Tải lên CV thành công", response));
 
         } catch (Exception e) {
             log.error("Lỗi khi upload CV cho user {}", user.getId(), e);
