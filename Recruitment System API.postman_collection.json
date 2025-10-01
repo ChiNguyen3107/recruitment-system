@@ -421,6 +421,7 @@
 						}
 					],
 					"description": "Quên mật khẩu: Gửi email của bạn. Luôn trả 200 để tránh lộ thông tin. Kiểm tra hộp thư/sandbox mail để nhận link đặt lại mật khẩu hoặc lấy token từ DB và gán vào biến {{passwordResetToken}}."
+					,
 					"response": []
 				},
 				{
@@ -471,6 +472,7 @@
 						}
 					],
 					"description": "Đặt lại mật khẩu: Dán token vào {{passwordResetToken}} (lấy từ email/sandbox/DB). Mật khẩu mới phải đạt chuẩn: ≥8 ký tự, có chữ hoa/thường/số/ký tự đặc biệt."
+					,
 					"response": []
 				},
 				{
