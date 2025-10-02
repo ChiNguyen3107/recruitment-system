@@ -49,7 +49,7 @@ public class PublicJobController {
                     size,
                     sortBy,
                     sortDir,
-                    Set.of("createdAt", "salaryMin", "salaryMax", "applicationDeadline")
+                    Set.of("createdAt", "publishedAt", "salaryMax")
             );
 
             LocalDateTime now = LocalDateTime.now();
