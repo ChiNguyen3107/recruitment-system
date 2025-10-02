@@ -18,6 +18,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.recruitment.system.config.PaginationValidator;
+import com.recruitment.system.dto.response.PageResponse;
+import com.recruitment.system.enums.ApplicationStatus;
+import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -102,6 +110,63 @@ public class ApplicationController {
         // Trả response
         ApplicationResponse response = convertToResponse(saved);
         return ResponseEntity.ok(ApiResponse.success("Nộp đơn thành công", response));
+    }
+
+    /**
+     * GET /api/applications/my
+     * Lấy danh sách đơn ứng tuyển của applicant hiện tại
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<ApplicationResponse>>> getMyApplications(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir,
+            @RequestParam(required = false) ApplicationStatus status
+    ) {
+        if (currentUser == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Chưa xác thực"));
+        }
+
+        try {
+            Pageable pageable = PaginationValidator.buildPageable(
+                    page,
+                    size,
+                    sortBy,
+                    sortDir,
+                    Set.of("createdAt", "status", "updatedAt")
+            );
+
+            Page<Application> applications;
+            if (status != null) {
+                applications = applicationRepository.findByApplicantIdAndStatus(currentUser.getId(), status, pageable);
+            } else {
+                applications = applicationRepository.findByApplicantId(currentUser.getId(), pageable);
+            }
+
+            List<ApplicationResponse> applicationResponses = applications.getContent().stream()
+                    .map(this::convertToResponse)
+                    .collect(Collectors.toList());
+
+            PageResponse<ApplicationResponse> pageResponse = new PageResponse<>(
+                    applicationResponses,
+                    applications.getNumber(),
+                    applications.getSize(),
+                    applications.getTotalElements(),
+                    applications.getTotalPages(),
+                    applications.isFirst(),
+                    applications.isLast(),
+                    applications.hasNext(),
+                    applications.hasPrevious()
+            );
+
+            return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đơn ứng tuyển thành công", pageResponse));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Lỗi khi lấy danh sách đơn ứng tuyển: " + e.getMessage()));
+        }
     }
 
     private ApplicationResponse convertToResponse(Application application) {

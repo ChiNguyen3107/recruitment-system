@@ -12,7 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
+// import org.springframework.web.context.request.WebRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -42,7 +42,16 @@ public class GlobalExceptionHandler {
         log.warn("Validation error from IP: {} - Fields: {}", getClientIp(request), errors.keySet());
         
         return ResponseEntity.badRequest()
-                .body(ApiResponse.error("Thông tin đầu vào không hợp lệ", errors));
+                .body(ApiResponse.error(
+                        "VALIDATION_ERROR",
+                        "Thông tin đầu vào không hợp lệ",
+                        "Request body không đạt ràng buộc",
+                        errors,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod()
+                        )
+                ));
     }
 
     /**
@@ -55,7 +64,16 @@ public class GlobalExceptionHandler {
         log.warn("Authentication failed from IP: {}", getClientIp(request));
         
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("Thông tin xác thực không chính xác"));
+                .body(ApiResponse.error(
+                        "UNAUTHORIZED",
+                        "Thông tin xác thực không chính xác",
+                        "Sai thông tin đăng nhập hoặc token",
+                        null,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod()
+                        )
+                ));
     }
 
     /**
@@ -68,7 +86,16 @@ public class GlobalExceptionHandler {
         log.warn("Access denied from IP: {}", getClientIp(request));
         
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("Không có quyền truy cập tài nguyên này"));
+                .body(ApiResponse.error(
+                        "FORBIDDEN",
+                        "Không có quyền truy cập tài nguyên này",
+                        "Thiếu quyền hoặc phạm vi",
+                        null,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod()
+                        )
+                ));
     }
 
     /**
@@ -81,7 +108,17 @@ public class GlobalExceptionHandler {
         log.warn("Rate limit exceeded for {} from IP: {}", ex.getOperation(), getClientIp(request));
         
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(ApiResponse.error(
+                        "RATE_LIMIT_EXCEEDED",
+                        ex.getMessage(),
+                        "Vượt quá giới hạn tần suất",
+                        null,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod(),
+                                "operation", ex.getOperation()
+                        )
+                ));
     }
 
     /**
@@ -94,7 +131,16 @@ public class GlobalExceptionHandler {
         log.warn("Expired JWT token from IP: {}", getClientIp(request));
         
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("Token đã hết hạn. Vui lòng đăng nhập lại."));
+                .body(ApiResponse.error(
+                        "TOKEN_EXPIRED",
+                        "Token đã hết hạn. Vui lòng đăng nhập lại.",
+                        "JWT expired",
+                        null,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod()
+                        )
+                ));
     }
 
     @ExceptionHandler(io.jsonwebtoken.MalformedJwtException.class)
@@ -104,7 +150,16 @@ public class GlobalExceptionHandler {
         log.warn("Malformed JWT token from IP: {}", getClientIp(request));
         
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("Token không hợp lệ."));
+                .body(ApiResponse.error(
+                        "TOKEN_MALFORMED",
+                        "Token không hợp lệ.",
+                        "JWT malformed",
+                        null,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod()
+                        )
+                ));
     }
 
     /**
@@ -116,7 +171,16 @@ public class GlobalExceptionHandler {
         String rootMessage = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
         log.warn("Data integrity violation from IP: {} - {}", getClientIp(request), rootMessage);
         return ResponseEntity.badRequest()
-                .body(ApiResponse.error("Dữ liệu không hợp lệ: " + rootMessage));
+                .body(ApiResponse.error(
+                        "DATA_INTEGRITY_VIOLATION",
+                        "Dữ liệu không hợp lệ",
+                        "Vi phạm ràng buộc dữ liệu",
+                        null,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod()
+                        )
+                ));
     }
 
     @ExceptionHandler(io.jsonwebtoken.SignatureException.class)
@@ -126,7 +190,16 @@ public class GlobalExceptionHandler {
         log.warn("Invalid JWT signature from IP: {}", getClientIp(request));
         
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("Token không hợp lệ."));
+                .body(ApiResponse.error(
+                        "TOKEN_SIGNATURE_INVALID",
+                        "Token không hợp lệ.",
+                        "JWT signature invalid",
+                        null,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod()
+                        )
+                ));
     }
 
     /**
@@ -139,7 +212,16 @@ public class GlobalExceptionHandler {
         log.error("Runtime error from IP: {} - Message: {}", getClientIp(request), ex.getMessage(), ex);
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau."));
+                .body(ApiResponse.error(
+                        "INTERNAL_SERVER_ERROR",
+                        "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.",
+                        "Runtime exception",
+                        null,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod()
+                        )
+                ));
     }
 
     /**
@@ -152,7 +234,16 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error from IP: {} - Message: {}", getClientIp(request), ex.getMessage(), ex);
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau."));
+                .body(ApiResponse.error(
+                        "UNEXPECTED_ERROR",
+                        "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.",
+                        "Unhandled exception",
+                        null,
+                        Map.of(
+                                "path", request.getRequestURI(),
+                                "method", request.getMethod()
+                        )
+                ));
     }
 
     /**

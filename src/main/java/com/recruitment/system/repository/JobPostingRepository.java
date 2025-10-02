@@ -32,6 +32,9 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     Page<JobPosting> findByCompanyId(Long companyId, Pageable pageable);
 
+    @Query("SELECT jp FROM JobPosting jp WHERE jp.company.id = :companyId AND jp.status = :status")
+    Page<JobPosting> findByCompanyIdAndStatus(@Param("companyId") Long companyId, @Param("status") JobStatus status, Pageable pageable);
+
     @Query("SELECT jp FROM JobPosting jp WHERE jp.status = 'ACTIVE' AND jp.applicationDeadline > :now")
     List<JobPosting> findActiveJobs(@Param("now") LocalDateTime now);
 

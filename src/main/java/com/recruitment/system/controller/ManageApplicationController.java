@@ -18,9 +18,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import com.recruitment.system.config.PaginationValidator;
+import java.util.Set;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,7 +60,13 @@ public class ManageApplicationController {
             return ResponseEntity.status(403).body(ApiResponse.error("Chỉ employer/recruiter mới được truy cập"));
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PaginationValidator.buildPageable(
+                page,
+                size,
+                "createdAt",
+                "DESC",
+                Set.of("createdAt", "status")
+        );
         Page<Application> result;
         Long companyId = currentUser.getCompany().getId();
 

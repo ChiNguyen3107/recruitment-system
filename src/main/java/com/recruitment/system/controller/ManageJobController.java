@@ -18,8 +18,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.recruitment.system.config.PaginationValidator;
+import com.recruitment.system.dto.response.PageResponse;
+import java.util.Set;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Controller quản lý CRUD tin tuyển dụng cho EMPLOYER/RECRUITER/ADMIN
@@ -31,6 +37,59 @@ public class ManageJobController {
 
     private final JobPostingRepository jobPostingRepository;
     private final AuditLogger auditLogger;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<JobPostingResponse>>> listJobs(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir,
+            @RequestParam(required = false) JobStatus status
+    ) {
+        try {
+            validateEmployerContext(currentUser);
+
+            Pageable pageable = PaginationValidator.buildPageable(
+                    page,
+                    size,
+                    sortBy,
+                    sortDir,
+                    Set.of("createdAt", "title", "status", "applicationDeadline")
+            );
+
+            Long companyId = currentUser.getCompany().getId();
+            Page<JobPosting> jobs;
+
+            if (status != null) {
+                jobs = jobPostingRepository.findByCompanyIdAndStatus(companyId, status, pageable);
+            } else {
+                jobs = jobPostingRepository.findByCompanyId(companyId, pageable);
+            }
+
+            List<JobPostingResponse> jobResponses = jobs.getContent().stream()
+                    .map(this::convertToResponse)
+                    .collect(java.util.stream.Collectors.toList());
+
+            PageResponse<JobPostingResponse> pageResponse = new PageResponse<>(
+                    jobResponses,
+                    jobs.getNumber(),
+                    jobs.getSize(),
+                    jobs.getTotalElements(),
+                    jobs.getTotalPages(),
+                    jobs.isFirst(),
+                    jobs.isLast(),
+                    jobs.hasNext(),
+                    jobs.hasPrevious()
+            );
+
+            return ResponseEntity.ok(ApiResponse.success("Lấy danh sách jobs thành công", pageResponse));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Lỗi khi lấy danh sách jobs: " + e.getMessage()));
+        }
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<JobPostingResponse>> createJob(

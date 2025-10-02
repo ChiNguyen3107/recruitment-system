@@ -8,9 +8,9 @@ import com.recruitment.system.enums.JobType;
 import com.recruitment.system.repository.JobPostingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import com.recruitment.system.config.PaginationValidator;
+import java.util.Set;
 import org.springframework.http.ResponseEntity;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.web.bind.annotation.*;
@@ -64,9 +64,13 @@ public class JobController {
             @RequestParam(defaultValue = "DESC") String sortDir) {
 
         try {
-            // Tạo Pageable object
-            Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-            Pageable pageable = PageRequest.of(page, size, sort);
+            Pageable pageable = PaginationValidator.buildPageable(
+                    page,
+                    size,
+                    sortBy,
+                    sortDir,
+                    Set.of("createdAt", "salaryMin", "salaryMax", "applicationDeadline")
+            );
 
             LocalDateTime now = LocalDateTime.now();
             Page<JobPosting> jobPostings;
@@ -153,7 +157,13 @@ public class JobController {
             @RequestParam(defaultValue = "10") int size) {
 
         try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            Pageable pageable = PaginationValidator.buildPageable(
+                    page,
+                    size,
+                    "createdAt",
+                    "DESC",
+                    Set.of("createdAt")
+            );
             LocalDateTime now = LocalDateTime.now();
 
             Page<JobPosting> jobPostings = jobPostingRepository.findActiveJobs(now, pageable);

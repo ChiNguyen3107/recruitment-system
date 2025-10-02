@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "8f8bc168-2897-408e-ac62-6c301d4d868b",
 		"name": "Recruitment System API",
-		"description": "Endpoints for Auth, Public Jobs, and Debug\n\nHướng dẫn test nhanh với Postman:\n1) Thiết lập biến môi trường:\n   - baseUrl = http://localhost:8081\n2) Test Public Job Search:\n   - Gọi GET {{baseUrl}}/api/public/jobs/search với các query: keyword, location, jobType, minSalary, page, size, sortBy, sortDir\n   - Kỳ vọng 200, body là ApiResponse chứa PageResponse<JobPostingResponse>\n   - Mặc định chỉ trả job status=ACTIVE và applicationDeadline > now\n3) Test Detail (Public):\n   - Gọi GET {{baseUrl}}/api/public/jobs/{id} và kiểm tra job còn hoạt động\n4) Test Latest (Public):\n   - Gọi GET {{baseUrl}}/api/public/jobs/latest?page=0&size=10\n\nGợi ý: Có thể thay đổi sortBy (createdAt, publishedAt, salaryMin, salaryMax, applicationsCount, viewsCount ...) và sortDir (ASC/DESC).",
+		"description": "Recruitment System API - Đã chuẩn hoá validation và error handling\n\n🎯 TÍNH NĂNG MỚI:\n- ✅ Validation mạnh: Giới hạn độ dài, format, whitelist sortBy/sortDir\n- ✅ Pagination chuẩn: Tự động giới hạn size ≤ 50\n- ✅ Error response chuẩn: ApiResponse với code/reason/context\n- ✅ RBAC đúng: Employer chỉ thấy dữ liệu công ty, Applicant chỉ thấy của mình\n- ✅ Upload an toàn: Giới hạn 5MB, chỉ PDF, magic number validation\n\n🚀 HƯỚNG DẪN TEST:\n1) Setup: baseUrl = http://localhost:8081\n2) Test Validation: Dùng 'Create Job - Validation Error Test'\n3) Test Pagination: Dùng 'Search - Pagination Validation Test'\n4) Test RBAC: Dùng 'List Company Jobs' vs 'List My Applications'\n5) Test Upload: Dùng 'Upload My Resume (PDF)'\n\n📋 ENDPOINTS MỚI:\n- GET /api/employer/jobs - Danh sách jobs của công ty\n- GET /api/jobs/manage - Quản lý jobs với pagination\n- GET /api/applications/my - Danh sách applications của user\n\n🔒 BẢO MẬT:\n- Không lộ stack trace trong response\n- Input sanitization tự động\n- File upload validation chặt chẽ",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "48481540",
 		"_collection_link": "https://chinguyen3107-7344893.postman.co/workspace/Ch%25C3%25AD-Nguy%25E1%25BB%2585n's-Workspace~556e17ea-1f12-443b-8df6-d9e40470be85/collection/48481540-8f8bc168-2897-408e-ac62-6c301d4d868b?action=share&source=collection_link&creator=48481540"
@@ -552,6 +552,63 @@
 					"response": []
 				},
 				{
+					"name": "Create Job - Validation Error Test",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"\",\n  \"description\": \"A very long description that exceeds the maximum allowed length of 20000 characters...\",\n  \"salaryCurrency\": \"INVALID\",\n  \"applicationDeadline\": \"2023-01-01T00:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/manage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"jobs",
+								"manage"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"  pm.response.to.have.status(400);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"Error response format\", function () {",
+									"  pm.expect(json).to.have.property('success', false);",
+									"  pm.expect(json).to.have.property('code', 'VALIDATION_ERROR');",
+									"  pm.expect(json).to.have.property('reason');",
+									"  pm.expect(json).to.have.property('context');",
+									"});",
+									"pm.test(\"Validation errors present\", function () {",
+									"  pm.expect(json.error).to.be.an('object');",
+									"  pm.expect(json.error).to.have.property('title');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
 					"name": "Update Job (Manage)",
 					"request": {
 						"method": "PUT",
@@ -677,6 +734,79 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "List Jobs (Manage)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/manage?page=0&size=10&sortBy=createdAt&sortDir=DESC&status=ACTIVE",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"jobs",
+								"manage"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "DESC"
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"description": "Tùy chọn: DRAFT, ACTIVE, CLOSED"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse format\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('data');",
+									"});",
+									"pm.test(\"Pagination structure\", function () {",
+									"  if (json.data && json.data.content) {",
+									"    pm.expect(json.data).to.have.property('page');",
+									"    pm.expect(json.data).to.have.property('size');",
+									"    pm.expect(json.data.size).to.be.at.most(50);",
+									"  }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
 				}
 			]
 			,
@@ -800,6 +930,70 @@
 							]
 						}
 					},
+					"response": []
+				},
+				{
+					"name": "Search - Pagination Validation Test",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/public/jobs/search?page=0&size=100&sortBy=invalidField&sortDir=INVALID",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"public",
+								"jobs",
+								"search"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "100",
+									"description": "Test size > 50 should be limited to 50"
+								},
+								{
+									"key": "sortBy",
+									"value": "invalidField",
+									"description": "Test invalid sortBy should fallback to default"
+								},
+								{
+									"key": "sortDir",
+									"value": "INVALID",
+									"description": "Test invalid sortDir should fallback to DESC"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse format\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('data');",
+									"});",
+									"pm.test(\"Size is limited to 50\", function () {",
+									"  if (json.data && json.data.size) {",
+									"    pm.expect(json.data.size).to.be.at.most(50);",
+									"  }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"response": []
 				},
 				{
@@ -1437,6 +1631,79 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "List My Applications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/my?page=0&size=10&sortBy=createdAt&sortDir=DESC&status=RECEIVED",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"my"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "DESC"
+								},
+								{
+									"key": "status",
+									"value": "RECEIVED",
+									"description": "Tùy chọn: RECEIVED, REVIEWED, INTERVIEW, OFFER, HIRED, REJECTED"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse format\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('data');",
+									"});",
+									"pm.test(\"Pagination structure\", function () {",
+									"  if (json.data && json.data.content) {",
+									"    pm.expect(json.data).to.have.property('page');",
+									"    pm.expect(json.data).to.have.property('size');",
+									"    pm.expect(json.data.size).to.be.at.most(50);",
+									"  }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
 				}
 			],
 			"description": "Nộp đơn ứng tuyển bởi ứng viên\n- role: APPLICANT đã đăng nhập (nên có email VERIFIED).\n- POST /api/applications/my: Gửi đơn với `jobPostingId`, `coverLetter`, `resumeUrl`.\n- Điều kiện: Job phải ACTIVE và còn hạn nộp, không bị xóa.\n- Kết quả: Lưu hồ sơ ứng tuyển và có thể thông báo tới nhà tuyển dụng."
@@ -1653,6 +1920,79 @@
 									"    pm.expect(item).to.have.property('applications');",
 									"  });",
 									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "List Company Jobs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{recruiterToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/employer/jobs?page=0&size=10&sortBy=createdAt&sortDir=DESC&status=ACTIVE",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"employer",
+								"jobs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "DESC"
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"description": "Tùy chọn: DRAFT, ACTIVE, CLOSED"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse format\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('data');",
+									"});",
+									"pm.test(\"Pagination structure\", function () {",
+									"  if (json.data && json.data.content) {",
+									"    pm.expect(json.data).to.have.property('page');",
+									"    pm.expect(json.data).to.have.property('size');",
+									"    pm.expect(json.data.size).to.be.at.most(50);",
+									"  }",
+									"});"
 								],
 								"type": "text/javascript"
 							}
