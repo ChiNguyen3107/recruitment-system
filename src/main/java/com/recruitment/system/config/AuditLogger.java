@@ -122,6 +122,26 @@ public class AuditLogger {
     }
 
     /**
+     * Ghi log nộp đơn ứng tuyển (applicant submit)
+     */
+    public void logApplicationSubmitted(Long applicationId, Long jobId, Long companyId, String userEmail, String ipAddress, String userAgent, boolean success) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        String result = success ? "SUCCESS" : "FAILURE";
+        log.info("{} {} APPLICATION_SUBMITTED - Result: {}, ApplicationId: {}, JobId: {}, CompanyId: {}, By: {}, IP: {}, UserAgent: {}",
+                AUDIT_PREFIX, timestamp, result, applicationId, jobId, companyId, userEmail, ipAddress, userAgent);
+    }
+
+    /**
+     * Ghi log upload CV (resume)
+     */
+    public void logResumeUploaded(Long userId, String userEmail, String resumeUrl, String ipAddress, String userAgent, boolean success) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        String result = success ? "SUCCESS" : "FAILURE";
+        log.info("{} {} RESUME_UPLOADED - Result: {}, UserId: {}, Email: {}, ResumeUrl: {}, IP: {}, UserAgent: {}",
+                AUDIT_PREFIX, timestamp, result, userId, userEmail, resumeUrl, ipAddress, userAgent);
+    }
+
+    /**
      * Ghi log tạo mới tin tuyển dụng
      */
     public void logJobCreated(Long jobId, Long companyId, String performedByEmail, String ipAddress, String userAgent) {
