@@ -7,6 +7,7 @@ import com.recruitment.system.entity.Profile;
 import com.recruitment.system.entity.User;
 import com.recruitment.system.enums.UserRole;
 import com.recruitment.system.repository.ProfileRepository;
+import com.recruitment.system.config.AuditLogger;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
 
@@ -29,6 +31,7 @@ public class ProfileController {
 
     private final ProfileRepository profileRepository;
     private final com.recruitment.system.service.StorageService storageService;
+    private final AuditLogger auditLogger;
 
     /**
      * Lấy hồ sơ của người dùng hiện tại
@@ -84,7 +87,8 @@ public class ProfileController {
     @PostMapping(value = "/my/resume", consumes = {"multipart/form-data"})
     public ResponseEntity<ApiResponse<ProfileResponse>> uploadMyResume(
             @AuthenticationPrincipal User user,
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file,
+            HttpServletRequest httpRequest) {
 
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -154,11 +158,18 @@ public class ProfileController {
             Profile saved = profileRepository.save(profile);
 
             ProfileResponse response = ProfileResponse.fromProfile(saved);
+
+            // Audit
+            String clientIp = getClientIpAddress(httpRequest);
+            auditLogger.logResumeUploaded(user.getId(), user.getEmail(), resumeUrl, clientIp, httpRequest.getHeader("User-Agent"), true);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Tải lên CV thành công", response));
 
         } catch (Exception e) {
             log.error("Lỗi khi upload CV cho user {}", user.getId(), e);
+            // Audit failure (không log chi tiết lỗi)
+            String clientIp = httpRequest != null ? getClientIpAddress(httpRequest) : "unknown";
+            auditLogger.logResumeUploaded(user != null ? user.getId() : null, user != null ? user.getEmail() : "unknown", null, clientIp, httpRequest != null ? httpRequest.getHeader("User-Agent") : "unknown", false);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Có lỗi xảy ra khi tải lên CV"));
         }
@@ -299,6 +310,15 @@ public class ProfileController {
         
         if (request.getIsPublic() != null) {
             profile.setIsPublic(request.getIsPublic());
+        }
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedForHeader = request.getHeader("X-Forwarded-For");
+        if (xForwardedForHeader == null) {
+            return request.getRemoteAddr();
+        } else {
+            return xForwardedForHeader.split(",")[0];
         }
     }
 }

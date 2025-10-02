@@ -1,6 +1,8 @@
 package com.recruitment.system.controller;
 
 import com.recruitment.system.dto.request.ApplicationRequest;
+import com.recruitment.system.config.AuditLogger;
+import jakarta.servlet.http.HttpServletRequest;
 import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.response.ApplicationResponse;
 import com.recruitment.system.dto.response.JobPostingResponse;
@@ -40,6 +42,7 @@ public class ApplicationController {
     private final ApplicationRepository applicationRepository;
     private final JobPostingRepository jobPostingRepository;
     private final MailService mailService;
+    private final AuditLogger auditLogger;
 
     /**
      * POST /api/applications/my
@@ -48,7 +51,8 @@ public class ApplicationController {
     @Transactional
     public ResponseEntity<ApiResponse<ApplicationResponse>> applyMy(
             @AuthenticationPrincipal User currentUser,
-            @Valid @RequestBody ApplicationRequest request
+            @Valid @RequestBody ApplicationRequest request,
+            HttpServletRequest httpRequest
     ) {
         if (currentUser == null) {
             return ResponseEntity.status(401).body(ApiResponse.error("Chưa xác thực"));
@@ -109,7 +113,21 @@ public class ApplicationController {
 
         // Trả response
         ApplicationResponse response = convertToResponse(saved);
+
+        // Audit
+        String clientIp = getClientIpAddress(httpRequest);
+        Long companyId = jobPosting.getCompany() != null ? jobPosting.getCompany().getId() : null;
+        auditLogger.logApplicationSubmitted(saved.getId(), jobPosting.getId(), companyId, currentUser.getEmail(), clientIp, httpRequest.getHeader("User-Agent"), true);
         return ResponseEntity.ok(ApiResponse.success("Nộp đơn thành công", response));
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedForHeader = request.getHeader("X-Forwarded-For");
+        if (xForwardedForHeader == null) {
+            return request.getRemoteAddr();
+        } else {
+            return xForwardedForHeader.split(",")[0];
+        }
     }
 
     /**
