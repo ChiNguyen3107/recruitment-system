@@ -75,7 +75,8 @@ public class SecurityConfig {
                 // Public endpoints - specific paths first
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/api/companies/public/**").permitAll()
+                .requestMatchers("/api/companies/*/public").permitAll()
+                .requestMatchers("/api/companies/*/jobs").permitAll()
                 .requestMatchers("/api/auth/refresh").permitAll()
                 .requestMatchers("/api/debug/**").permitAll() // Debug endpoints
                 // Swagger/OpenAPI endpoints
@@ -106,6 +107,7 @@ public class SecurityConfig {
                 
                 // Employer/Recruiter endpoints
                 .requestMatchers("/api/employer/**").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
+                .requestMatchers("/api/companies/my").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
                 .requestMatchers("/api/jobs/manage/**").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
                 .requestMatchers("/api/applications/manage/**").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
                 

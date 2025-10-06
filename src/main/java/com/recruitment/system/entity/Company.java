@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Entity đại diện cho công ty
@@ -63,6 +64,32 @@ public class Company {
 
     @Column(name = "is_verified")
     private Boolean isVerified = false;
+
+    // Thông tin mở rộng cho hồ sơ công ty
+    @Column(name = "benefits", columnDefinition = "TEXT")
+    @Convert(converter = com.recruitment.system.entity.converter.StringListJsonConverter.class)
+    private List<String> benefits;
+
+    @Column(name = "working_hours")
+    private String workingHours;
+
+    @Column(name = "company_photos", columnDefinition = "TEXT")
+    @Convert(converter = com.recruitment.system.entity.converter.StringListJsonConverter.class)
+    private List<String> companyPhotos;
+
+    @Column(name = "social_links", columnDefinition = "TEXT")
+    @Convert(converter = com.recruitment.system.entity.converter.StringMapJsonConverter.class)
+    private Map<String, String> socialLinks;
+
+    // Các chỉ số tổng hợp (tính động, có thể lưu cache tầng ứng dụng; không bắt buộc lưu DB)
+    @Transient
+    private Integer activeJobsCount;
+
+    @Transient
+    private Double averageResponseTime;
+
+    @Transient
+    private Double hiringSuccessRate;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -85,6 +85,9 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     @Query("SELECT COUNT(jp) FROM JobPosting jp WHERE jp.company.id = :companyId AND jp.status = :status")
     Long countByCompanyIdAndStatus(@Param("companyId") Long companyId, @Param("status") JobStatus status);
 
+    @Query("SELECT COUNT(jp) FROM JobPosting jp WHERE jp.company.id = :companyId AND jp.status = 'ACTIVE' AND jp.applicationDeadline > :now")
+    Long countActiveAndNotExpiredByCompany(@Param("companyId") Long companyId, @Param("now") LocalDateTime now);
+
     @Query("SELECT jp FROM JobPosting jp WHERE jp.applicationDeadline < :now AND jp.status = 'ACTIVE'")
     List<JobPosting> findExpiredJobs(@Param("now") LocalDateTime now);
 

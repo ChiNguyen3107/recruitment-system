@@ -42,6 +42,16 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
                                               @Param("status") ApplicationStatus status, 
                                               Pageable pageable);
 
+
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.jobPosting.company.id = :companyId AND a.status = 'HIRED'")
+    Long countHiredByCompanyId(@Param("companyId") Long companyId);
+
+    @Query("SELECT AVG(TIMESTAMPDIFF(DAY, a.createdAt, a.reviewedAt)) FROM Application a WHERE a.jobPosting.company.id = :companyId AND a.reviewedAt IS NOT NULL")
+    Double averageResponseDaysByCompany(@Param("companyId") Long companyId);
+
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.jobPosting.company.id = :companyId")
+    Long countByCompanyId(@Param("companyId") Long companyId);
+
     @Query("SELECT a FROM Application a WHERE a.jobPosting.company.id = :companyId AND a.jobPosting.id = :jobPostingId")
     Page<Application> findByCompanyIdAndJobPostingId(@Param("companyId") Long companyId,
                                                     @Param("jobPostingId") Long jobPostingId,
@@ -60,8 +70,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Query("SELECT COUNT(a) FROM Application a WHERE a.status = :status")
     Long countByStatus(@Param("status") ApplicationStatus status);
 
-    @Query("SELECT COUNT(a) FROM Application a WHERE a.jobPosting.company.id = :companyId")
-    Long countByCompanyId(@Param("companyId") Long companyId);
+    // giữ lại một phiên bản duy nhất của countByCompanyId
 
     @Query("SELECT COUNT(a) FROM Application a WHERE a.jobPosting.company.id = :companyId AND a.status = :status")
     Long countByCompanyIdAndStatus(@Param("companyId") Long companyId, @Param("status") ApplicationStatus status);
