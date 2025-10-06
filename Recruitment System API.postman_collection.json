@@ -932,6 +932,170 @@
 					},
 					"response": []
 				},
+                {
+                    "name": "Search (Jobs) - Advanced Filters",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/jobs/search?keyword=java&location=Hanoi&jobType=FULL_TIME&salaryRange=10000000-20000000&postedWithin=30&experienceLevel=SENIOR&companySize=MEDIUM&workMode=REMOTE&benefits=bonus,insurance&page=0&size=10&sortBy=createdAt&sortDir=DESC",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "jobs",
+                                "search"
+                            ],
+                            "query": [
+                                {"key":"keyword","value":"java"},
+                                {"key":"location","value":"Hanoi"},
+                                {"key":"jobType","value":"FULL_TIME"},
+                                {"key":"salaryRange","value":"10000000-20000000"},
+                                {"key":"postedWithin","value":"30"},
+                                {"key":"experienceLevel","value":"SENIOR"},
+                                {"key":"companySize","value":"MEDIUM"},
+                                {"key":"workMode","value":"REMOTE"},
+                                {"key":"benefits","value":"bonus,insurance"},
+                                {"key":"page","value":"0"},
+                                {"key":"size","value":"10"},
+                                {"key":"sortBy","value":"createdAt"},
+                                {"key":"sortDir","value":"DESC"}
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code 200\", function () {",
+                                    "  pm.response.to.have.status(200);",
+                                    "});",
+                                    "const json = pm.response.json();",
+                                    "pm.test(\"ApiResponse success\", function () {",
+                                    "  pm.expect(json).to.have.property('success', true);",
+                                    "  pm.expect(json).to.have.property('data');",
+                                    "});",
+                                    "pm.test(\"Has pagination fields\", function () {",
+                                    "  pm.expect(json.data).to.have.property('page');",
+                                    "  pm.expect(json.data).to.have.property('size');",
+                                    "  pm.expect(json.data).to.have.property('totalElements');",
+                                    "  pm.expect(json.data).to.have.property('totalPages');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": []
+                },
+                {
+                    "name": "Validation - salaryRange invalid format",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/jobs/search?salaryRange=abc-xyz",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "jobs",
+                                "search"
+                            ],
+                            "query": [
+                                {"key":"salaryRange","value":"abc-xyz"}
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"400 for invalid salaryRange format\", function () {",
+                                    "  pm.response.to.have.status(400);",
+                                    "  pm.expect(pm.response.json().message).to.include(\"salaryRange không đúng định dạng\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": []
+                },
+                {
+                    "name": "Validation - postedWithin out of range",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/jobs/search?postedWithin=0",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "jobs",
+                                "search"
+                            ],
+                            "query": [
+                                {"key":"postedWithin","value":"0"}
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"400 for postedWithin out of range\", function () {",
+                                    "  pm.response.to.have.status(400);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": []
+                },
+                {
+                    "name": "Validation - benefits too long",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/jobs/search?benefits={{tooLong}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "jobs",
+                                "search"
+                            ],
+                            "query": [
+                                {"key":"benefits","value":"{{tooLong}}"}
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"400 for benefits too long\", function () {",
+                                    "  pm.response.to.have.status(400);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": []
+                },
 				{
 					"name": "Search - Pagination Validation Test",
 					"request": {

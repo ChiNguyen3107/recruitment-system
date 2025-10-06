@@ -5,6 +5,9 @@ import com.recruitment.system.dto.response.JobPostingResponse;
 import com.recruitment.system.dto.response.PageResponse;
 import com.recruitment.system.entity.JobPosting;
 import com.recruitment.system.enums.JobType;
+import com.recruitment.system.enums.ExperienceLevel;
+import com.recruitment.system.enums.CompanySize;
+import com.recruitment.system.enums.WorkMode;
 import com.recruitment.system.repository.JobPostingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -58,6 +61,12 @@ public class JobController {
             @RequestParam(required = false) String location,
             @RequestParam(required = false) JobType jobType,
             @RequestParam(required = false) BigDecimal minSalary,
+            @RequestParam(required = false) String salaryRange,
+            @RequestParam(required = false) ExperienceLevel experienceLevel,
+            @RequestParam(required = false) CompanySize companySize,
+            @RequestParam(required = false) Integer postedWithin,
+            @RequestParam(required = false) WorkMode workMode,
+            @RequestParam(required = false) String benefits,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -75,23 +84,64 @@ public class JobController {
             LocalDateTime now = LocalDateTime.now();
             Page<JobPosting> jobPostings;
 
-            // Tìm kiếm dựa trên các tham số
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                // Tìm kiếm theo từ khóa
-                jobPostings = jobPostingRepository.searchActiveJobs(keyword.trim(), now, pageable);
-            } else if (location != null && !location.trim().isEmpty()) {
-                // Tìm kiếm theo địa điểm
-                jobPostings = jobPostingRepository.findActiveJobsByLocation(location.trim(), now, pageable);
-            } else if (jobType != null) {
-                // Tìm kiếm theo loại công việc
-                jobPostings = jobPostingRepository.findActiveJobsByType(jobType, now, pageable);
-            } else if (minSalary != null) {
-                // Tìm kiếm theo mức lương
-                jobPostings = jobPostingRepository.findActiveJobsBySalary(minSalary, now, pageable);
-            } else {
-                // Lấy tất cả việc làm đang hoạt động
-                jobPostings = jobPostingRepository.findActiveJobs(now, pageable);
+            // Validation nâng cao
+            BigDecimal minRange = null;
+            BigDecimal maxRange = null;
+            if (salaryRange != null && !salaryRange.isBlank()) {
+                if (!salaryRange.matches("\\d+-\\d+")) {
+                    return ResponseEntity.badRequest().body(ApiResponse.error("salaryRange không đúng định dạng 'min-max'"));
+                }
+                String[] parts = salaryRange.split("-");
+                try {
+                    minRange = new BigDecimal(parts[0]);
+                    maxRange = new BigDecimal(parts[1]);
+                    if (minRange.compareTo(maxRange) > 0) {
+                        return ResponseEntity.badRequest().body(ApiResponse.error("salaryRange: min phải <= max"));
+                    }
+                } catch (NumberFormatException ex) {
+                    return ResponseEntity.badRequest().body(ApiResponse.error("salaryRange phải là số"));
+                }
             }
+
+            if (postedWithin != null) {
+                if (postedWithin < 1 || postedWithin > 365) {
+                    return ResponseEntity.badRequest().body(ApiResponse.error("postedWithin phải trong khoảng 1-365 ngày"));
+                }
+            }
+
+            if (benefits != null && benefits.length() > 500) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("benefits không được vượt quá 500 ký tự"));
+            }
+
+            // Chuẩn hóa chuỗi
+            String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
+            String loc = (location != null && !location.isBlank()) ? location.trim() : null;
+            String benefitsFilter = (benefits != null && !benefits.isBlank()) ? benefits.trim().toLowerCase() : null;
+            String workModeFilter = workMode != null ? workMode.name().toLowerCase() : null;
+            String experienceFilter = experienceLevel != null ? experienceLevel.name().toLowerCase() : null;
+            String companySizeFilter = companySize != null ? companySize.name() : null;
+
+            LocalDateTime postedAfter = null;
+            if (postedWithin != null) {
+                postedAfter = now.minusDays(postedWithin);
+            }
+
+            // Gọi truy vấn nâng cao
+            jobPostings = jobPostingRepository.searchAdvancedJobs(
+                    com.recruitment.system.enums.JobStatus.ACTIVE,
+                    now,
+                    kw,
+                    loc,
+                    jobType,
+                    minRange != null ? minRange : minSalary,
+                    maxRange,
+                    postedAfter,
+                    experienceFilter,
+                    companySizeFilter,
+                    workModeFilter,
+                    benefitsFilter,
+                    pageable
+            );
 
             // Convert to response DTOs
             List<JobPostingResponse> jobResponses = jobPostings.getContent().stream()

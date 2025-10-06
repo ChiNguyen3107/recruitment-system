@@ -112,4 +112,33 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
                                       @Param("minSalary") BigDecimal minSalary,
                                       @Param("now") LocalDateTime now,
                                       Pageable pageable);
+
+    /**
+     * Truy vấn nâng cao cho tìm kiếm jobs theo nhiều bộ lọc.
+     */
+    @Query("SELECT jp FROM JobPosting jp WHERE " +
+           "jp.status = :status AND jp.applicationDeadline > :now AND " +
+           "(:keyword IS NULL OR (LOWER(jp.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(jp.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(jp.skillsRequired) LIKE LOWER(CONCAT('%', :keyword, '%')))) AND " +
+           "(:location IS NULL OR LOWER(jp.location) LIKE LOWER(CONCAT('%', :location, '%'))) AND " +
+           "(:jobType IS NULL OR jp.jobType = :jobType) AND " +
+           "(:minSalary IS NULL OR jp.salaryMax >= :minSalary) AND " +
+           "(:maxSalary IS NULL OR jp.salaryMin <= :maxSalary) AND " +
+           "(:postedAfter IS NULL OR jp.createdAt >= :postedAfter) AND " +
+           "(:experienceLevel IS NULL OR (jp.experienceRequired IS NOT NULL AND LOWER(jp.experienceRequired) LIKE LOWER(CONCAT('%', :experienceLevel, '%')))) AND " +
+           "(:companySize IS NULL OR (jp.company.companySize IS NOT NULL AND UPPER(jp.company.companySize) = :companySize)) AND " +
+           "(:workMode IS NULL OR ( (jp.description IS NOT NULL AND LOWER(jp.description) LIKE LOWER(CONCAT('%', :workMode, '%'))) OR (jp.benefits IS NOT NULL AND LOWER(jp.benefits) LIKE LOWER(CONCAT('%', :workMode, '%'))) )) AND " +
+           "(:benefits IS NULL OR (jp.benefits IS NOT NULL AND LOWER(jp.benefits) LIKE LOWER(CONCAT('%', :benefits, '%'))))")
+    Page<JobPosting> searchAdvancedJobs(@Param("status") JobStatus status,
+                                        @Param("now") LocalDateTime now,
+                                        @Param("keyword") String keyword,
+                                        @Param("location") String location,
+                                        @Param("jobType") JobType jobType,
+                                        @Param("minSalary") BigDecimal minSalary,
+                                        @Param("maxSalary") BigDecimal maxSalary,
+                                        @Param("postedAfter") LocalDateTime postedAfter,
+                                        @Param("experienceLevel") String experienceLevel,
+                                        @Param("companySize") String companySize,
+                                        @Param("workMode") String workMode,
+                                        @Param("benefits") String benefits,
+                                        Pageable pageable);
 }
