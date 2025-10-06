@@ -1868,9 +1868,36 @@
 						}
 					],
 					"response": []
+				},
+				{
+					"name": "Withdraw Application (My)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/my/{{applicationId}}/withdraw",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applications",
+								"my",
+								"{{applicationId}}",
+								"withdraw"
+							]
+						}
+					},
+					"response": []
 				}
 			],
-			"description": "Nộp đơn ứng tuyển bởi ứng viên\n- role: APPLICANT đã đăng nhập (nên có email VERIFIED).\n- POST /api/applications/my: Gửi đơn với `jobPostingId`, `coverLetter`, `resumeUrl`.\n- Điều kiện: Job phải ACTIVE và còn hạn nộp, không bị xóa.\n- Kết quả: Lưu hồ sơ ứng tuyển và có thể thông báo tới nhà tuyển dụng."
+			"description": "Nộp đơn ứng tuyển bởi ứng viên\n- role: APPLICANT đã đăng nhập (nên có email VERIFIED).\n- POST /api/applications/my: Gửi đơn với `jobPostingId`, `coverLetter`, `resumeUrl`.\n- POST /api/applications/my/{id}/withdraw: Rút đơn khi trạng thái là RECEIVED/REVIEWED → chuyển sang WITHDRAWN (không thể chuyển tiếp).\n- Điều kiện: Job phải ACTIVE và còn hạn nộp, không bị xóa.\n- Kết quả: Lưu hồ sơ ứng tuyển, có thể thông báo tới nhà tuyển dụng, và trả kèm `timeline` trong ApplicationResponse nếu có lịch sử."
 		},
 		{
 			"name": "Applications Management",
@@ -1982,7 +2009,7 @@
 					"response": []
 				}
 			],
-			"description": "Quản lý đơn ứng tuyển cho nhà tuyển dụng\n- role: RECRUITER (giới hạn trong công ty của mình) hoặc ADMIN (toàn hệ thống).\n- Danh sách: phân trang, lọc theo `status` và `jobPostingId`.\n- Chi tiết: chỉ xem được khi đơn thuộc công ty của user.\n- Cập nhật trạng thái: flow RECEIVED → REVIEWED → INTERVIEW → OFFER → (HIRED | REJECTED). Khi chuyển từ RECEIVED ghi `reviewedAt/by` và gửi email cho ứng viên."
+			"description": "Quản lý đơn ứng tuyển cho nhà tuyển dụng\n- role: RECRUITER (giới hạn trong công ty của mình) hoặc ADMIN (toàn hệ thống).\n- Danh sách: phân trang, lọc theo `status` và `jobPostingId`.\n- Chi tiết: chỉ xem được khi đơn thuộc công ty của user.\n- Cập nhật trạng thái: flow RECEIVED → REVIEWED → INTERVIEW → OFFER → (HIRED | REJECTED). Ứng viên có thể rút đơn → WITHDRAWN (không thể chuyển tiếp).\n- Mỗi lần đổi trạng thái hoặc rút đơn, hệ thống ghi `timeline` (fromStatus → toStatus, note, changedBy, changedAt) và trả về trong `ApplicationResponse.timeline`. Khi chuyển từ RECEIVED ghi `reviewedAt/by` và gửi email cho ứng viên."
 		},
 		{
 			"name": "Dashboards",

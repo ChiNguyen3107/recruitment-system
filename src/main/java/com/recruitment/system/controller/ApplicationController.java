@@ -25,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import com.recruitment.system.config.PaginationValidator;
 import com.recruitment.system.dto.response.PageResponse;
 import com.recruitment.system.enums.ApplicationStatus;
+import com.recruitment.system.entity.ApplicationTimeline;
+import com.recruitment.system.repository.ApplicationTimelineRepository;
 import java.util.Set;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,6 +45,7 @@ public class ApplicationController {
     private final JobPostingRepository jobPostingRepository;
     private final MailService mailService;
     private final AuditLogger auditLogger;
+    private final ApplicationTimelineRepository applicationTimelineRepository;
 
     /**
      * POST /api/applications/my
@@ -246,7 +249,91 @@ public class ApplicationController {
         resp.setIsInProgress(application.isInProgress());
         resp.setIsCompleted(application.isCompleted());
 
+        try {
+            java.util.List<com.recruitment.system.dto.response.ApplicationTimelineResponse> timeline = applicationTimelineRepository
+                    .findByApplicationIdOrderByChangedAtAsc(application.getId())
+                    .stream()
+                    .map(t -> {
+                        com.recruitment.system.dto.response.ApplicationTimelineResponse tr = new com.recruitment.system.dto.response.ApplicationTimelineResponse();
+                        tr.setId(t.getId());
+                        tr.setFromStatus(t.getFromStatus());
+                        tr.setToStatus(t.getToStatus());
+                        tr.setNote(t.getNote());
+                        tr.setChangedBy(t.getChangedBy());
+                        tr.setChangedAt(t.getChangedAt());
+                        return tr;
+                    })
+                    .toList();
+            resp.setTimeline(timeline);
+        } catch (Exception ignored) {}
+
         return resp;
+    }
+
+    /**
+     * POST /api/applications/my/{id}/withdraw
+     */
+    @PostMapping("/{id}/withdraw")
+    @Transactional
+    public ResponseEntity<ApiResponse<ApplicationResponse>> withdrawMyApplication(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id,
+            HttpServletRequest httpRequest
+    ) {
+        if (currentUser == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Chưa xác thực"));
+        }
+
+        Application app = applicationRepository.findById(id).orElse(null);
+        if (app == null) {
+            return ResponseEntity.status(404).body(ApiResponse.error("Đơn ứng tuyển không tồn tại"));
+        }
+        if (!app.getApplicant().getId().equals(currentUser.getId())) {
+            return ResponseEntity.status(403).body(ApiResponse.error("Không có quyền rút đơn này"));
+        }
+
+        if (!(app.getStatus() == ApplicationStatus.RECEIVED || app.getStatus() == ApplicationStatus.REVIEWED)) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Chỉ được rút đơn khi trạng thái là RECEIVED hoặc REVIEWED"));
+        }
+
+        ApplicationStatus from = app.getStatus();
+        app.updateStatus(ApplicationStatus.WITHDRAWN, "Applicant withdraw application");
+        Application saved = applicationRepository.save(app);
+
+        // Decrement job applications count
+        JobPosting job = saved.getJobPosting();
+        if (job != null) {
+            job.decrementApplicationsCount();
+            jobPostingRepository.save(job);
+        }
+
+        // Timeline
+        ApplicationTimeline timeline = new ApplicationTimeline();
+        timeline.setApplicationId(saved.getId());
+        timeline.setFromStatus(from);
+        timeline.setToStatus(ApplicationStatus.WITHDRAWN);
+        timeline.setNote("Applicant withdraw application");
+        timeline.setChangedBy(currentUser.getId());
+        applicationTimelineRepository.save(timeline);
+
+        // Email notify employer
+        try {
+            if (job != null && job.getCreatedBy() != null) {
+                User employer = job.getCreatedBy();
+                String subjectJobTitle = job.getTitle();
+                String applicantName = currentUser.getFullName();
+                mailService.sendApplicationWithdrawnEmail(employer, subjectJobTitle, applicantName);
+            }
+        } catch (Exception e) {
+            log.warn("Không thể gửi email thông báo rút đơn: {}", e.getMessage());
+        }
+
+        // Audit
+        String clientIp = getClientIpAddress(httpRequest);
+        Long companyId = job != null && job.getCompany() != null ? job.getCompany().getId() : null;
+        auditLogger.logApplicationStatusChanged(saved.getId(), companyId, from.name(), ApplicationStatus.WITHDRAWN.name(), currentUser.getEmail(), clientIp, httpRequest.getHeader("User-Agent"));
+
+        return ResponseEntity.ok(ApiResponse.success("Rút đơn thành công", convertToResponse(saved)));
     }
 }
 

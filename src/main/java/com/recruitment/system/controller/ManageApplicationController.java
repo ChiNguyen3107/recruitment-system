@@ -13,6 +13,9 @@ import com.recruitment.system.enums.ApplicationStatus;
 import com.recruitment.system.enums.UserRole;
 import com.recruitment.system.repository.ApplicationRepository;
 import com.recruitment.system.service.MailService;
+import com.recruitment.system.entity.ApplicationTimeline;
+import com.recruitment.system.repository.ApplicationTimelineRepository;
+import com.recruitment.system.dto.response.ApplicationTimelineResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,7 @@ public class ManageApplicationController {
 
     private final ApplicationRepository applicationRepository;
     private final MailService mailService;
+    private final ApplicationTimelineRepository applicationTimelineRepository;
     private final AuditLogger auditLogger;
 
     private boolean isEmployerOfCompany(User user) {
@@ -142,6 +146,15 @@ public class ManageApplicationController {
 
         Application saved = applicationRepository.save(application);
 
+        // Lưu timeline
+        ApplicationTimeline timeline = new ApplicationTimeline();
+        timeline.setApplicationId(saved.getId());
+        timeline.setFromStatus(current);
+        timeline.setToStatus(next);
+        timeline.setNote(req.getNotes());
+        timeline.setChangedBy(currentUser != null ? currentUser.getId() : null);
+        applicationTimelineRepository.save(timeline);
+
         // Audit log
         String clientIp = getClientIpAddress(httpRequest);
         Long companyId = saved.getJobPosting() != null && saved.getJobPosting().getCompany() != null
@@ -170,6 +183,7 @@ public class ManageApplicationController {
 
     private boolean isValidTransition(ApplicationStatus current, ApplicationStatus next) {
         if (current == next) return true; // cho phép idempotent
+        if (current == ApplicationStatus.WITHDRAWN) return false; // không chuyển từ WITHDRAWN
         switch (current) {
             case RECEIVED:
                 return next == ApplicationStatus.REVIEWED || next == ApplicationStatus.REJECTED;
@@ -245,6 +259,25 @@ public class ManageApplicationController {
         resp.setIsReviewed(application.isReviewed());
         resp.setIsInProgress(application.isInProgress());
         resp.setIsCompleted(application.isCompleted());
+
+        // map timeline
+        try {
+            java.util.List<ApplicationTimelineResponse> timeline = applicationTimelineRepository
+                    .findByApplicationIdOrderByChangedAtAsc(application.getId())
+                    .stream()
+                    .map(t -> {
+                        ApplicationTimelineResponse tr = new ApplicationTimelineResponse();
+                        tr.setId(t.getId());
+                        tr.setFromStatus(t.getFromStatus());
+                        tr.setToStatus(t.getToStatus());
+                        tr.setNote(t.getNote());
+                        tr.setChangedBy(t.getChangedBy());
+                        tr.setChangedAt(t.getChangedAt());
+                        return tr;
+                    })
+                    .toList();
+            resp.setTimeline(timeline);
+        } catch (Exception ignored) {}
 
         return resp;
     }

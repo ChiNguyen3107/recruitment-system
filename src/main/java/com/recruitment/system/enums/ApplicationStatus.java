@@ -9,7 +9,8 @@ public enum ApplicationStatus {
     INTERVIEW("Phỏng vấn"),
     OFFER("Đề nghị"),
     HIRED("Được tuyển"),
-    REJECTED("Từ chối");
+    REJECTED("Từ chối"),
+    WITHDRAWN("Đã rút đơn");
 
     private final String displayName;
 

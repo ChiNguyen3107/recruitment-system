@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 06, 2025 lúc 10:03 AM
+-- Thời gian đã tạo: Th10 06, 2025 lúc 10:25 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -53,6 +53,22 @@ CREATE TABLE `applications` (
 
 INSERT INTO `applications` (`id`, `job_posting_id`, `applicant_id`, `status`, `cover_letter`, `resume_url`, `additional_documents`, `interview_date`, `interview_location`, `interview_notes`, `feedback`, `rejection_reason`, `offer_details`, `reviewed_at`, `reviewed_by`, `created_at`, `updated_at`) VALUES
 (2, 4, 5, 'REVIEWED', 'Thư xin việc mẫu...', 'https://example.com/cv.pdf', NULL, NULL, NULL, NULL, 'Đã xem hồ sơ', NULL, NULL, '2025-09-29 07:53:47', 20, '2025-09-25 09:36:51', '2025-09-29 07:54:15');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `application_timelines`
+--
+
+CREATE TABLE `application_timelines` (
+  `id` bigint(20) NOT NULL,
+  `application_id` bigint(20) NOT NULL,
+  `from_status` enum('RECEIVED','REVIEWED','INTERVIEW','OFFER','HIRED','REJECTED','WITHDRAWN') DEFAULT NULL,
+  `to_status` enum('RECEIVED','REVIEWED','INTERVIEW','OFFER','HIRED','REJECTED','WITHDRAWN') NOT NULL,
+  `note` text DEFAULT NULL,
+  `changed_by` bigint(20) DEFAULT NULL,
+  `changed_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -110,7 +126,7 @@ INSERT INTO `companies` (`id`, `name`, `description`, `business_license`, `tax_c
 (2, 'Digital Solutions Ltd.', 'Digital transformation and consulting services', NULL, NULL, 'https://digitalsolutions.vn', 'Consulting', NULL, NULL, 'Hanoi', NULL, NULL, 'jobs@digitalsolutions.vn', NULL, 1, '2025-09-16 08:20:18', '2025-09-16 08:20:18', NULL, NULL, NULL, NULL),
 (3, 'StartUp Hub', 'Innovative startup focusing on mobile applications', NULL, NULL, 'https://startuphub.vn', 'Technology', NULL, NULL, 'Da Nang', NULL, NULL, 'careers@startuphub.vn', NULL, 0, '2025-09-16 08:20:18', '2025-09-16 08:20:18', NULL, NULL, NULL, NULL),
 (4, 'Tech Company Ltd', 'Leading technology company', NULL, NULL, 'https://techcompany.com', 'Technology', NULL, '123 Tech Street, Ho Chi Minh City', NULL, NULL, NULL, NULL, NULL, 0, '2025-09-22 07:38:10', '2025-09-22 07:38:10', NULL, NULL, NULL, NULL),
-(5, 'Tech Company Ltd', 'Leading technology company', NULL, NULL, 'https://techcompany.com', 'Technology', NULL, '123 Tech Street, Ho Chi Minh City', NULL, NULL, NULL, NULL, NULL, 0, '2025-09-22 07:41:38', '2025-09-22 07:41:38', NULL, NULL, NULL, NULL);
+(5, 'Tech Innovate Co.', 'Mô tả công ty cập nhật', NULL, NULL, 'https://techinnovate.com', 'Technology', 'MEDIUM', '123 Tech Street', 'Ho Chi Minh City', 'Vietnam', '0900000000', 'hr@techinnovate.com', NULL, 0, '2025-09-22 07:41:38', '2025-10-06 08:04:59', '[\"Health Insurance\",\"Remote Work\",\"13th Month Salary\"]', '9:00-18:00', '[\"https://example.com/photo1.jpg\",\"https://example.com/photo2.jpg\"]', '{\"facebook\":\"https://facebook.com/techinnovate\",\"linkedin\":\"https://linkedin.com/company/techinnovate\",\"twitter\":\"https://twitter.com/techinnovate\"}');
 
 -- --------------------------------------------------------
 
@@ -364,7 +380,8 @@ INSERT INTO `refresh_tokens` (`id`, `user_id`, `token`, `expires_at`, `revoked`,
 (44, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTM5MDEwOCwiZXhwIjoxNzYxOTgyMTA4fQ.lYduPF968hC4VXB2WtqIvEVAsrtqqmmOZ6gFShMTRj4t6oZrTm-G2mGF3RN535pT', '2025-11-01 07:28:28', 1, NULL, '2025-10-02 07:28:28', '2025-10-06 07:56:13'),
 (45, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzM3MywiZXhwIjoxNzYyMzI5MzczfQ.9UjaXc5ww6V1Jc2NFWqXQwp0_wjzm6VSye4KHOU9VWgpIw2woEgtRwviW3T7vs8c', '2025-11-05 07:56:13', 1, NULL, '2025-10-06 07:56:13', '2025-10-06 07:59:29'),
 (46, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzU2OSwiZXhwIjoxNzYyMzI5NTY5fQ.wFZVgTShvuVuFcxaVsCbxmiBzrbPF_B2TzflQJnY6P_9H4qs7rhyKsBkMjeSj1UR', '2025-11-05 07:59:29', 1, NULL, '2025-10-06 07:59:29', '2025-10-06 08:01:59'),
-(47, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzcxOSwiZXhwIjoxNzYyMzI5NzE5fQ.0YKXp3YzZ177np1eYXjTkTIEwGC2CGJNFTnmjRz6ioZhUXcNQ4iyJnpEASIKUzR4', '2025-11-05 08:01:59', 0, NULL, '2025-10-06 08:01:59', '2025-10-06 08:01:59');
+(47, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzcxOSwiZXhwIjoxNzYyMzI5NzE5fQ.0YKXp3YzZ177np1eYXjTkTIEwGC2CGJNFTnmjRz6ioZhUXcNQ4iyJnpEASIKUzR4', '2025-11-05 08:01:59', 1, NULL, '2025-10-06 08:01:59', '2025-10-06 08:04:47'),
+(48, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzg4NywiZXhwIjoxNzYyMzI5ODg3fQ.82vYgpVO5mFoO-IpjzhuLvLg_UbbOLQN1EVEQV7HRIpJKGsiMBTrTS5jCfIY-juk', '2025-11-05 08:04:47', 0, NULL, '2025-10-06 08:04:47', '2025-10-06 08:04:47');
 
 -- --------------------------------------------------------
 
@@ -443,7 +460,7 @@ INSERT INTO `users` (`id`, `email`, `password`, `first_name`, `last_name`, `phon
 (1, 'admin@recruitment.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'Admin', 'System', NULL, 'ADMIN', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-09-30 07:41:02', NULL, '2025-09-16 08:20:18', '2025-09-30 07:41:02'),
 (2, 'employer@techinnovate.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'John', 'Manager', NULL, 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2025-09-16 08:20:18', '2025-09-22 06:52:01'),
 (5, 'john.doe@example.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'John', 'Doe', NULL, 'APPLICANT', 'ACTIVE', 1, '3a9f742d-1c78-4dfa-963b-ce257875b043', NULL, NULL, NULL, NULL, '2025-10-02 07:26:44', NULL, '2025-09-16 09:16:08', '2025-10-02 07:26:44'),
-(20, 'nguyenb2110051@student.ctu.edu.vn', '$2a$10$HJVAtYuDppZMk1wBjz5GYezvdcTXOYGE5dtk6alnq8RdAoeaRZzxG', 'Doan', 'Chi Nguyen', '0835886837', 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-10-06 08:01:59', 5, '2025-09-24 07:51:53', '2025-10-06 08:01:59'),
+(20, 'nguyenb2110051@student.ctu.edu.vn', '$2a$10$HJVAtYuDppZMk1wBjz5GYezvdcTXOYGE5dtk6alnq8RdAoeaRZzxG', 'Doan', 'Chi Nguyen', '0835886837', 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-10-06 08:04:46', 5, '2025-09-24 07:51:53', '2025-10-06 08:04:46'),
 (21, 'recruiter@example.com', '$2a$10$ioSYxLU09ewJui2Jxk80o.F75xMIQasS54zp3etV84a9tq3qEumla', 'Recruiter', 'User', '0900000001', 'RECRUITER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-09-25 07:53:17', NULL, '2025-09-25 07:36:18', '2025-09-25 07:53:17'),
 (22, 'user@example.com', '$2a$10$KFIuTaLlXo.Fcc93Gqyal.dnl1DeuB9KGt/SphVrWVFzT2a7OsJpy', 'First', 'Last', '0900000000', 'APPLICANT', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-09-29 09:19:48', NULL, '2025-09-29 06:56:05', '2025-09-29 09:19:48');
 
@@ -476,6 +493,14 @@ ALTER TABLE `applications`
   ADD KEY `idx_status` (`status`),
   ADD KEY `idx_job` (`job_posting_id`),
   ADD KEY `idx_applicant` (`applicant_id`);
+
+--
+-- Chỉ mục cho bảng `application_timelines`
+--
+ALTER TABLE `application_timelines`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_app_id` (`application_id`),
+  ADD KEY `fk_timeline_user` (`changed_by`);
 
 --
 -- Chỉ mục cho bảng `attachments`
@@ -626,6 +651,12 @@ ALTER TABLE `applications`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT cho bảng `application_timelines`
+--
+ALTER TABLE `application_timelines`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT cho bảng `attachments`
 --
 ALTER TABLE `attachments`
@@ -683,7 +714,7 @@ ALTER TABLE `profiles`
 -- AUTO_INCREMENT cho bảng `refresh_tokens`
 --
 ALTER TABLE `refresh_tokens`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT cho bảng `skills`
@@ -719,6 +750,13 @@ ALTER TABLE `work_experiences`
 ALTER TABLE `applications`
   ADD CONSTRAINT `applications_ibfk_1` FOREIGN KEY (`job_posting_id`) REFERENCES `job_postings` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `applications_ibfk_2` FOREIGN KEY (`applicant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Các ràng buộc cho bảng `application_timelines`
+--
+ALTER TABLE `application_timelines`
+  ADD CONSTRAINT `fk_timeline_application` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_timeline_user` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `attachments`

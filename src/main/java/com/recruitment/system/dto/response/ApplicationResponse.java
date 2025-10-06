@@ -37,4 +37,7 @@ public class ApplicationResponse {
     private Boolean isReviewed;
     private Boolean isInProgress;
     private Boolean isCompleted;
+
+    // Timeline
+    private java.util.List<ApplicationTimelineResponse> timeline;
 }

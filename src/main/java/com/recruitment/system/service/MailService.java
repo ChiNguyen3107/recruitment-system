@@ -428,4 +428,27 @@ public class MailService {
             "</div></body></html>"
         );
     }
+
+    /**
+     * Gửi email thông báo employer khi ứng viên rút đơn
+     */
+    public void sendApplicationWithdrawnEmail(User employer, String jobTitle, String applicantName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(employer.getEmail());
+            helper.setSubject("Application withdrawn for " + jobTitle);
+
+            String html = "<p>Ứng viên <b>" + applicantName + "</b> đã rút đơn cho vị trí <b>" + jobTitle + "</b>.</p>"
+                    + "<p>Vui lòng kiểm tra hệ thống để biết chi tiết.</p>";
+            helper.setText(html, true);
+
+            sendWithRetry(message, employer.getEmail(), helper.getMimeMessage().getSubject());
+            log.info("Withdrawn application email sent to employer: {} for job '{}'", employer.getEmail(), jobTitle);
+        } catch (MessagingException e) {
+            log.warn("Send withdrawn application email failed {}: {}", employer.getEmail(), e.getMessage());
+        }
+    }
 }

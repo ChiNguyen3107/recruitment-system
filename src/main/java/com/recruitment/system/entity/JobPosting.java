@@ -125,4 +125,12 @@ public class JobPosting {
     public void incrementApplicationsCount() {
         this.applicationsCount = this.applicationsCount == null ? 1 : this.applicationsCount + 1;
     }
+
+    public void decrementApplicationsCount() {
+        if (this.applicationsCount == null || this.applicationsCount <= 0) {
+            this.applicationsCount = 0;
+        } else {
+            this.applicationsCount = this.applicationsCount - 1;
+        }
+    }
 }
