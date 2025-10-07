@@ -44,4 +44,9 @@ public class JobPostingResponse {
     // Trạng thái có thể ứng tuyển
     private Boolean canApply;
     private Boolean isExpired;
+
+    //Cải thiện JobPostingResponse:
+    private Boolean isSaved;          // null | true | false
+    private LocalDateTime savedAt;    // chỉ có khi là job đã lưu
+
 }

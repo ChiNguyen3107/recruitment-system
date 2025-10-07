@@ -195,4 +195,17 @@ public class JobPostingController {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    // Endpoint dev-test: trả job cho chính user đang đăng nhập (APPLICANT), để kiểm tra isSaved
+    // - Chưa login  -> null
+    // - Không phải APPLICANT -> null
+    // - APPLICANT   -> existsByUserIdAndJobPostingId ? true : false
+    @GetMapping("/{jobId}/me")
+    @PreAuthorize("hasRole('APPLICANT')")
+    public ResponseEntity<ApiResponse<JobPostingResponse>> getJobForMe(
+            @PathVariable Long jobId, Authentication authentication) {
+        String email = authentication.getName();
+        JobPostingResponse dto = jobPostingService.getJobForCurrentUser(jobId, email);
+        return ResponseEntity.ok(ApiResponse.success("OK", dto));
+    }
 }

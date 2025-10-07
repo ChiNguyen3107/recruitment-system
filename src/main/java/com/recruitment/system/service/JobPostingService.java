@@ -7,10 +7,12 @@ import com.recruitment.system.dto.response.PageResponse;
 import com.recruitment.system.dto.response.UserResponse;
 import com.recruitment.system.entity.Company;
 import com.recruitment.system.entity.JobPosting;
+import com.recruitment.system.entity.SavedJob;
 import com.recruitment.system.entity.User;
 import com.recruitment.system.enums.JobStatus;
 import com.recruitment.system.enums.UserRole;
 import com.recruitment.system.repository.JobPostingRepository;
+import com.recruitment.system.repository.SavedJobRepository;
 import com.recruitment.system.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +37,7 @@ public class JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final UserRepository userRepository;
 
+    private final SavedJobRepository savedJobRepository;
     /**
      * Tạo tin tuyển dụng mới (Employer only)
      */
@@ -61,7 +65,7 @@ public class JobPostingService {
         jobPosting.setUpdatedAt(LocalDateTime.now());
         
         jobPosting = jobPostingRepository.save(jobPosting);
-        return convertToJobPostingResponse(jobPosting);
+        return convertToJobPostingResponse(jobPosting, user);
     }
 
     /**
@@ -84,7 +88,7 @@ public class JobPostingService {
         jobPosting.setUpdatedAt(LocalDateTime.now());
         
         jobPosting = jobPostingRepository.save(jobPosting);
-        return convertToJobPostingResponse(jobPosting);
+        return convertToJobPostingResponse(jobPosting, user);
     }
 
     /**
@@ -148,11 +152,11 @@ public class JobPostingService {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<JobPosting> jobPage = jobPostingRepository.findByCompany(company, pageable);
-        
+
         List<JobPostingResponse> jobResponses = jobPage.getContent().stream()
-                .map(this::convertToJobPostingResponse)
+                .map(j -> convertToJobPostingResponse(j, user)) // optional
                 .collect(Collectors.toList());
-        
+
         return createPageResponse(jobPage, jobResponses);
     }
 
@@ -176,7 +180,7 @@ public class JobPostingService {
         jobPosting.setUpdatedAt(LocalDateTime.now());
         
         jobPosting = jobPostingRepository.save(jobPosting);
-        return convertToJobPostingResponse(jobPosting);
+        return convertToJobPostingResponse(jobPosting, user);
     }
 
     /**
@@ -252,7 +256,7 @@ public class JobPostingService {
     /**
      * Convert JobPosting entity to JobPostingResponse
      */
-    private JobPostingResponse convertToJobPostingResponse(JobPosting jobPosting) {
+    private JobPostingResponse convertToJobPostingResponse(JobPosting jobPosting , User currentUser) {
         JobPostingResponse response = new JobPostingResponse();
         response.setId(jobPosting.getId());
         response.setTitle(jobPosting.getTitle());
@@ -306,10 +310,26 @@ public class JobPostingService {
             userResponse.setRole(createdBy.getRole());
             response.setCreatedBy(userResponse);
         }
-        
+
+        // cải thiện JobPostingResponse====== isSaved theo 3 trường hợp ======
+        if (currentUser == null || currentUser.getRole() != UserRole.APPLICANT) {
+            response.setIsSaved(null);
+            response.setSavedAt(null);
+        } else {
+            Optional<SavedJob> savedOpt = savedJobRepository
+                    .findByUserIdAndJobPostingId(currentUser.getId(), jobPosting.getId());
+            response.setIsSaved(savedOpt.isPresent());
+            response.setSavedAt(savedOpt.map(SavedJob::getSavedAt).orElse(null));
+        }
+
         return response;
     }
-    
+
+    // Overload giữ tương thích cũ: public endpoints / chỗ không có user => isSaved = null
+    private JobPostingResponse convertToJobPostingResponse(JobPosting jobPosting) {
+        return convertToJobPostingResponse(jobPosting, null);
+    }
+
     /**
      * Helper method để tạo PageResponse
      */
@@ -325,5 +345,16 @@ public class JobPostingService {
         response.setHasNext(jobPage.hasNext());
         response.setHasPrevious(jobPage.hasPrevious());
         return response;
+    }
+
+
+    // Trả job theo user hiện tại, dùng converter có currentUser để tính isSaved (true/false/null)
+    @Transactional(readOnly = true)
+    public JobPostingResponse getJobForCurrentUser(Long jobId, String email) {
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        JobPosting job = jobPostingRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job posting not found"));
+        return convertToJobPostingResponse(job, currentUser); // isSaved set đúng theo DB & role
     }
 }
