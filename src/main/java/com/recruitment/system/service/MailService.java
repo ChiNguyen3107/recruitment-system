@@ -451,4 +451,65 @@ public class MailService {
             log.warn("Send withdrawn application email failed {}: {}", employer.getEmail(), e.getMessage());
         }
     }
+
+    /**
+     * Gửi email mời phỏng vấn (đơn giản, không đính kèm tệp .ics)
+     * Tham số tương thích với chỗ gọi trong InterviewController
+     */
+    public void sendInterviewInvite(
+            User recipient,
+            LocalDateTime scheduledAt,
+            int durationMinutes,
+            String subject,
+            String notes,
+            String location,
+            String meetingLink,
+            String organizerEmail
+    ) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(recipient.getEmail());
+            helper.setSubject(subject != null && !subject.isBlank() ? subject : "Thư mời phỏng vấn");
+
+            String safeNotes = (notes != null && !notes.isBlank()) ? notes.replaceAll("<", "&lt;").replaceAll(">", "&gt;") : "";
+            String safeLocation = (location != null) ? location.replaceAll("<", "&lt;").replaceAll(">", "&gt;") : "";
+            String safeMeetingLink = (meetingLink != null) ? meetingLink : "";
+            String organizer = (organizerEmail != null && !organizerEmail.isBlank()) ? organizerEmail : fromEmail;
+
+            String appName = "Hệ thống Tuyển dụng";
+            int year = LocalDateTime.now().getYear();
+
+            StringBuilder content = new StringBuilder();
+            content.append("<!DOCTYPE html><html lang=\"vi\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Thư mời phỏng vấn</title>")
+                   .append("<style>body{font-family:Arial,sans-serif;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#17a2b8;color:#fff;padding:20px;text-align:center;border-radius:8px 8px 0 0}.content{background:#f8f9fa;padding:30px;border-radius:0 0 8px 8px}.footer{text-align:center;margin-top:30px;color:#666;font-size:12px}.button{display:inline-block;background:#17a2b8;color:#fff;padding:10px 18px;text-decoration:none;border-radius:5px;margin:14px 0}</style></head><body>")
+                   .append("<div class=\"container\"><div class=\"header\"><h1>📅 Thư mời phỏng vấn</h1></div><div class=\"content\">")
+                   .append("<p>Xin chào <strong>").append(recipient.getFullName()).append("</strong>,</p>")
+                   .append("<p>Bạn có một lịch phỏng vấn mới.</p>")
+                   .append("<ul>")
+                   .append("<li><strong>Thời gian:</strong> ").append(String.valueOf(scheduledAt)).append("</li>")
+                   .append("<li><strong>Thời lượng:</strong> ").append(durationMinutes).append(" phút</li>")
+                   .append(safeLocation.isBlank() ? "" : ("<li><strong>Địa điểm:</strong> " + safeLocation + "</li>"))
+                   .append(safeMeetingLink.isBlank() ? "" : ("<li><strong>Link họp:</strong> <a href=\"" + safeMeetingLink + "\">" + safeMeetingLink + "</a></li>"))
+                   .append("<li><strong>Người tổ chức:</strong> ").append(organizer).append("</li>")
+                   .append("</ul>");
+
+            if (!safeNotes.isBlank()) {
+                content.append("<p><strong>Ghi chú:</strong> ").append(safeNotes).append("</p>");
+            }
+
+            content.append("<p>Vui lòng phản hồi email này nếu bạn cần hỗ trợ.</p>")
+                   .append("</div><div class=\"footer\">&copy; ").append(year).append(" ").append(appName).append(". Tất cả quyền được bảo lưu.</div></div></body></html>");
+
+            helper.setText(content.toString(), true);
+
+            sendWithRetry(message, recipient.getEmail(), helper.getMimeMessage().getSubject());
+            log.info("Interview invite email sent to: {} at {}", recipient.getEmail(), scheduledAt);
+        } catch (MessagingException e) {
+            log.warn("Send interview invite email failed {}: {}", recipient.getEmail(), e.getMessage());
+            // Không throw để không chặn luồng tạo/đổi lịch
+        }
+    }
 }

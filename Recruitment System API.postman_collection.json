@@ -38,8 +38,8 @@
 						}
 					},
 					"response": []
-				},
-				{
+                },
+                {
 					"name": "Set Status: REVIEWED",
 					"request": {
 						"method": "PATCH",
@@ -420,8 +420,7 @@
 							}
 						}
 					],
-					"description": "Quên mật khẩu: Gửi email của bạn. Luôn trả 200 để tránh lộ thông tin. Kiểm tra hộp thư/sandbox mail để nhận link đặt lại mật khẩu hoặc lấy token từ DB và gán vào biến {{passwordResetToken}}."
-					,
+					"description": "Quên mật khẩu: Gửi email của bạn. Luôn trả 200 để tránh lộ thông tin. Kiểm tra hộp thư/sandbox mail để nhận link đặt lại mật khẩu hoặc lấy token từ DB và gán vào biến {{passwordResetToken}}.",
 					"response": []
 				},
 				{
@@ -471,8 +470,7 @@
 							}
 						}
 					],
-					"description": "Đặt lại mật khẩu: Dán token vào {{passwordResetToken}} (lấy từ email/sandbox/DB). Mật khẩu mới phải đạt chuẩn: ≥8 ký tự, có chữ hoa/thường/số/ký tự đặc biệt."
-					,
+					"description": "Đặt lại mật khẩu: Dán token vào {{passwordResetToken}} (lấy từ email/sandbox/DB). Mật khẩu mới phải đạt chuẩn: ≥8 ký tự, có chữ hoa/thường/số/ký tự đặc biệt.",
 					"response": []
 				},
 				{
@@ -511,8 +509,7 @@
 					},
 					"response": []
 				}
-			]
-			,
+			],
 			"description": "Xác thực và quản lý tài khoản\n- role: Public (register, login, verify-email, resend-verification, forgot-password, reset-password); Authenticated (me, logout); APPLICANT bắt buộc khi upload resume.\n- flow:\n  1) Register → hệ thống tạo user trạng thái PENDING_EMAIL và gửi email xác minh.\n  2) Verify email → đổi sang VERIFIED, có thể đăng nhập đầy đủ.\n  3) Login → nhận accessToken + refreshToken.\n  4) Me/Logout → thao tác với accessToken.\n  5) Refresh token → cấp accessToken mới từ refreshToken hợp lệ.\n  6) Quên mật khẩu → gửi email reset; Reset password → đặt mật khẩu mới."
 		},
 		{
@@ -808,8 +805,7 @@
 					],
 					"response": []
 				}
-			]
-			,
+			],
 			"description": "Quản lý tin tuyển dụng\n- role: RECRUITER của công ty sở hữu tin, hoặc ADMIN.\n- flow:\n  Draft → ACTIVE → Soft Delete (đánh dấu xóa) hoặc Hard Delete (xóa vĩnh viễn).\n- endpoints: Tạo, Cập nhật, Cập nhật trạng thái, Xóa mềm/cứng.\n- Lưu ý: Job chỉ hiển thị công khai/ứng tuyển khi ACTIVE và trước applicationDeadline."
 		},
 		{
@@ -871,8 +867,7 @@
 					},
 					"response": []
 				}
-			]
-			,
+			],
 			"description": "Luồng xác minh email\n- role: Public.\n- flow: Nhận token từ email (hoặc truy vấn ở mục Debug) → POST verify-email để kích hoạt tài khoản. Có thể yêu cầu gửi lại email xác minh qua resend-verification.\n- Bảo mật: Token dùng 1 lần và có thời hạn theo cấu hình."
 		},
 		{
@@ -932,170 +927,218 @@
 					},
 					"response": []
 				},
-                {
-                    "name": "Search (Jobs) - Advanced Filters",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/jobs/search?keyword=java&location=Hanoi&jobType=FULL_TIME&salaryRange=10000000-20000000&postedWithin=30&experienceLevel=SENIOR&companySize=MEDIUM&workMode=REMOTE&benefits=bonus,insurance&page=0&size=10&sortBy=createdAt&sortDir=DESC",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "jobs",
-                                "search"
-                            ],
-                            "query": [
-                                {"key":"keyword","value":"java"},
-                                {"key":"location","value":"Hanoi"},
-                                {"key":"jobType","value":"FULL_TIME"},
-                                {"key":"salaryRange","value":"10000000-20000000"},
-                                {"key":"postedWithin","value":"30"},
-                                {"key":"experienceLevel","value":"SENIOR"},
-                                {"key":"companySize","value":"MEDIUM"},
-                                {"key":"workMode","value":"REMOTE"},
-                                {"key":"benefits","value":"bonus,insurance"},
-                                {"key":"page","value":"0"},
-                                {"key":"size","value":"10"},
-                                {"key":"sortBy","value":"createdAt"},
-                                {"key":"sortDir","value":"DESC"}
-                            ]
-                        }
-                    },
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code 200\", function () {",
-                                    "  pm.response.to.have.status(200);",
-                                    "});",
-                                    "const json = pm.response.json();",
-                                    "pm.test(\"ApiResponse success\", function () {",
-                                    "  pm.expect(json).to.have.property('success', true);",
-                                    "  pm.expect(json).to.have.property('data');",
-                                    "});",
-                                    "pm.test(\"Has pagination fields\", function () {",
-                                    "  pm.expect(json.data).to.have.property('page');",
-                                    "  pm.expect(json.data).to.have.property('size');",
-                                    "  pm.expect(json.data).to.have.property('totalElements');",
-                                    "  pm.expect(json.data).to.have.property('totalPages');",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "response": []
-                },
-                {
-                    "name": "Validation - salaryRange invalid format",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/jobs/search?salaryRange=abc-xyz",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "jobs",
-                                "search"
-                            ],
-                            "query": [
-                                {"key":"salaryRange","value":"abc-xyz"}
-                            ]
-                        }
-                    },
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"400 for invalid salaryRange format\", function () {",
-                                    "  pm.response.to.have.status(400);",
-                                    "  pm.expect(pm.response.json().message).to.include(\"salaryRange không đúng định dạng\");",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "response": []
-                },
-                {
-                    "name": "Validation - postedWithin out of range",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/jobs/search?postedWithin=0",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "jobs",
-                                "search"
-                            ],
-                            "query": [
-                                {"key":"postedWithin","value":"0"}
-                            ]
-                        }
-                    },
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"400 for postedWithin out of range\", function () {",
-                                    "  pm.response.to.have.status(400);",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "response": []
-                },
-                {
-                    "name": "Validation - benefits too long",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/jobs/search?benefits={{tooLong}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "jobs",
-                                "search"
-                            ],
-                            "query": [
-                                {"key":"benefits","value":"{{tooLong}}"}
-                            ]
-                        }
-                    },
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"400 for benefits too long\", function () {",
-                                    "  pm.response.to.have.status(400);",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "response": []
-                },
+				{
+					"name": "Search (Jobs) - Advanced Filters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/search?keyword=java&location=Hanoi&jobType=FULL_TIME&salaryRange=10000000-20000000&postedWithin=30&experienceLevel=SENIOR&companySize=MEDIUM&workMode=REMOTE&benefits=bonus,insurance&page=0&size=10&sortBy=createdAt&sortDir=DESC",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"jobs",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "java"
+								},
+								{
+									"key": "location",
+									"value": "Hanoi"
+								},
+								{
+									"key": "jobType",
+									"value": "FULL_TIME"
+								},
+								{
+									"key": "salaryRange",
+									"value": "10000000-20000000"
+								},
+								{
+									"key": "postedWithin",
+									"value": "30"
+								},
+								{
+									"key": "experienceLevel",
+									"value": "SENIOR"
+								},
+								{
+									"key": "companySize",
+									"value": "MEDIUM"
+								},
+								{
+									"key": "workMode",
+									"value": "REMOTE"
+								},
+								{
+									"key": "benefits",
+									"value": "bonus,insurance"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "DESC"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse success\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('data');",
+									"});",
+									"pm.test(\"Has pagination fields\", function () {",
+									"  pm.expect(json.data).to.have.property('page');",
+									"  pm.expect(json.data).to.have.property('size');",
+									"  pm.expect(json.data).to.have.property('totalElements');",
+									"  pm.expect(json.data).to.have.property('totalPages');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Validation - salaryRange invalid format",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/search?salaryRange=abc-xyz",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"jobs",
+								"search"
+							],
+							"query": [
+								{
+									"key": "salaryRange",
+									"value": "abc-xyz"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"400 for invalid salaryRange format\", function () {",
+									"  pm.response.to.have.status(400);",
+									"  pm.expect(pm.response.json().message).to.include(\"salaryRange không đúng định dạng\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Validation - postedWithin out of range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/search?postedWithin=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"jobs",
+								"search"
+							],
+							"query": [
+								{
+									"key": "postedWithin",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"400 for postedWithin out of range\", function () {",
+									"  pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Validation - benefits too long",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/search?benefits={{tooLong}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"jobs",
+								"search"
+							],
+							"query": [
+								{
+									"key": "benefits",
+									"value": "{{tooLong}}"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"400 for benefits too long\", function () {",
+									"  pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
 				{
 					"name": "Search - Pagination Validation Test",
 					"request": {
@@ -1756,8 +1799,7 @@
 					},
 					"response": []
 				}
-			]
-			,
+			],
 			"description": "Các endpoint Debug chỉ dùng trong môi trường DEV\n- role: Public (không yêu cầu token) — TUYỆT ĐỐI không bật ở production.\n- Chức năng: tra cứu user theo email, kiểm tra mật khẩu, tạo user test, lấy refresh token/verification token, kiểm tra trạng thái xác minh email.\n- Cảnh báo: Có thể lộ dữ liệu nhạy cảm; dùng để hỗ trợ kiểm thử luồng Auth/Email."
 		},
 		{
@@ -2193,36 +2235,295 @@
 				}
 			],
 			"description": "Bảng điều khiển (Dashboards)\n\n1) Admin Dashboard\n- Endpoint: GET /api/admin/dashboard\n- Quyền: Chỉ ADMIN (Authorization: Bearer {{adminToken}}).\n- Dữ liệu trả về: tổng số người dùng (totalUsers), số lượng tin tuyển dụng theo trạng thái (jobsByStatus), số lượng đơn ứng tuyển theo trạng thái (applicationsByStatus).\n- Mục đích: Thống kê nhanh toàn hệ thống để theo dõi hoạt động.\n\n2) Employer Dashboard\n- Endpoint: GET /api/employer/dashboard\n- Quyền: EMPLOYER/RECRUITER thuộc công ty hoặc ADMIN (Authorization: Bearer {{recruiterToken}} hoặc {{adminToken}}).\n- Dữ liệu trả về: danh sách tin đang ACTIVE của công ty kèm số đơn ứng tuyển cho mỗi tin (activeJobs), tỷ lệ chuyển đổi cơ bản (conversionRate = HIRED / tổng đơn).\n- Mục đích: Giúp nhà tuyển dụng theo dõi hiệu quả tuyển dụng theo từng tin và tổng quan."
-		}
-	],
-	"variable": [
-		{
-			"key": "baseUrl",
-			"value": "http://localhost:8081"
 		},
 		{
-			"key": "accessToken",
-			"value": ""
-		},
-		{
-			"key": "refreshToken",
-			"value": ""
-		},
-		{
-			"key": "verificationToken",
-			"value": ""
-		},
-		{
-			"key": "passwordResetToken",
-			"value": ""
-		},
-		{
-			"key": "recruiterToken",
-			"value": ""
-		},
-		{
-			"key": "adminToken",
-			"value": ""
-		}
-	]
-}
+			"name": "Interviews",
+			"item": [
+				{
+					"name": "Schedule Interview",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"applicationId\": 2,\n  \"scheduledAt\": \"2099-12-31T10:00:00\",\n  \"durationMinutes\": 60,\n  \"interviewType\": \"VIDEO\",\n  \"location\": null,\n  \"meetingLink\": \"https://meet.example.com/abc\",\n  \"notes\": \"Buổi phỏng vấn kỹ thuật\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/interviews/schedule",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"interviews",
+								"schedule"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse success\", function () { pm.expect(json).to.have.property('success', true); });",
+									"pm.test(\"Has interview fields\", function () { pm.expect(json.data).to.have.property('id'); pm.expect(json.data).to.have.property('applicationId'); pm.expect(json.data).to.have.property('scheduledAt'); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "My Interviews",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/interviews/my?start={{start}}&end={{end}}&status={{interviewStatus}}&page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"interviews",
+								"my"
+							],
+							"query": [
+								{
+									"key": "start",
+									"value": "{{start}}",
+									"description": "ISO datetime, vd: 2025-01-01T00:00:00"
+								},
+								{
+									"key": "end",
+									"value": "{{end}}",
+									"description": "ISO datetime"
+								},
+								{
+									"key": "status",
+									"value": "{{interviewStatus}}",
+									"description": "SCHEDULED|COMPLETED|CANCELLED|RESCHEDULED"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse success\", function () { pm.expect(json).to.have.property('success', true); });",
+									"pm.test(\"Has page structure\", function () { pm.expect(json.data).to.have.property('content'); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Reschedule Interview",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newScheduledAt\": \"2099-12-31T11:00:00\",\n  \"reason\": \"Dời 1 tiếng do bận họp\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/reschedule",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"interviews",
+								"{{interviewId}}",
+								"reschedule"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Interview",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Ứng viên báo bận\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/cancel",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"interviews",
+								"{{interviewId}}",
+								"cancel"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+									"const json = pm.response.json();",
+									"pm.test(\"Cancelled\", function () { pm.expect(json.data.status).to.eql('CANCELLED'); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Complete Interview",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"Phỏng vấn xong, chờ đánh giá\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/complete",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"interviews",
+								"{{interviewId}}",
+								"complete"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+									"const json = pm.response.json();",
+									"pm.test(\"Completed\", function () { pm.expect(json.data.status).to.eql('COMPLETED'); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				}
+				],
+				"description": "Quản lý lịch phỏng vấn\n- Schedule: POST /api/interviews/schedule (EMPLOYER/RECRUITER công ty sở hữu application).\n- My: GET /api/interviews/my (Applicant: các lịch của họ; Employer/Recruiter: các lịch họ tạo).\n- Reschedule: PATCH /api/interviews/{id}/reschedule.\n- Email: Hệ thống gửi .ics cho applicant và interviewer."
+			}
+		],
+		"variable": [
+			{
+				"key": "baseUrl",
+				"value": "http://localhost:8081"
+			},
+			{
+				"key": "accessToken",
+				"value": ""
+			},
+			{
+				"key": "refreshToken",
+				"value": ""
+			},
+			{
+				"key": "verificationToken",
+				"value": ""
+			},
+			{
+				"key": "passwordResetToken",
+				"value": ""
+			},
+			{
+				"key": "recruiterToken",
+				"value": ""
+			},
+			{
+				"key": "adminToken",
+				"value": ""
+			},
+			{
+				"key": "interviewId",
+				"value": ""
+			},
+			{
+				"key": "start",
+				"value": "2025-01-01T00:00:00"
+			},
+			{
+				"key": "end",
+				"value": "2099-12-31T23:59:59"
+			},
+			{
+				"key": "interviewStatus",
+				"value": ""
+			}
+		]
+	}

@@ -110,6 +110,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/companies/my").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
                 .requestMatchers("/api/jobs/manage/**").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
                 .requestMatchers("/api/applications/manage/**").hasAnyRole("EMPLOYER", "RECRUITER", "ADMIN")
+                .requestMatchers("/api/interviews/**").authenticated()
                 
                 // Applicant endpoints
                 .requestMatchers("/api/applicant/**").hasRole("APPLICANT")
