@@ -2596,7 +2596,128 @@
 				}
 				],
 				"description": "Quản lý lịch phỏng vấn\n- Schedule: POST /api/interviews/schedule (EMPLOYER/RECRUITER công ty sở hữu application).\n- My: GET /api/interviews/my (Applicant: các lịch của họ; Employer/Recruiter: các lịch họ tạo).\n- Reschedule: PATCH /api/interviews/{id}/reschedule.\n- Email: Hệ thống gửi .ics cho applicant và interviewer."
-			}
+		},
+		{
+			"name": "Recommendations",
+			"item": [
+				{
+					"name": "Get Recommended Jobs (My)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/recommended?limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","jobs","recommended"],
+							"query": [
+								{ "key": "limit", "value": "10" }
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"const json = pm.response.json();",
+									"pm.test(\"ApiResponse success\", function () { pm.expect(json).to.have.property('success', true); });",
+									"pm.test(\"Data is an array\", function () { pm.expect(Array.isArray(json.data)).to.eql(true); });",
+									"if (Array.isArray(json.data) && json.data.length > 0) {",
+									"  pm.test(\"Has matchScore\", function () { pm.expect(json.data[0]).to.have.property('matchScore'); });",
+									"  const scores = json.data.map(i => i.matchScore || 0);",
+									"  const sorted = [...scores].sort((a,b)=>b-a);",
+									"  pm.test(\"Sorted by score DESC\", function () { pm.expect(scores).to.eql(sorted); });",
+									"}",
+									"pm.test(\"Limit <= 20\", function () { pm.expect(json.data.length).to.be.at.most(20); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Recommended - Limit Cap 50",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/recommended?limit=50",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","jobs","recommended"],
+							"query": [
+								{ "key": "limit", "value": "50" }
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"const json = pm.response.json();",
+									"pm.test(\"Limit capped to 20\", function () { pm.expect(json.data.length).to.be.at.most(20); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Recommended - Wrong Role (RECRUITER)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{recruiterToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/recommended",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","jobs","recommended"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 for wrong role\", function () { pm.response.to.have.status(403); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Recommended - No Token",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/jobs/recommended",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","jobs","recommended"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 401 for no token\", function () { pm.response.to.have.status(401); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		}
 		],
 		"variable": [
 			{

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 06, 2025 lúc 10:25 AM
+-- Thời gian đã tạo: Th10 08, 2025 lúc 05:15 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -31,7 +31,7 @@ CREATE TABLE `applications` (
   `id` bigint(20) NOT NULL,
   `job_posting_id` bigint(20) NOT NULL,
   `applicant_id` bigint(20) NOT NULL,
-  `status` enum('RECEIVED','REVIEWED','INTERVIEW','OFFER','HIRED','REJECTED') NOT NULL DEFAULT 'RECEIVED',
+  `status` enum('RECEIVED','REVIEWED','INTERVIEW','OFFER','HIRED','REJECTED','WITHDRAWN') NOT NULL DEFAULT 'RECEIVED',
   `cover_letter` text DEFAULT NULL,
   `resume_url` varchar(500) DEFAULT NULL,
   `additional_documents` varchar(1000) DEFAULT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE `applications` (
 --
 
 INSERT INTO `applications` (`id`, `job_posting_id`, `applicant_id`, `status`, `cover_letter`, `resume_url`, `additional_documents`, `interview_date`, `interview_location`, `interview_notes`, `feedback`, `rejection_reason`, `offer_details`, `reviewed_at`, `reviewed_by`, `created_at`, `updated_at`) VALUES
-(2, 4, 5, 'REVIEWED', 'Thư xin việc mẫu...', 'https://example.com/cv.pdf', NULL, NULL, NULL, NULL, 'Đã xem hồ sơ', NULL, NULL, '2025-09-29 07:53:47', 20, '2025-09-25 09:36:51', '2025-09-29 07:54:15');
+(6, 4, 5, 'INTERVIEW', 'Thư xin việc mẫu...', 'https://example.com/cv.pdf', NULL, '2026-01-07 04:00:00', NULL, 'Mời phỏng vấn tuần tới', 'Đã xem hồ sơ', NULL, NULL, '2025-10-08 07:13:23', 20, '2025-10-08 06:59:53', '2025-10-08 07:31:14');
 
 -- --------------------------------------------------------
 
@@ -70,6 +70,18 @@ CREATE TABLE `application_timelines` (
   `changed_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `application_timelines`
+--
+
+INSERT INTO `application_timelines` (`id`, `application_id`, `from_status`, `to_status`, `note`, `changed_by`, `changed_at`) VALUES
+(4, 6, 'RECEIVED', 'WITHDRAWN', 'Applicant withdraw application', 5, '2025-10-08 07:00:08'),
+(5, 6, 'RECEIVED', 'REVIEWED', 'Đã xem hồ sơ', 20, '2025-10-08 07:13:15'),
+(6, 6, 'REVIEWED', 'INTERVIEW', 'Mời phỏng vấn tuần tới', 20, '2025-10-08 07:13:23'),
+(7, 6, 'INTERVIEW', 'INTERVIEW', 'Lên lịch phỏng vấn: 2025-12-31T10:00', 20, '2025-10-08 07:26:53'),
+(8, 6, 'INTERVIEW', 'INTERVIEW', 'Đổi lịch phỏng vấn từ 2099-12-31T11:00 sang 2026-01-07T11:00. Lý do: Dời 1 tuần do bận họp', 20, '2025-10-08 07:31:15'),
+(9, 6, 'INTERVIEW', 'INTERVIEW', 'Hoàn tất phỏng vấn: Phỏng vấn xong, chờ đánh giá', 20, '2025-10-08 08:46:12');
+
 -- --------------------------------------------------------
 
 --
@@ -79,7 +91,7 @@ CREATE TABLE `application_timelines` (
 CREATE TABLE `attachments` (
   `id` bigint(20) NOT NULL,
   `profile_id` bigint(20) NOT NULL,
-  `type` enum('CV','COVER_LETTER','CHUNG_CHI','KHAC') NOT NULL,
+  `type` enum('RESUME','COVER_LETTER','PORTFOLIO','CERTIFICATE') NOT NULL,
   `file_name` varchar(200) NOT NULL,
   `file_extension` varchar(50) DEFAULT NULL,
   `file_size` bigint(20) DEFAULT NULL,
@@ -148,6 +160,19 @@ CREATE TABLE `educations` (
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `interview_participants`
+--
+
+CREATE TABLE `interview_participants` (
+  `id` bigint(20) NOT NULL,
+  `interview_id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
+  `role` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `interview_schedules`
 --
 
@@ -161,8 +186,18 @@ CREATE TABLE `interview_schedules` (
   `method` enum('ONLINE','OFFLINE') NOT NULL,
   `address` varchar(255) DEFAULT NULL,
   `note` varchar(500) DEFAULT NULL,
-  `status` enum('MOI_TAO','XAC_NHAN','HOAN_TAT','HUY') NOT NULL DEFAULT 'MOI_TAO'
+  `status` enum('MOI_TAO','XAC_NHAN','HOAN_TAT','HUY') NOT NULL DEFAULT 'MOI_TAO',
+  `duration_minutes` int(11) DEFAULT NULL,
+  `meeting_link` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `interview_schedules`
+--
+
+INSERT INTO `interview_schedules` (`id`, `application_id`, `company_id`, `responsible_user_id`, `start_time`, `end_time`, `method`, `address`, `note`, `status`, `duration_minutes`, `meeting_link`) VALUES
+(1, 6, 5, 20, '2099-12-31 10:00:00', '2099-12-31 11:00:00', 'ONLINE', NULL, 'Buổi phỏng vấn kỹ thuật', 'XAC_NHAN', NULL, NULL),
+(2, 6, 5, 20, '2099-12-31 11:00:00', '2026-01-07 12:00:00', 'ONLINE', NULL, 'Buổi phỏng vấn kỹ thuật', 'HOAN_TAT', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -201,9 +236,9 @@ CREATE TABLE `job_postings` (
 --
 
 INSERT INTO `job_postings` (`id`, `company_id`, `created_by`, `title`, `description`, `requirements`, `benefits`, `location`, `job_type`, `salary_min`, `salary_max`, `salary_currency`, `experience_required`, `education_required`, `skills_required`, `number_of_positions`, `application_deadline`, `published_at`, `views_count`, `applications_count`, `status`, `created_at`, `updated_at`) VALUES
-(1, 1, 2, 'Senior Java Developer (Updated)', 'Updated job description for Java developer.', 'Bachelor degree in Computer Science, 5+ years Java experience, Spring Boot knowledge, MySQL experience', 'Attractive salary, Flexible working hours, Health insurance, Bonus', 'Ho Chi Minh City', 'FULL_TIME', 25000000.00, 35000000.00, 'VND', NULL, NULL, NULL, 2, '2025-12-31 23:59:59', '2025-09-16 15:20:18', 0, 0, 'ACTIVE', '2025-09-16 08:20:18', '2025-09-17 07:02:11'),
+(1, 1, 2, 'Senior Java Developer (Updated)', 'Updated job description for Java developer.', 'Bachelor degree in Computer Science, 5+ years Java experience, Spring Boot knowledge, MySQL experience', 'Attractive salary, Flexible working hours, Health insurance, Bonus', 'Ho Chi Minh City', 'FULL_TIME', 25000000.00, 35000000.00, 'VND', NULL, NULL, NULL, 2, '2025-12-31 23:59:59', '2025-09-16 15:20:18', 0, 1, 'ACTIVE', '2025-09-16 08:20:18', '2025-10-08 07:00:11'),
 (3, 1, 2, 'Senior Java Developer', 'We are looking for an experienced Java developer to join our dynamic team. You will be responsible for developing high-quality applications using Java and Spring Boot.', 'Bachelor degree in Computer Science, 3+ years Java experience, Spring Boot knowledge, MySQL experience', 'Attractive salary, Flexible working hours, Health insurance', 'Ho Chi Minh City', 'FULL_TIME', 20000000.00, 30000000.00, 'VND', NULL, NULL, NULL, 1, '2025-10-16 15:20:18', NULL, 0, 0, 'ACTIVE', '2025-09-17 07:16:25', '2025-09-17 07:16:25'),
-(4, 4, 2, 'Lập trình viên Java cấp cao', 'Chúng tôi cần tuyển Lập trình viên Java có kinh nghiệm tham gia phát triển các ứng dụng doanh nghiệp với Java và Spring Boot.', 'Tốt nghiệp Đại học ngành CNTT, 3+ năm kinh nghiệm Java, thành thạo Spring Boot, có kinh nghiệm MySQL', 'Lương hấp dẫn, Giờ làm việc linh hoạt, Bảo hiểm sức khỏe', 'TP. Hồ Chí Minh', 'FULL_TIME', 20000000.00, 30000000.00, 'VND', NULL, NULL, NULL, 1, '2025-10-16 15:20:18', NULL, 0, 1, 'ACTIVE', '2025-09-17 07:18:05', '2025-10-02 07:31:57');
+(4, 5, 2, 'Lập trình viên Java cấp cao', 'Chúng tôi cần tuyển Lập trình viên Java có kinh nghiệm tham gia phát triển các ứng dụng doanh nghiệp với Java và Spring Boot.', 'Tốt nghiệp Đại học ngành CNTT, 3+ năm kinh nghiệm Java, thành thạo Spring Boot, có kinh nghiệm MySQL', 'Lương hấp dẫn, Giờ làm việc linh hoạt, Bảo hiểm sức khỏe', 'TP. Hồ Chí Minh', 'FULL_TIME', 20000000.00, 30000000.00, 'VND', NULL, NULL, NULL, 1, '2025-10-16 15:20:18', NULL, 0, 1, 'ACTIVE', '2025-09-17 07:18:05', '2025-10-08 07:12:50');
 
 -- --------------------------------------------------------
 
@@ -256,6 +291,14 @@ CREATE TABLE `notifications` (
   `is_read` tinyint(4) NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `recipient_id`, `type`, `title`, `content`, `is_read`, `created_at`) VALUES
+(1, 5, 'INTERVIEW_SCHEDULED', 'Bạn có lịch phỏng vấn mới', 'Thời gian: 2025-12-31T10:00', 0, '2025-10-08 07:26:53'),
+(2, 5, 'INTERVIEW_COMPLETED', 'Phỏng vấn đã hoàn tất', 'Phỏng vấn xong, chờ đánh giá', 0, '2025-10-08 08:46:12');
 
 -- --------------------------------------------------------
 
@@ -376,12 +419,21 @@ INSERT INTO `refresh_tokens` (`id`, `user_id`, `token`, `expires_at`, `revoked`,
 (40, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU5MzAzODg2LCJleHAiOjE3NjE4OTU4ODZ9.eUWB8Q1h6emOPvp9kWUcOt5kpnzin3b18YLSjpZ5q4X53fOBqlttbyTHYNSd3X95', '2025-10-31 07:31:26', 1, NULL, '2025-10-01 07:31:26', '2025-10-02 07:08:59'),
 (41, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU5Mzg4OTM5LCJleHAiOjE3NjE5ODA5Mzl9.6uSq1ZqApDSrVFGbQkF0yXI1uz7Rc_gZ5KSa-a_icMX1sYIA9ZPcGBvhzAZ0iCU8', '2025-11-01 07:08:59', 1, NULL, '2025-10-02 07:08:59', '2025-10-02 07:26:44'),
 (42, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTM4OTI1NCwiZXhwIjoxNzYxOTgxMjU0fQ.VDym0MJ8S-VgWXiReIUyToJ22UEF10E_K1SPL8tIdWJqGfJlkkppwl0NIkg7s7uF', '2025-11-01 07:14:14', 1, NULL, '2025-10-02 07:14:14', '2025-10-02 07:28:28'),
-(43, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU5MzkwMDA0LCJleHAiOjE3NjE5ODIwMDR9.vrCQW1qrg_BBhvmuuglLGsuBQFGcx0mOoQrM8GZn1v9-_J_DMyis65CFkvk5hjAf', '2025-11-01 07:26:44', 0, NULL, '2025-10-02 07:26:44', '2025-10-02 07:26:44'),
+(43, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU5MzkwMDA0LCJleHAiOjE3NjE5ODIwMDR9.vrCQW1qrg_BBhvmuuglLGsuBQFGcx0mOoQrM8GZn1v9-_J_DMyis65CFkvk5hjAf', '2025-11-01 07:26:44', 1, NULL, '2025-10-02 07:26:44', '2025-10-06 08:48:03'),
 (44, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTM5MDEwOCwiZXhwIjoxNzYxOTgyMTA4fQ.lYduPF968hC4VXB2WtqIvEVAsrtqqmmOZ6gFShMTRj4t6oZrTm-G2mGF3RN535pT', '2025-11-01 07:28:28', 1, NULL, '2025-10-02 07:28:28', '2025-10-06 07:56:13'),
 (45, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzM3MywiZXhwIjoxNzYyMzI5MzczfQ.9UjaXc5ww6V1Jc2NFWqXQwp0_wjzm6VSye4KHOU9VWgpIw2woEgtRwviW3T7vs8c', '2025-11-05 07:56:13', 1, NULL, '2025-10-06 07:56:13', '2025-10-06 07:59:29'),
 (46, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzU2OSwiZXhwIjoxNzYyMzI5NTY5fQ.wFZVgTShvuVuFcxaVsCbxmiBzrbPF_B2TzflQJnY6P_9H4qs7rhyKsBkMjeSj1UR', '2025-11-05 07:59:29', 1, NULL, '2025-10-06 07:59:29', '2025-10-06 08:01:59'),
 (47, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzcxOSwiZXhwIjoxNzYyMzI5NzE5fQ.0YKXp3YzZ177np1eYXjTkTIEwGC2CGJNFTnmjRz6ioZhUXcNQ4iyJnpEASIKUzR4', '2025-11-05 08:01:59', 1, NULL, '2025-10-06 08:01:59', '2025-10-06 08:04:47'),
-(48, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzg4NywiZXhwIjoxNzYyMzI5ODg3fQ.82vYgpVO5mFoO-IpjzhuLvLg_UbbOLQN1EVEQV7HRIpJKGsiMBTrTS5jCfIY-juk', '2025-11-05 08:04:47', 0, NULL, '2025-10-06 08:04:47', '2025-10-06 08:04:47');
+(48, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTczNzg4NywiZXhwIjoxNzYyMzI5ODg3fQ.82vYgpVO5mFoO-IpjzhuLvLg_UbbOLQN1EVEQV7HRIpJKGsiMBTrTS5jCfIY-juk', '2025-11-05 08:04:47', 1, NULL, '2025-10-06 08:04:47', '2025-10-08 07:09:31'),
+(49, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU5NzQwNDgzLCJleHAiOjE3NjIzMzI0ODN9._nby5ENpzx_Q3qP5KSKJof7iZXjvaGEVmBVGVlA3NYGmDTMD43o5w3A0m1cQJEQ0', '2025-11-05 08:48:03', 1, NULL, '2025-10-06 08:48:03', '2025-10-06 08:55:09'),
+(50, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU5NzQwOTA5LCJleHAiOjE3NjIzMzI5MDl9.t9GJ4Bd8rhVb4FjjuTtHrm_KStyBt-vs7KDKavz-5Ev0v1MXlZEphwxfYLqPGnoc', '2025-11-05 08:55:09', 1, NULL, '2025-10-06 08:55:09', '2025-10-06 08:58:54'),
+(51, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU5NzQxMTM0LCJleHAiOjE3NjIzMzMxMzR9.QOeTLI1BlAQv3fW3Tj8R24dveSA6SqM55-FK8ODpCuhv95xAQi2dXkKn5p8pnnWj', '2025-11-05 08:58:54', 1, NULL, '2025-10-06 08:58:54', '2025-10-08 06:58:38'),
+(52, 5, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU5OTA2NzE4LCJleHAiOjE3NjI0OTg3MTh9.I8boFtoVRDDIOrYaBks_WXb422ZNaEkNz2NO81SMj9XwAWqqE3AQHJonb8chy1dZ', '2025-11-07 06:58:38', 0, NULL, '2025-10-08 06:58:38', '2025-10-08 06:58:38'),
+(53, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTkwNzM3MSwiZXhwIjoxNzYyNDk5MzcxfQ.EoPVIZva5tG6sAtDGR8lBsE7_vrgvmqozXLYn4GKs2uknXaLt2jQIw98SpYO6n7M', '2025-11-07 07:09:31', 1, NULL, '2025-10-08 07:09:31', '2025-10-08 07:15:20'),
+(54, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTkwNzcyMCwiZXhwIjoxNzYyNDk5NzIwfQ.CgK7W9Vpa7nQRV6k8iVe1Ezw-N_FPGNzcUXP80UKp3nHcd6miXMcRw8yQcgh9njF', '2025-11-07 07:15:20', 1, NULL, '2025-10-08 07:15:20', '2025-10-08 07:23:47'),
+(55, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTkwODIyNywiZXhwIjoxNzYyNTAwMjI3fQ.pnUxq4xNEuUoc99hV9du0HTqYD96DW38SIyu7kMbQqZX_dMgxQ1Vwj6CwB5RaQlE', '2025-11-07 07:23:47', 1, NULL, '2025-10-08 07:23:47', '2025-10-08 08:45:34'),
+(56, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTkxMzEzNCwiZXhwIjoxNzYyNTA1MTM0fQ.Y6T1s395k3jbyGjMmuDPzUNIdP3rj6u4tvhuLYhv7QIlVFWpa_D3dcoiFcDTOkWM', '2025-11-07 08:45:34', 1, NULL, '2025-10-08 08:45:34', '2025-10-08 15:08:03'),
+(57, 20, 'eyJhbGciOiJIUzM4NCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6Im5ndXllbmIyMTEwMDUxQHN0dWRlbnQuY3R1LmVkdS52biIsImlhdCI6MTc1OTkzNjA4MywiZXhwIjoxNzYyNTI4MDgzfQ.bLp1fyPPaf-OgMpiStHkpGEJ52G1v6XOfh3w90BBFoTwWdkOt1ZD2W_gLrHTbO1D', '2025-11-07 15:08:03', 0, NULL, '2025-10-08 15:08:03', '2025-10-08 15:08:03');
 
 -- --------------------------------------------------------
 
@@ -459,8 +511,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `email`, `password`, `first_name`, `last_name`, `phone_number`, `role`, `status`, `email_verified`, `verification_token`, `verification_token_issued_at`, `password_reset_token`, `password_reset_expires`, `avatar_url`, `last_login`, `company_id`, `created_at`, `updated_at`) VALUES
 (1, 'admin@recruitment.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'Admin', 'System', NULL, 'ADMIN', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-09-30 07:41:02', NULL, '2025-09-16 08:20:18', '2025-09-30 07:41:02'),
 (2, 'employer@techinnovate.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'John', 'Manager', NULL, 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2025-09-16 08:20:18', '2025-09-22 06:52:01'),
-(5, 'john.doe@example.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'John', 'Doe', NULL, 'APPLICANT', 'ACTIVE', 1, '3a9f742d-1c78-4dfa-963b-ce257875b043', NULL, NULL, NULL, NULL, '2025-10-02 07:26:44', NULL, '2025-09-16 09:16:08', '2025-10-02 07:26:44'),
-(20, 'nguyenb2110051@student.ctu.edu.vn', '$2a$10$HJVAtYuDppZMk1wBjz5GYezvdcTXOYGE5dtk6alnq8RdAoeaRZzxG', 'Doan', 'Chi Nguyen', '0835886837', 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-10-06 08:04:46', 5, '2025-09-24 07:51:53', '2025-10-06 08:04:46'),
+(5, 'john.doe@example.com', '$2a$10$xrrBlgxjtduxrPzfLF.N/e54tE6g5EfPCNTYw4XxYacR5AQPY7EE.', 'John', 'Doe', NULL, 'APPLICANT', 'ACTIVE', 1, '3a9f742d-1c78-4dfa-963b-ce257875b043', NULL, NULL, NULL, NULL, '2025-10-08 06:58:38', NULL, '2025-09-16 09:16:08', '2025-10-08 06:58:38'),
+(20, 'nguyenb2110051@student.ctu.edu.vn', '$2a$10$HJVAtYuDppZMk1wBjz5GYezvdcTXOYGE5dtk6alnq8RdAoeaRZzxG', 'Doan', 'Chi Nguyen', '0835886837', 'EMPLOYER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-10-08 15:08:03', 5, '2025-09-24 07:51:53', '2025-10-08 15:08:03'),
 (21, 'recruiter@example.com', '$2a$10$ioSYxLU09ewJui2Jxk80o.F75xMIQasS54zp3etV84a9tq3qEumla', 'Recruiter', 'User', '0900000001', 'RECRUITER', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-09-25 07:53:17', NULL, '2025-09-25 07:36:18', '2025-09-25 07:53:17'),
 (22, 'user@example.com', '$2a$10$KFIuTaLlXo.Fcc93Gqyal.dnl1DeuB9KGt/SphVrWVFzT2a7OsJpy', 'First', 'Last', '0900000000', 'APPLICANT', 'ACTIVE', 1, NULL, NULL, NULL, NULL, NULL, '2025-09-29 09:19:48', NULL, '2025-09-29 06:56:05', '2025-09-29 09:19:48');
 
@@ -526,13 +578,22 @@ ALTER TABLE `educations`
   ADD KEY `profile_id` (`profile_id`);
 
 --
+-- Chỉ mục cho bảng `interview_participants`
+--
+ALTER TABLE `interview_participants`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_interview` (`interview_id`),
+  ADD KEY `idx_user` (`user_id`);
+
+--
 -- Chỉ mục cho bảng `interview_schedules`
 --
 ALTER TABLE `interview_schedules`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `application_id` (`application_id`),
-  ADD KEY `company_id` (`company_id`),
-  ADD KEY `responsible_user_id` (`responsible_user_id`);
+  ADD KEY `idx_interview_company` (`company_id`),
+  ADD KEY `idx_interview_responsible_time` (`responsible_user_id`,`start_time`),
+  ADD KEY `idx_interview_app` (`application_id`),
+  ADD KEY `idx_interview_start_time` (`start_time`);
 
 --
 -- Chỉ mục cho bảng `job_postings`
@@ -648,13 +709,13 @@ ALTER TABLE `work_experiences`
 -- AUTO_INCREMENT cho bảng `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT cho bảng `application_timelines`
 --
 ALTER TABLE `application_timelines`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT cho bảng `attachments`
@@ -675,10 +736,16 @@ ALTER TABLE `educations`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT cho bảng `interview_participants`
+--
+ALTER TABLE `interview_participants`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT cho bảng `interview_schedules`
 --
 ALTER TABLE `interview_schedules`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `job_postings`
@@ -696,7 +763,7 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT cho bảng `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `oauth_accounts`
@@ -714,7 +781,7 @@ ALTER TABLE `profiles`
 -- AUTO_INCREMENT cho bảng `refresh_tokens`
 --
 ALTER TABLE `refresh_tokens`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT cho bảng `skills`

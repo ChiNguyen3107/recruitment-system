@@ -4,11 +4,14 @@ import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.response.JobPostingResponse;
 import com.recruitment.system.dto.response.PageResponse;
 import com.recruitment.system.entity.JobPosting;
+import com.recruitment.system.entity.User;
 import com.recruitment.system.enums.JobType;
 import com.recruitment.system.enums.ExperienceLevel;
 import com.recruitment.system.enums.CompanySize;
 import com.recruitment.system.enums.WorkMode;
 import com.recruitment.system.repository.JobPostingRepository;
+import com.recruitment.system.service.RecommendationService;
+import com.recruitment.system.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +20,8 @@ import java.util.Set;
 import org.springframework.http.ResponseEntity;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,6 +37,7 @@ import java.util.stream.Collectors;
 public class JobController {
 
     private final JobPostingRepository jobPostingRepository;
+    private final RecommendationService recommendationService;
 
     /**
      * Test endpoint để kiểm tra security
@@ -165,6 +171,30 @@ public class JobController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Lỗi khi tìm kiếm việc làm: " + e.getMessage()));
         }
+    }
+
+    /**
+     * GET /api/jobs/recommended
+     */
+    @GetMapping("/recommended")
+    public ResponseEntity<ApiResponse<List<JobPostingResponse>>> getRecommendedJobs(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Chưa xác thực người dùng"));
+        }
+        if (currentUser.getRole() != UserRole.APPLICANT) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Chỉ ứng viên mới được xem gợi ý"));
+        }
+
+        // Giới hạn phân trang tối đa 20
+        int safeLimit = Math.max(1, Math.min(limit, 20));
+
+        // Kiểm tra độ hoàn thiện profile >= 50% (sử dụng helper trong Profile nếu có); đơn giản: có summary/experience/education/skills
+        // Ở đây ủy quyền cho service trả về rỗng nếu chưa đủ
+        List<JobPostingResponse> recommended = recommendationService.getRecommendedJobs(currentUser, safeLimit);
+        return ResponseEntity.ok(ApiResponse.success("Gợi ý việc làm", recommended));
     }
 
     /**

@@ -44,4 +44,7 @@ public class JobPostingResponse {
     // Trạng thái có thể ứng tuyển
     private Boolean canApply;
     private Boolean isExpired;
+
+    // Điểm phù hợp cho hệ thống gợi ý
+    private Double matchScore;
 }
