@@ -1,5 +1,8 @@
 package com.recruitment.system.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.request.InterviewRescheduleRequest;
 import com.recruitment.system.dto.request.InterviewCancelRequest;
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/interviews")
+@Tag(name = "Interviews", description = "Quản lý lịch phỏng vấn")
 @RequiredArgsConstructor
 @Slf4j
 public class InterviewController {
@@ -97,6 +101,7 @@ public class InterviewController {
     }
 
     @PostMapping("/schedule")
+    @Operation(summary = "Tạo lịch phỏng vấn", description = "EMPLOYER/RECRUITER cùng công ty với application")
     public ResponseEntity<ApiResponse<InterviewResponse>> schedule(@AuthenticationPrincipal User currentUser,
                                                                    @RequestBody InterviewScheduleRequest request) {
         if (currentUser == null) {
@@ -226,6 +231,7 @@ public class InterviewController {
     }
 
     @GetMapping("/my")
+    @Operation(summary = "Danh sách lịch của tôi", description = "Applicant: lịch của họ; Employer/Recruiter: lịch họ tạo")
     public ResponseEntity<ApiResponse<Page<InterviewResponse>>> my(@AuthenticationPrincipal User currentUser,
                                                                    @RequestParam(required = false) LocalDateTime start,
                                                                    @RequestParam(required = false) LocalDateTime end,
@@ -275,6 +281,7 @@ public class InterviewController {
     }
 
     @PatchMapping("/{id}/reschedule")
+    @Operation(summary = "Đổi lịch phỏng vấn")
     public ResponseEntity<ApiResponse<InterviewResponse>> reschedule(@PathVariable Long id,
                                                                      @AuthenticationPrincipal User currentUser,
                                                                      @RequestBody InterviewRescheduleRequest request) {
@@ -385,6 +392,7 @@ public class InterviewController {
     }
 
     @PatchMapping("/{id}/cancel")
+    @Operation(summary = "Hủy lịch phỏng vấn")
     public ResponseEntity<ApiResponse<InterviewResponse>> cancel(@PathVariable Long id,
                                                                  @AuthenticationPrincipal User currentUser,
                                                                  @RequestBody InterviewCancelRequest request) {
@@ -439,6 +447,7 @@ public class InterviewController {
     }
 
     @PatchMapping("/{id}/complete")
+    @Operation(summary = "Hoàn tất phỏng vấn")
     public ResponseEntity<ApiResponse<InterviewResponse>> complete(@PathVariable Long id,
                                                                    @AuthenticationPrincipal User currentUser,
                                                                    @RequestBody InterviewCompleteRequest request) {
