@@ -2475,6 +2475,68 @@
 						}
 					],
 					"response": []
+				},
+				{
+					"name": "Add Participants",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userIds\": [21, 20],\n  \"role\": \"INTERVIEWER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/participants",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","interviews","{{interviewId}}","participants"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Remove Participants",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userIds\": [21]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/participants",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","interviews","{{interviewId}}","participants"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
 				}
 				],
 				"description": "Quản lý lịch phỏng vấn\n- Schedule: POST /api/interviews/schedule (EMPLOYER/RECRUITER công ty sở hữu application).\n- My: GET /api/interviews/my (Applicant: các lịch của họ; Employer/Recruiter: các lịch họ tạo).\n- Reschedule: PATCH /api/interviews/{id}/reschedule.\n- Email: Hệ thống gửi .ics cho applicant và interviewer."
