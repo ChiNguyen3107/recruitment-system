@@ -4,9 +4,12 @@ import com.recruitment.system.dto.request.ProfileRequest;
 import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.response.ProfileResponse;
 import com.recruitment.system.entity.Profile;
+import com.recruitment.system.entity.ProfileDocument;
 import com.recruitment.system.entity.User;
+import com.recruitment.system.enums.ProfileDocumentType;
 import com.recruitment.system.enums.UserRole;
 import com.recruitment.system.repository.ProfileRepository;
+import com.recruitment.system.repository.ProfileDocumentRepository;
 import com.recruitment.system.config.AuditLogger;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +35,7 @@ public class ProfileController {
     private final ProfileRepository profileRepository;
     private final com.recruitment.system.service.StorageService storageService;
     private final AuditLogger auditLogger;
+    private final ProfileDocumentRepository profileDocumentRepository;
 
     /**
      * Lấy hồ sơ của người dùng hiện tại
@@ -77,6 +81,213 @@ public class ProfileController {
             log.error("Lỗi khi lấy hồ sơ cho user ID: {}", user.getId(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Có lỗi xảy ra khi lấy hồ sơ"));
+        }
+    }
+
+    /**
+     * Upload tài liệu hồ sơ đa định dạng
+     * POST /api/profiles/my/documents
+     */
+    @PostMapping(value = "/my/documents", consumes = {"multipart/form-data"})
+    public ResponseEntity<ApiResponse<Object>> uploadDocument(
+            @AuthenticationPrincipal User user,
+            @RequestPart("file") MultipartFile file,
+            @RequestParam("documentType") ProfileDocumentType documentType,
+            HttpServletRequest httpRequest) {
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Chưa xác thực người dùng"));
+        }
+        if (user.getRole() != UserRole.APPLICANT) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Chỉ ứng viên mới có thể tải lên tài liệu"));
+        }
+        try {
+            if (file == null || file.isEmpty()) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("File không được để trống"));
+            }
+
+            // Validate theo loại & magic number
+            String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "file";
+            String lowerName = originalFilename.toLowerCase();
+            long size = file.getSize();
+
+            switch (documentType) {
+                case RESUME:
+                case COVER_LETTER: {
+                    long max = 5L * 1024 * 1024;
+                    if (size > max) return ResponseEntity.badRequest().body(ApiResponse.error("Kích thước tối đa 5MB"));
+                    if (!(lowerName.endsWith(".pdf") || lowerName.endsWith(".doc") || lowerName.endsWith(".docx"))) {
+                        return ResponseEntity.badRequest().body(ApiResponse.error("Chỉ chấp nhận PDF/DOC/DOCX"));
+                    }
+                    if (lowerName.endsWith(".pdf") && !isPdf(file)) return ResponseEntity.badRequest().body(ApiResponse.error("PDF không hợp lệ"));
+                    if ((lowerName.endsWith(".doc") || lowerName.endsWith(".docx")) && !isMsOffice(file)) return ResponseEntity.badRequest().body(ApiResponse.error("DOC/DOCX không hợp lệ"));
+                    break;
+                }
+                case PORTFOLIO: {
+                    long max = 10L * 1024 * 1024;
+                    if (size > max) return ResponseEntity.badRequest().body(ApiResponse.error("Kích thước tối đa 10MB"));
+                    if (!(lowerName.endsWith(".pdf") || lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg") || lowerName.endsWith(".png"))) {
+                        return ResponseEntity.badRequest().body(ApiResponse.error("Chỉ chấp nhận JPG/PNG/PDF"));
+                    }
+                    if (lowerName.endsWith(".pdf") && !isPdf(file)) return ResponseEntity.badRequest().body(ApiResponse.error("PDF không hợp lệ"));
+                    if ((lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) && !isJpeg(file)) return ResponseEntity.badRequest().body(ApiResponse.error("JPG không hợp lệ"));
+                    if (lowerName.endsWith(".png") && !isPng(file)) return ResponseEntity.badRequest().body(ApiResponse.error("PNG không hợp lệ"));
+                    break;
+                }
+                case CERTIFICATE: {
+                    long max = 3L * 1024 * 1024;
+                    if (size > max) return ResponseEntity.badRequest().body(ApiResponse.error("Kích thước tối đa 3MB"));
+                    if (!(lowerName.endsWith(".pdf") || lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg") || lowerName.endsWith(".png"))) {
+                        return ResponseEntity.badRequest().body(ApiResponse.error("Chỉ chấp nhận PDF/JPG/PNG"));
+                    }
+                    if (lowerName.endsWith(".pdf") && !isPdf(file)) return ResponseEntity.badRequest().body(ApiResponse.error("PDF không hợp lệ"));
+                    if ((lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) && !isJpeg(file)) return ResponseEntity.badRequest().body(ApiResponse.error("JPG không hợp lệ"));
+                    if (lowerName.endsWith(".png") && !isPng(file)) return ResponseEntity.badRequest().body(ApiResponse.error("PNG không hợp lệ"));
+                    break;
+                }
+            }
+
+            String extension = lowerName.contains(".") ? lowerName.substring(lowerName.lastIndexOf('.')) : "";
+            String safeName = documentType.name().toLowerCase() + "-" + System.currentTimeMillis() + extension;
+            String directory = "documents/" + user.getId() + "/" + documentType.name().toLowerCase();
+            String path = storageService.save(file, directory, safeName);
+
+            Profile profile = profileRepository.findByUserId(user.getId()).orElseGet(() -> {
+                Profile p = new Profile();
+                p.setUser(user);
+                p.setIsPublic(false);
+                return profileRepository.save(p);
+            });
+
+            ProfileDocument doc = new ProfileDocument();
+            doc.setProfile(profile);
+            doc.setType(documentType);
+            doc.setFileName(safeName);
+            doc.setFileExtension(extension);
+            doc.setFileSize(size);
+            doc.setPath(path);
+            profileDocumentRepository.save(doc);
+
+            String clientIp = getClientIpAddress(httpRequest);
+            auditLogger.logProfileDocumentUploaded(user.getId(), user.getEmail(), documentType.name(), path, clientIp, httpRequest.getHeader("User-Agent"), true);
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Tải lên tài liệu thành công", null));
+        } catch (Exception e) {
+            String clientIp = httpRequest != null ? getClientIpAddress(httpRequest) : "unknown";
+            auditLogger.logProfileDocumentUploaded(user != null ? user.getId() : null, user != null ? user.getEmail() : "unknown", documentType != null ? documentType.name() : "unknown", null, clientIp, httpRequest != null ? httpRequest.getHeader("User-Agent") : "unknown", false);
+            log.error("Lỗi upload tài liệu", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Có lỗi xảy ra khi tải lên"));
+        }
+    }
+
+    /**
+     * Danh sách tài liệu của tôi, group theo loại
+     */
+    @GetMapping("/my/documents")
+    public ResponseEntity<ApiResponse<Object>> listMyDocuments(@AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Chưa xác thực người dùng"));
+        }
+        if (user.getRole() != UserRole.APPLICANT) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Chỉ ứng viên mới có thể truy cập"));
+        }
+        Optional<Profile> profileOpt = profileRepository.findByUserId(user.getId());
+        if (profileOpt.isEmpty()) {
+            return ResponseEntity.ok(ApiResponse.success("Danh sách tài liệu", java.util.Map.of()));
+        }
+        Long profileId = profileOpt.get().getId();
+        java.util.List<ProfileDocument> docs = profileDocumentRepository.findByProfileId(profileId);
+        java.util.Map<ProfileDocumentType, java.util.List<java.util.Map<String, Object>>> grouped = new java.util.EnumMap<>(ProfileDocumentType.class);
+        for (ProfileDocumentType t : ProfileDocumentType.values()) {
+            grouped.put(t, new java.util.ArrayList<>());
+        }
+        for (ProfileDocument d : docs) {
+            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            m.put("id", d.getId());
+            m.put("filename", d.getFileName());
+            m.put("size", d.getFileSize());
+            m.put("uploadedAt", d.getUploadedAt());
+            m.put("downloadUrl", d.getPath());
+            grouped.get(d.getType()).add(m);
+        }
+        return ResponseEntity.ok(ApiResponse.success("Danh sách tài liệu", grouped));
+    }
+
+    /**
+     * Xóa tài liệu của tôi theo id
+     */
+    @DeleteMapping("/my/documents/{id}")
+    public ResponseEntity<ApiResponse<Object>> deleteMyDocument(
+            @AuthenticationPrincipal User user,
+            @PathVariable("id") Long id,
+            HttpServletRequest httpRequest) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Chưa xác thực người dùng"));
+        }
+        if (user.getRole() != UserRole.APPLICANT) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Chỉ ứng viên mới có thể thao tác"));
+        }
+        Optional<Profile> profileOpt = profileRepository.findByUserId(user.getId());
+        if (profileOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Không tìm thấy hồ sơ"));
+        }
+        Long profileId = profileOpt.get().getId();
+        return profileDocumentRepository.findByIdAndProfileId(id, profileId)
+                .map(doc -> {
+                    boolean deleted = storageService.delete(doc.getPath());
+                    profileDocumentRepository.deleteById(doc.getId());
+                    String clientIp = getClientIpAddress(httpRequest);
+                    auditLogger.logProfileDocumentDeleted(user.getId(), user.getEmail(), doc.getId(), doc.getType().name(), doc.getPath(), clientIp, httpRequest.getHeader("User-Agent"), deleted);
+                    return ResponseEntity.ok(ApiResponse.success("Xóa tài liệu thành công", null));
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Không tìm thấy tài liệu")));
+    }
+
+    // ===== Helpers: magic number validators =====
+    private boolean isPdf(MultipartFile file) {
+        try {
+            byte[] head = file.getInputStream().readNBytes(5);
+            return head.length == 5 && head[0] == '%'
+                    && head[1] == 'P' && head[2] == 'D' && head[3] == 'F' && head[4] == '-';
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isJpeg(MultipartFile file) {
+        try {
+            byte[] head = file.getInputStream().readNBytes(3);
+            return head.length >= 3 && (head[0] & 0xFF) == 0xFF && (head[1] & 0xFF) == 0xD8 && (head[2] & 0xFF) == 0xFF;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isPng(MultipartFile file) {
+        try {
+            byte[] head = file.getInputStream().readNBytes(8);
+            int[] sig = {137, 80, 78, 71, 13, 10, 26, 10};
+            if (head.length < 8) return false;
+            for (int i = 0; i < 8; i++) {
+                if ((head[i] & 0xFF) != sig[i]) return false;
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isMsOffice(MultipartFile file) {
+        try {
+            byte[] head = file.getInputStream().readNBytes(8);
+            // DOC/DOCX: có thể là OLE (D0 CF 11 E0 A1 B1 1A E1) hoặc ZIP (50 4B 03 04)
+            boolean ole = head.length >= 8 && (head[0] & 0xFF) == 0xD0 && (head[1] & 0xFF) == 0xCF && (head[2] & 0xFF) == 0x11 && (head[3] & 0xFF) == 0xE0
+                    && (head[4] & 0xFF) == 0xA1 && (head[5] & 0xFF) == 0xB1 && (head[6] & 0xFF) == 0x1A && (head[7] & 0xFF) == 0xE1;
+            boolean zip = head.length >= 4 && (head[0] & 0xFF) == 0x50 && (head[1] & 0xFF) == 0x4B && (head[2] & 0xFF) == 0x03 && (head[3] & 0xFF) == 0x04;
+            return ole || zip;
+        } catch (Exception e) {
+            return false;
         }
     }
 

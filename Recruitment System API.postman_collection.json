@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "8f8bc168-2897-408e-ac62-6c301d4d868b",
 		"name": "Recruitment System API",
-		"description": "Recruitment System API - Đã chuẩn hoá validation và error handling\n\n🎯 TÍNH NĂNG MỚI:\n- ✅ Validation mạnh: Giới hạn độ dài, format, whitelist sortBy/sortDir\n- ✅ Pagination chuẩn: Tự động giới hạn size ≤ 50\n- ✅ Error response chuẩn: ApiResponse với code/reason/context\n- ✅ RBAC đúng: Employer chỉ thấy dữ liệu công ty, Applicant chỉ thấy của mình\n- ✅ Upload an toàn: Giới hạn 5MB, chỉ PDF, magic number validation\n\n🚀 HƯỚNG DẪN TEST:\n1) Setup: baseUrl = http://localhost:8081\n2) Test Validation: Dùng 'Create Job - Validation Error Test'\n3) Test Pagination: Dùng 'Search - Pagination Validation Test'\n4) Test RBAC: Dùng 'List Company Jobs' vs 'List My Applications'\n5) Test Upload: Dùng 'Upload My Resume (PDF)'\n\n📋 ENDPOINTS MỚI:\n- GET /api/employer/jobs - Danh sách jobs của công ty\n- GET /api/jobs/manage - Quản lý jobs với pagination\n- GET /api/applications/my - Danh sách applications của user\n\n🔒 BẢO MẬT:\n- Không lộ stack trace trong response\n- Input sanitization tự động\n- File upload validation chặt chẽ",
+		"description": "Recruitment System API - Đã chuẩn hoá validation và error handling\n\n🎯 TÍNH NĂNG MỚI:\n- ✅ Validation mạnh: Giới hạn độ dài, format, whitelist sortBy/sortDir\n- ✅ Pagination chuẩn: Tự động giới hạn size ≤ 50\n- ✅ Error response chuẩn: ApiResponse với code/reason/context\n- ✅ RBAC đúng: Employer chỉ thấy dữ liệu công ty, Applicant chỉ thấy của mình\n- ✅ Upload an toàn: Hỗ trợ nhiều loại tài liệu (PDF/DOC/DOCX/JPG/PNG) với magic number và giới hạn dung lượng theo loại\n\n🚀 HƯỚNG DẪN TEST:\n1) Setup: baseUrl = http://localhost:8081\n2) Test Validation: Dùng 'Create Job - Validation Error Test'\n3) Test Pagination: Dùng 'Search - Pagination Validation Test'\n4) Test RBAC: Dùng 'List Company Jobs' vs 'List My Applications'\n5) Test Upload: Dùng 'Upload My Document' và 'List My Documents'\n\n📋 ENDPOINTS MỚI:\n- GET /api/employer/jobs - Danh sách jobs của công ty\n- GET /api/jobs/manage - Quản lý jobs với pagination\n- GET /api/applications/my - Danh sách applications của user\n- POST/GET/DELETE /api/profiles/my/documents - Quản lý tài liệu hồ sơ (Applicant)\n\n🔒 BẢO MẬT:\n- Không lộ stack trace trong response\n- Input sanitization tự động\n- File upload validation chặt chẽ",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "48481540",
 		"_collection_link": "https://chinguyen3107-7344893.postman.co/workspace/Ch%25C3%25AD-Nguy%25E1%25BB%2585n's-Workspace~556e17ea-1f12-443b-8df6-d9e40470be85/collection/48481540-8f8bc168-2897-408e-ac62-6c301d4d868b?action=share&source=collection_link&creator=48481540"
@@ -1484,8 +1484,64 @@
 					},
 					"response": []
 				},
-				{
-					"name": "Update Profile (Validation Test)",
+					{
+						"name": "Upload My Document",
+						"request": {
+							"method": "POST",
+							"header": [
+								{
+									"key": "Authorization",
+									"value": "Bearer {{accessToken}}",
+									"type": "text"
+								}
+							],
+							"body": {
+								"mode": "formdata",
+								"formdata": [
+									{ "key": "file", "type": "file", "src": "" },
+									{ "key": "documentType", "value": "RESUME", "type": "text" }
+								]
+							},
+							"url": {
+								"raw": "{{baseUrl}}/api/profiles/my/documents",
+								"host": ["{{baseUrl}}"],
+								"path": ["api","profiles","my","documents"]
+							}
+						},
+						"response": []
+					},
+					{
+						"name": "List My Documents",
+						"request": {
+							"method": "GET",
+							"header": [
+								{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+							],
+							"url": {
+								"raw": "{{baseUrl}}/api/profiles/my/documents",
+								"host": ["{{baseUrl}}"],
+								"path": ["api","profiles","my","documents"]
+							}
+						},
+						"response": []
+					},
+					{
+						"name": "Delete My Document",
+						"request": {
+							"method": "DELETE",
+							"header": [
+								{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+							],
+							"url": {
+								"raw": "{{baseUrl}}/api/profiles/my/documents/{{documentId}}",
+								"host": ["{{baseUrl}}"],
+								"path": ["api","profiles","my","documents","{{documentId}}"]
+							}
+						},
+						"response": []
+					},
+					{
+						"name": "Update Profile (Validation Test)",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -2569,6 +2625,10 @@
 			},
 			{
 				"key": "adminToken",
+				"value": ""
+			},
+			{
+				"key": "documentId",
 				"value": ""
 			},
 			{

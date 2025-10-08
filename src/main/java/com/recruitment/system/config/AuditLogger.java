@@ -142,6 +142,26 @@ public class AuditLogger {
     }
 
     /**
+     * Ghi log upload tài liệu hồ sơ (nhiều loại)
+     */
+    public void logProfileDocumentUploaded(Long userId, String userEmail, String type, String filePath, String ipAddress, String userAgent, boolean success) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        String result = success ? "SUCCESS" : "FAILURE";
+        log.info("{} {} PROFILE_DOCUMENT_UPLOADED - Result: {}, UserId: {}, Email: {}, Type: {}, Path: {}, IP: {}, UserAgent: {}",
+                AUDIT_PREFIX, timestamp, result, userId, userEmail, type, filePath, ipAddress, userAgent);
+    }
+
+    /**
+     * Ghi log xóa tài liệu hồ sơ
+     */
+    public void logProfileDocumentDeleted(Long userId, String userEmail, Long documentId, String type, String filePath, String ipAddress, String userAgent, boolean success) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        String result = success ? "SUCCESS" : "FAILURE";
+        log.info("{} {} PROFILE_DOCUMENT_DELETED - Result: {}, UserId: {}, Email: {}, DocumentId: {}, Type: {}, Path: {}, IP: {}, UserAgent: {}",
+                AUDIT_PREFIX, timestamp, result, userId, userEmail, documentId, type, filePath, ipAddress, userAgent);
+    }
+
+    /**
      * Ghi log tạo mới tin tuyển dụng
      */
     public void logJobCreated(Long jobId, Long companyId, String performedByEmail, String ipAddress, String userAgent) {

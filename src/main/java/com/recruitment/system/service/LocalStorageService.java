@@ -53,6 +53,34 @@ public class LocalStorageService implements StorageService {
         }
     }
 
+    /**
+     * Xóa file theo đường dẫn tương đối bắt đầu bằng "/uploads"
+     */
+    public boolean delete(String relativePath) {
+        try {
+            if (relativePath == null || relativePath.isBlank()) {
+                return false;
+            }
+            String normalized = relativePath.replace("\\", "/");
+            if (normalized.startsWith("/")) {
+                normalized = normalized.substring(1);
+            }
+            Path root = Paths.get(baseUploadDir).toAbsolutePath().normalize();
+            Path target = Paths.get(normalized).toAbsolutePath().normalize();
+            if (!target.startsWith(root)) {
+                // Nếu path không chứa base dir, cố gắng ghép
+                target = root.resolve(normalized).normalize();
+            }
+            if (!target.startsWith(root)) {
+                throw new RuntimeException("Đường dẫn không hợp lệ");
+            }
+            return Files.deleteIfExists(target);
+        } catch (IOException e) {
+            log.warn("Không thể xóa file: {}", relativePath, e);
+            return false;
+        }
+    }
+
     private String sanitizeFileName(String original) {
         String filename = StringUtils.hasText(original) ? original : "file";
         filename = Normalizer.normalize(filename, Normalizer.Form.NFD)

@@ -16,6 +16,13 @@ public interface StorageService {
      * @return resumeUrl (public hoặc relative) để client sử dụng
      */
     String save(MultipartFile file, String directory, String safeFileName);
+
+    /**
+     * Xóa file theo đường dẫn tương đối bắt đầu bằng "/uploads".
+     * @param relativePath đường dẫn tương đối
+     * @return true nếu xóa thành công hoặc file không tồn tại
+     */
+    boolean delete(String relativePath);
 }
 
 
