@@ -21,6 +21,9 @@ import com.recruitment.system.repository.ApplicationRepository;
 import com.recruitment.system.repository.ApplicationTimelineRepository;
 import com.recruitment.system.repository.InterviewRepository;
 import com.recruitment.system.repository.NotificationRepository;
+import com.recruitment.system.repository.InterviewParticipantRepository;
+import com.recruitment.system.entity.InterviewParticipant;
+import com.recruitment.system.dto.request.InterviewParticipantsRequest;
 import com.recruitment.system.service.MailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,11 +52,60 @@ public class InterviewController {
     private final ApplicationTimelineRepository applicationTimelineRepository;
     private final NotificationRepository notificationRepository;
     private final MailService mailService;
+    private final InterviewParticipantRepository interviewParticipantRepository;
 
     private boolean isEmployerOrRecruiter(User user) {
         return user != null && (user.getRole().name().equals("EMPLOYER") || user.getRole().name().equals("RECRUITER") || user.getRole().name().equals("ADMIN")) && user.getCompany() != null;
     }
 
+    @PostMapping("/{id}/participants")
+    @Operation(summary = "Thêm người tham gia phỏng vấn")
+    public ResponseEntity<ApiResponse<InterviewResponse>> addParticipants(@PathVariable Long id,
+                                                                          @AuthenticationPrincipal User currentUser,
+                                                                          @RequestBody InterviewParticipantsRequest request) {
+        Optional<Interview> opt = interviewRepository.findById(id);
+        if (opt.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Không tìm thấy interview"));
+        Interview interview = opt.get();
+        Optional<Application> appOpt = applicationRepository.findById(interview.getApplicationId());
+        if (appOpt.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Không tìm thấy application"));
+        Application application = appOpt.get();
+        if (!isEmployerOrRecruiter(currentUser) || !sameCompany(currentUser, application)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Không có quyền"));
+        }
+
+        String role = (request.getRole() == null || request.getRole().isBlank()) ? "INTERVIEWER" : request.getRole();
+        for (Long uid : request.getUserIds()) {
+            if (uid == null) continue;
+            if (interviewParticipantRepository.existsByInterviewIdAndUserId(id, uid)) continue;
+            InterviewParticipant p = new InterviewParticipant();
+            p.setInterviewId(id);
+            p.setUserId(uid);
+            p.setRole(role);
+            interviewParticipantRepository.save(p);
+        }
+        return ResponseEntity.ok(ApiResponse.success(toResponse(interview)));
+    }
+
+    @DeleteMapping("/{id}/participants")
+    @Operation(summary = "Xóa người tham gia phỏng vấn")
+    public ResponseEntity<ApiResponse<InterviewResponse>> removeParticipants(@PathVariable Long id,
+                                                                             @AuthenticationPrincipal User currentUser,
+                                                                             @RequestBody InterviewParticipantsRequest request) {
+        Optional<Interview> opt = interviewRepository.findById(id);
+        if (opt.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Không tìm thấy interview"));
+        Interview interview = opt.get();
+        Optional<Application> appOpt = applicationRepository.findById(interview.getApplicationId());
+        if (appOpt.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Không tìm thấy application"));
+        Application application = appOpt.get();
+        if (!isEmployerOrRecruiter(currentUser) || !sameCompany(currentUser, application)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Không có quyền"));
+        }
+        for (Long uid : request.getUserIds()) {
+            if (uid == null) continue;
+            interviewParticipantRepository.deleteByInterviewIdAndUserId(id, uid);
+        }
+        return ResponseEntity.ok(ApiResponse.success(toResponse(interview)));
+    }
     private boolean sameCompany(User user, Application application) {
         return application.getJobPosting() != null && application.getJobPosting().getCompany() != null
                 && user.getCompany() != null
