@@ -14,6 +14,8 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
     Page<Interview> findByScheduledAtBetweenOrderByScheduledAtAsc(LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     List<Interview> findByScheduledByAndScheduledAtBetween(Long scheduledBy, LocalDateTime start, LocalDateTime end);
+
+    List<Interview> findByDbStatusAndScheduledAtBetween(String dbStatus, LocalDateTime start, LocalDateTime end);
 }
 
 
