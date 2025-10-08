@@ -129,6 +129,28 @@ public class InterviewController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("Bị trùng lịch phỏng vấn khác"));
         }
 
+        // Kiểm tra trùng lịch cho applicant (ứng viên có lịch khác cùng thời gian)
+        try {
+            Long applicantId = application.getApplicant() != null ? application.getApplicant().getId() : null;
+            if (applicantId != null) {
+                List<Application> applicantApps = applicationRepository.findByApplicantId(applicantId);
+                if (applicantApps != null && !applicantApps.isEmpty()) {
+                    List<Long> appIds = applicantApps.stream().map(Application::getId).toList();
+                    List<Interview> applicantInterviews = interviewRepository.findByApplicationIdIn(appIds);
+                    boolean overlap = applicantInterviews.stream().anyMatch(iv -> {
+                        if (iv.getId() != null && iv.getApplicationId().equals(application.getId())) return false; // bỏ qua chính lịch này (nếu có)
+                        LocalDateTime ivStart = iv.getScheduledAt();
+                        LocalDateTime ivEnd = iv.getEndTime() != null ? iv.getEndTime() : (ivStart != null ? ivStart.plusMinutes(resolveDuration(iv)) : null);
+                        if (ivStart == null || ivEnd == null) return false;
+                        return !(end.isBefore(ivStart) || start.isAfter(ivEnd));
+                    });
+                    if (overlap) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("Ứng viên đã có lịch phỏng vấn khác trong khoảng thời gian này"));
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+
         Interview interview = new Interview();
         interview.setApplicationId(application.getId());
         if (application.getJobPosting() != null && application.getJobPosting().getCompany() != null) {
@@ -284,6 +306,28 @@ public class InterviewController {
         if (!conflicts.isEmpty()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("Bị trùng lịch phỏng vấn khác"));
         }
+
+        // Kiểm tra trùng lịch cho applicant khi dời lịch
+        try {
+            Long applicantId = application.getApplicant() != null ? application.getApplicant().getId() : null;
+            if (applicantId != null) {
+                List<Application> applicantApps = applicationRepository.findByApplicantId(applicantId);
+                if (applicantApps != null && !applicantApps.isEmpty()) {
+                    List<Long> appIds = applicantApps.stream().map(Application::getId).toList();
+                    List<Interview> applicantInterviews = interviewRepository.findByApplicationIdIn(appIds);
+                    boolean overlap = applicantInterviews.stream().anyMatch(iv -> {
+                        if (iv.getId() != null && iv.getId().equals(interview.getId())) return false; // bỏ qua chính lịch này
+                        LocalDateTime ivStart = iv.getScheduledAt();
+                        LocalDateTime ivEnd = iv.getEndTime() != null ? iv.getEndTime() : (ivStart != null ? ivStart.plusMinutes(resolveDuration(iv)) : null);
+                        if (ivStart == null || ivEnd == null) return false;
+                        return !(end.isBefore(ivStart) || start.isAfter(ivEnd));
+                    });
+                    if (overlap) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("Ứng viên đã có lịch phỏng vấn khác trong khoảng thời gian này"));
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
 
         LocalDateTime old = interview.getScheduledAt();
         interview.setScheduledAt(request.getNewScheduledAt());
