@@ -4,14 +4,18 @@ import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.response.JobPostingResponse;
 import com.recruitment.system.dto.response.PageResponse;
 import com.recruitment.system.entity.JobPosting;
+import com.recruitment.system.entity.User;
 import com.recruitment.system.enums.JobType;
+import com.recruitment.system.enums.UserRole;
 import com.recruitment.system.repository.JobPostingRepository;
+import com.recruitment.system.repository.SavedJobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.recruitment.system.config.PaginationValidator;
 import java.util.Set;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -28,12 +32,14 @@ import java.util.stream.Collectors;
 public class PublicJobController {
 
     private final JobPostingRepository jobPostingRepository;
+    private final SavedJobRepository savedJobRepository;
 
     /**
      * Tìm kiếm việc làm công khai
      */
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<PageResponse<JobPostingResponse>>> searchJobs(
+            @AuthenticationPrincipal User currentUser,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) JobType jobType,
@@ -66,7 +72,7 @@ public class PublicJobController {
 
             // Convert to response DTOs
             List<JobPostingResponse> jobResponses = jobPostings.getContent().stream()
-                    .map(this::convertToResponse)
+                    .map(job -> convertToResponse(job, currentUser))
                     .collect(Collectors.toList());
 
             // Tạo PageResponse
@@ -92,7 +98,9 @@ public class PublicJobController {
      * Lấy chi tiết việc làm công khai
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<JobPostingResponse>> getPublicJobDetail(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<JobPostingResponse>> getPublicJobDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser ) {
         try {
             JobPosting jobPosting = jobPostingRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy việc làm"));
@@ -103,7 +111,7 @@ public class PublicJobController {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Việc làm không còn hoạt động"));
             }
 
-            JobPostingResponse response = convertToResponse(jobPosting);
+            JobPostingResponse response = convertToResponse(jobPosting, currentUser);
             return ResponseEntity.ok(ApiResponse.success("Lấy thông tin thành công", response));
 
         } catch (Exception e) {
@@ -117,6 +125,7 @@ public class PublicJobController {
      */
     @GetMapping("/latest")
     public ResponseEntity<ApiResponse<PageResponse<JobPostingResponse>>> getLatestJobs(
+            @AuthenticationPrincipal User currentUser,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
@@ -133,7 +142,7 @@ public class PublicJobController {
             Page<JobPosting> jobPostings = jobPostingRepository.findActiveJobs(now, pageable);
 
             List<JobPostingResponse> jobResponses = jobPostings.getContent().stream()
-                    .map(this::convertToResponse)
+                    .map(job -> convertToResponse(job, currentUser))
                     .collect(Collectors.toList());
 
             PageResponse<JobPostingResponse> pageResponse = new PageResponse<>(
@@ -197,4 +206,18 @@ public class PublicJobController {
 
         return response;
     }
+
+    private JobPostingResponse convertToResponse(JobPosting jobPosting, User currentUser) {
+        JobPostingResponse response = convertToResponse(jobPosting);
+
+        if (currentUser != null && currentUser.getRole() == UserRole.APPLICANT) {
+            boolean isSaved = savedJobRepository.existsByUserIdAndJobPostingId(currentUser.getId(), jobPosting.getId());
+            response.setIsSaved(isSaved);
+        } else {
+            response.setIsSaved(null);
+        }
+
+        return response;
+    }
+
 }

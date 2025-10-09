@@ -47,4 +47,8 @@ public class JobPostingResponse {
 
     // Điểm phù hợp cho hệ thống gợi ý
     private Double matchScore;
+
+    //Cải thiện JobPostingResponse:
+    private Boolean isSaved;          // null | true | false
+    private LocalDateTime savedAt;    // chỉ có khi là job đã lưu
 }

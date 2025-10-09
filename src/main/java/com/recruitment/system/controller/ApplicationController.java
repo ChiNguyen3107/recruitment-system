@@ -2,6 +2,7 @@ package com.recruitment.system.controller;
 
 import com.recruitment.system.dto.request.ApplicationRequest;
 import com.recruitment.system.config.AuditLogger;
+import com.recruitment.system.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.response.ApplicationResponse;
@@ -46,6 +47,8 @@ public class ApplicationController {
     private final MailService mailService;
     private final AuditLogger auditLogger;
     private final ApplicationTimelineRepository applicationTimelineRepository;
+
+    private final NotificationService notificationService;
 
     /**
      * POST /api/applications/my
@@ -113,6 +116,22 @@ public class ApplicationController {
         } catch (Exception e) {
             log.warn("Không thể gửi email thông báo đơn ứng tuyển mới: {}", e.getMessage());
         }
+
+        // Gửi notification cho nhà tuyển dụng khi có đơn ứng tuyển mới
+        try {
+            User employer = jobPosting.getCreatedBy();
+            if (employer != null) {
+                notificationService.notifyNewApplication(
+                        employer.getId(),                                // employerId
+                        jobPosting.getTitle(),                           // job title
+                        currentUser.getFullName(),                       // applicant name
+                        "/employer/jobs/" + jobPosting.getId() // link trang quản lý
+                );
+            }
+        } catch (Exception e) {
+            log.warn("Không thể tạo thông báo cho employer: {}", e.getMessage());
+        }
+
 
         // Trả response
         ApplicationResponse response = convertToResponse(saved);

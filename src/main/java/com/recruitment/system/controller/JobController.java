@@ -4,21 +4,25 @@ import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.dto.response.JobPostingResponse;
 import com.recruitment.system.dto.response.PageResponse;
 import com.recruitment.system.entity.JobPosting;
+import com.recruitment.system.entity.SavedJob;
 import com.recruitment.system.entity.User;
-import com.recruitment.system.enums.JobType;
-import com.recruitment.system.enums.ExperienceLevel;
-import com.recruitment.system.enums.CompanySize;
-import com.recruitment.system.enums.WorkMode;
+import com.recruitment.system.enums.*;
 import com.recruitment.system.repository.JobPostingRepository;
+import com.recruitment.system.repository.SavedJobRepository;
 import com.recruitment.system.service.RecommendationService;
-import com.recruitment.system.enums.UserRole;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.recruitment.system.config.PaginationValidator;
+
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.http.ResponseEntity;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.HttpStatus;
@@ -38,6 +42,9 @@ public class JobController {
 
     private final JobPostingRepository jobPostingRepository;
     private final RecommendationService recommendationService;
+
+    private final SavedJobRepository savedJobRepository;
+
 
     /**
      * Test endpoint để kiểm tra security
@@ -63,6 +70,7 @@ public class JobController {
     @GetMapping("/search")
     @PermitAll
     public ResponseEntity<ApiResponse<PageResponse<JobPostingResponse>>> searchJobs(
+            @AuthenticationPrincipal User currentUser,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) JobType jobType,
@@ -151,7 +159,7 @@ public class JobController {
 
             // Convert to response DTOs
             List<JobPostingResponse> jobResponses = jobPostings.getContent().stream()
-                    .map(this::convertToResponse)
+                    .map(job -> convertToResponse(job, currentUser))
                     .collect(Collectors.toList());
 
             // Tạo PageResponse
@@ -204,7 +212,8 @@ public class JobController {
      * @return Chi tiết việc làm
      */
     @GetMapping("/public/{id}")
-    public ResponseEntity<ApiResponse<JobPostingResponse>> getPublicJobDetail(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<JobPostingResponse>> getPublicJobDetail(@PathVariable Long id,
+                                                                              @AuthenticationPrincipal User currentUser   ) {
         try {
             JobPosting jobPosting = jobPostingRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy việc làm"));
@@ -215,7 +224,7 @@ public class JobController {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Việc làm không còn hoạt động"));
             }
 
-            JobPostingResponse response = convertToResponse(jobPosting);
+            JobPostingResponse response = convertToResponse(jobPosting, currentUser);
             return ResponseEntity.ok(ApiResponse.success("Lấy thông tin thành công", response));
 
         } catch (Exception e) {
@@ -233,6 +242,7 @@ public class JobController {
      */
     @GetMapping("/latest")
     public ResponseEntity<ApiResponse<PageResponse<JobPostingResponse>>> getLatestJobs(
+            @AuthenticationPrincipal User currentUser,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
@@ -249,7 +259,7 @@ public class JobController {
             Page<JobPosting> jobPostings = jobPostingRepository.findActiveJobs(now, pageable);
 
             List<JobPostingResponse> jobResponses = jobPostings.getContent().stream()
-                    .map(this::convertToResponse)
+                    .map(job -> convertToResponse(job, currentUser))
                     .collect(Collectors.toList());
 
             PageResponse<JobPostingResponse> pageResponse = new PageResponse<>(
@@ -313,4 +323,59 @@ public class JobController {
 
         return response;
     }
+
+    private JobPostingResponse convertToResponse(JobPosting jobPosting, User currentUser) {
+        JobPostingResponse response = convertToResponse(jobPosting);
+
+        Optional<SavedJob> savedOpt = savedJobRepository.findByUserIdAndJobPostingId(currentUser.getId(), jobPosting.getId());
+        if (savedOpt.isPresent()) {
+            response.setIsSaved(true);
+            response.setSavedAt(savedOpt.get().getSavedAt());
+        } else {
+            response.setIsSaved(false);
+            response.setSavedAt(null);
+        }
+
+
+        return response;
+    }
+
+    /**
+     * Lấy chi tiết tin tuyển dụng kèm trạng thái đã lưu (isSaved)
+     * Dùng để hiển thị chi tiết tin trong trang “Lưu việc làm yêu thích”
+     */
+    @GetMapping("/{id}/me")
+    @PreAuthorize("hasRole('APPLICANT')")
+    @Operation(summary = "Lấy chi tiết tin tuyển dụng kèm trạng thái đã lưu (isSaved)")
+    public ResponseEntity<ApiResponse<JobPostingResponse>> getJobDetailWithSavedCheck(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        try {
+            // Lấy job theo ID
+            JobPosting jobPosting = jobPostingRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Không tìm thấy tin tuyển dụng"));
+
+            // Kiểm tra job còn hoạt động và chưa hết hạn
+            if (jobPosting.getStatus() != JobStatus.ACTIVE ||
+                    jobPosting.getApplicationDeadline().isBefore(LocalDateTime.now())) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Tin tuyển dụng không còn hoạt động"));
+            }
+
+            // Convert sang response có cờ isSaved
+            JobPostingResponse response = convertToResponse(jobPosting, currentUser);
+
+            return ResponseEntity.ok(ApiResponse.success("Lấy thông tin thành công", response));
+
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Lỗi hệ thống: " + e.getMessage()));
+        }
+    }
+
+
+
 }

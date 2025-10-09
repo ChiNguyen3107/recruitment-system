@@ -16,6 +16,7 @@ import com.recruitment.system.service.MailService;
 import com.recruitment.system.entity.ApplicationTimeline;
 import com.recruitment.system.repository.ApplicationTimelineRepository;
 import com.recruitment.system.dto.response.ApplicationTimelineResponse;
+import com.recruitment.system.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,9 @@ public class ManageApplicationController {
     private final MailService mailService;
     private final ApplicationTimelineRepository applicationTimelineRepository;
     private final AuditLogger auditLogger;
+
+    private final NotificationService notificationService;
+
 
     private boolean isEmployerOfCompany(User user) {
         return user != null && (user.getRole() == UserRole.EMPLOYER || user.getRole() == UserRole.RECRUITER) && user.getCompany() != null;
@@ -177,6 +181,25 @@ public class ManageApplicationController {
         } catch (Exception e) {
             log.warn("Không thể gửi email cập nhật trạng thái: {}", e.getMessage());
         }
+
+        // Gửi notification cho ứng viên khi trạng thái thay đổi
+        try {
+            User applicant = saved.getApplicant();
+            JobPosting job = saved.getJobPosting();
+
+            if (applicant != null && job != null) {
+                notificationService.notifyApplicationStatusChanged(
+                        applicant.getId(),               // ứng viên
+                        job.getTitle(),                  // tên job
+                        saved.getStatus(),               // trạng thái mới (enum)
+                        "/applications/my"               // link khi click vào thông báo
+                );
+            }
+
+        } catch (Exception e) {
+            log.warn("Không thể tạo thông báo ứng viên: {}", e.getMessage());
+        }
+
 
         return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái thành công", convertToResponse(saved)));
     }
