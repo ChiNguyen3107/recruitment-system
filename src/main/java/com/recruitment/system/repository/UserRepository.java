@@ -58,4 +58,25 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.lastLogin < :date OR u.lastLogin IS NULL")
     List<User> findInactiveUsersSince(@Param("date") LocalDateTime date);
+
+    // ===================== Native queries cho admin analytics =====================
+
+    // Active users (login trong 30 ngày)
+    @Query(value = "SELECT COUNT(*) FROM users u WHERE u.last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY)", nativeQuery = true)
+    Long countActiveUsersLast30Days();
+
+    // New users this month
+    @Query(value = "SELECT COUNT(*) FROM users u WHERE u.created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", nativeQuery = true)
+    Long countNewUsersThisMonth();
+
+    // User growth 12 tháng gần nhất
+    @Query(value = "SELECT YEAR(u.created_at) AS y, MONTH(u.created_at) AS m, COUNT(*) AS c FROM users u \n" +
+            "WHERE u.created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY y, m ORDER BY y, m", nativeQuery = true)
+    List<Object[]> userGrowthLast12Months();
+
+    @Query(value = "SELECT YEAR(u.created_at) AS y, MONTH(u.created_at) AS m, COUNT(*) AS c FROM users u \n" +
+            "WHERE (:from IS NULL OR u.created_at >= :from) AND (:to IS NULL OR u.created_at <= :to) \n" +
+            "GROUP BY y, m ORDER BY y, m", nativeQuery = true)
+    List<Object[]> userGrowthInRange(@Param("from") java.time.LocalDateTime from,
+                                    @Param("to") java.time.LocalDateTime to);
 }

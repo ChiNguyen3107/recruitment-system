@@ -144,4 +144,41 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
                                         @Param("workMode") String workMode,
                                         @Param("benefits") String benefits,
                                         Pageable pageable);
+
+    // ===================== Native queries cho admin analytics =====================
+
+    // Jobs by status toàn hệ thống theo tháng hiện tại
+    @Query(value = "SELECT jp.status AS status, COUNT(*) AS cnt FROM job_postings jp \n" +
+            "WHERE jp.created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') GROUP BY jp.status",
+            nativeQuery = true)
+    List<Object[]> countJobsByStatusThisMonth();
+
+    // Job posting trend 12 tháng gần nhất
+    @Query(value = "SELECT YEAR(jp.created_at) AS y, MONTH(jp.created_at) AS m, COUNT(*) AS c \n" +
+            "FROM job_postings jp WHERE jp.created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) \n" +
+            "GROUP BY y, m ORDER BY y, m", nativeQuery = true)
+    List<Object[]> jobPostingTrendLast12Months();
+
+    @Query(value = "SELECT YEAR(jp.created_at) AS y, MONTH(jp.created_at) AS m, COUNT(*) AS c FROM job_postings jp \n" +
+            "WHERE (:from IS NULL OR jp.created_at >= :from) AND (:to IS NULL OR jp.created_at <= :to) \n" +
+            "GROUP BY y, m ORDER BY y, m", nativeQuery = true)
+    List<Object[]> jobPostingTrendInRange(@Param("from") java.time.LocalDateTime from,
+                                         @Param("to") java.time.LocalDateTime to);
+
+    // Most popular job types (top 5)
+    @Query(value = "SELECT jp.job_type AS jobType, COUNT(*) AS cnt FROM job_postings jp \n" +
+            "GROUP BY jp.job_type ORDER BY cnt DESC LIMIT 5", nativeQuery = true)
+    List<Object[]> mostPopularJobTypesTop5();
+
+    // Tổng jobs theo trạng thái (group by) toàn hệ thống
+    @Query(value = "SELECT jp.status AS status, COUNT(*) AS cnt FROM job_postings jp GROUP BY jp.status", nativeQuery = true)
+    List<Object[]> countJobsByStatusGroup();
+
+    // Số job đăng trong tháng hiện tại
+    @Query(value = "SELECT COUNT(*) FROM job_postings jp WHERE jp.created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", nativeQuery = true)
+    Long countJobsPostedThisMonth();
+
+    // Số công ty hiện có job ACTIVE còn hạn
+    @Query(value = "SELECT COUNT(DISTINCT jp.company_id) FROM job_postings jp WHERE jp.status = 'ACTIVE' AND jp.application_deadline > NOW()", nativeQuery = true)
+    Long countDistinctCompaniesWithActiveJobs();
 }

@@ -2148,10 +2148,70 @@
 									"  pm.expect(json).to.have.property('success', true);",
 									"  pm.expect(json).to.have.property('data');",
 									"});",
-									"pm.test(\"Data contains totalUsers and status maps\", function () {",
-									"  pm.expect(json.data).to.have.property('totalUsers');",
-									"  pm.expect(json.data).to.have.property('jobsByStatus');",
-									"  pm.expect(json.data).to.have.property('applicationsByStatus');",
+									"pm.test(\"Data contains systemOverview, performanceMetrics, growthTrends\", function () {",
+									"  pm.expect(json.data).to.have.property('systemOverview');",
+									"  pm.expect(json.data).to.have.property('performanceMetrics');",
+									"  pm.expect(json.data).to.have.property('growthTrends');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Admin Dashboard - With Date Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/dashboard?from=2025-01-01T00:00:00&to=2025-12-31T23:59:59",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"dashboard"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "2025-01-01T00:00:00",
+									"description": "Start date (ISO format)"
+								},
+								{
+									"key": "to",
+									"value": "2025-12-31T23:59:59",
+									"description": "End date (ISO format)"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"const json = pm.response.json();",
+									"pm.test(\"Body has ApiResponse shape\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('data');",
+									"});",
+									"pm.test(\"Data contains systemOverview, performanceMetrics, growthTrends\", function () {",
+									"  pm.expect(json.data).to.have.property('systemOverview');",
+									"  pm.expect(json.data).to.have.property('performanceMetrics');",
+									"  pm.expect(json.data).to.have.property('growthTrends');",
 									"});"
 								],
 								"type": "text/javascript"
@@ -2196,19 +2256,85 @@
 									"  pm.expect(json).to.have.property('success', true);",
 									"  pm.expect(json).to.have.property('data');",
 									"});",
-									"pm.test(\"Data contains activeJobs and conversionRate\", function () {",
-									"  pm.expect(json.data).to.have.property('activeJobs');",
-									"  pm.expect(json.data).to.have.property('conversionRate');",
+									"pm.test(\"Data contains new metrics\", function () {",
+									"  pm.expect(json.data).to.have.property('applicationsByStatus');",
+									"  pm.expect(json.data).to.have.property('topPerformingJobs');",
+									"  pm.expect(json.data).to.have.property('averageTimeToHire');",
+									"  pm.expect(json.data).to.have.property('conversionRates');",
+									"  pm.expect(json.data).to.have.property('hiringTrend');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Employer Dashboard - With Date Range & Limit",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{recruiterToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/employer/dashboard?from=2025-01-01T00:00:00&to=2025-12-31T23:59:59&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"employer",
+								"dashboard"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "2025-01-01T00:00:00",
+									"description": "Start date (ISO format)"
+								},
+								{
+									"key": "to",
+									"value": "2025-12-31T23:59:59",
+									"description": "End date (ISO format)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Limit for top performing jobs (default: 5)"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
 									"});",
-									"if (Array.isArray(json.data.activeJobs) && json.data.activeJobs.length > 0) {",
-									"  const item = json.data.activeJobs[0];",
-									"  pm.test(\"activeJobs item shape\", function () {",
-									"    pm.expect(item).to.have.property('jobId');",
-									"    pm.expect(item).to.have.property('title');",
-									"    pm.expect(item).to.have.property('status');",
-									"    pm.expect(item).to.have.property('applications');",
-									"  });",
-									"}"
+									"const json = pm.response.json();",
+									"pm.test(\"Body has ApiResponse shape\", function () {",
+									"  pm.expect(json).to.have.property('success', true);",
+									"  pm.expect(json).to.have.property('data');",
+									"});",
+									"pm.test(\"Data contains new metrics\", function () {",
+									"  pm.expect(json.data).to.have.property('applicationsByStatus');",
+									"  pm.expect(json.data).to.have.property('topPerformingJobs');",
+									"  pm.expect(json.data).to.have.property('averageTimeToHire');",
+									"  pm.expect(json.data).to.have.property('conversionRates');",
+									"  pm.expect(json.data).to.have.property('hiringTrend');",
+									"});",
+									"pm.test(\"topPerformingJobs respects limit\", function () {",
+									"  if (Array.isArray(json.data.topPerformingJobs)) {",
+									"    pm.expect(json.data.topPerformingJobs.length).to.be.at.most(10);",
+									"  }",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -2290,7 +2416,7 @@
 					"response": []
 				}
 			],
-			"description": "Bảng điều khiển (Dashboards)\n\n1) Admin Dashboard\n- Endpoint: GET /api/admin/dashboard\n- Quyền: Chỉ ADMIN (Authorization: Bearer {{adminToken}}).\n- Dữ liệu trả về: tổng số người dùng (totalUsers), số lượng tin tuyển dụng theo trạng thái (jobsByStatus), số lượng đơn ứng tuyển theo trạng thái (applicationsByStatus).\n- Mục đích: Thống kê nhanh toàn hệ thống để theo dõi hoạt động.\n\n2) Employer Dashboard\n- Endpoint: GET /api/employer/dashboard\n- Quyền: EMPLOYER/RECRUITER thuộc công ty hoặc ADMIN (Authorization: Bearer {{recruiterToken}} hoặc {{adminToken}}).\n- Dữ liệu trả về: danh sách tin đang ACTIVE của công ty kèm số đơn ứng tuyển cho mỗi tin (activeJobs), tỷ lệ chuyển đổi cơ bản (conversionRate = HIRED / tổng đơn).\n- Mục đích: Giúp nhà tuyển dụng theo dõi hiệu quả tuyển dụng theo từng tin và tổng quan."
+			"description": "Bảng điều khiển (Dashboards) - Nâng cao với Analytics\n\n1) Admin Dashboard\n- Endpoint: GET /api/admin/dashboard\n- Quyền: Chỉ ADMIN (Authorization: Bearer {{adminToken}}).\n- Tham số: from, to (ISO datetime) - lọc theo khoảng thời gian\n- Dữ liệu trả về:\n  + systemOverview: totalUsers, activeUsers (30 ngày), newUsersThisMonth, totalCompanies, verifiedCompanies, companiesWithActiveJobs, totalJobsByStatus, jobsPostedThisMonth, totalApplicationsByStatus, applicationsThisMonth\n  + performanceMetrics: averageApplicationsPerJob, averageJobsPerCompany, systemWideConversionRate, mostPopularJobTypes (top 5), mostActiveCompanies (top 10)\n  + growthTrends: userGrowthChart, jobPostingTrend, applicationVolumeTrend (12 tháng)\n- Cache: 15 phút, precompute mỗi 15 phút\n\n2) Employer Dashboard\n- Endpoint: GET /api/employer/dashboard\n- Quyền: EMPLOYER/RECRUITER thuộc công ty hoặc ADMIN (Authorization: Bearer {{recruiterToken}} hoặc {{adminToken}}).\n- Tham số: from, to (ISO datetime), limit (số lượng top jobs, mặc định 5)\n- Dữ liệu trả về:\n  + applicationsByStatus: Map trạng thái ứng tuyển\n  + topPerformingJobs: Top N jobs theo số applications (jobTitle, applicationsCount, interviewsCount, hiresCount, conversionRate)\n  + averageTimeToHire: Thời gian trung bình từ RECEIVED → HIRED (ngày)\n  + conversionRates: receivedToReviewed, reviewedToInterview, interviewToOffer, offerToHired\n  + hiringTrend: Xu hướng tuyển dụng 12 tháng (MonthlyStats: year, month, count)\n- Cache: 15 phút theo companyId + tham số\n- Mục đích: Analytics chi tiết cho nhà tuyển dụng theo dõi hiệu quả tuyển dụng và xu hướng."
 		},
 		{
 			"name": "Interviews",

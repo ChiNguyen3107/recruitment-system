@@ -4,8 +4,8 @@ import com.recruitment.system.dto.response.ApiResponse;
 import com.recruitment.system.entity.JobPosting;
 import com.recruitment.system.entity.User;
 import com.recruitment.system.enums.UserRole;
-import com.recruitment.system.repository.ApplicationRepository;
 import com.recruitment.system.repository.JobPostingRepository;
+import com.recruitment.system.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +23,6 @@ import com.recruitment.system.enums.JobStatus;
 import java.util.stream.Collectors;
 import java.util.Set;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +32,7 @@ import java.util.Map;
 public class EmployerDashboardController {
 
     private final JobPostingRepository jobPostingRepository;
-    private final ApplicationRepository applicationRepository;
+    private final DashboardService dashboardService;
 
     private boolean isEmployer(User user) {
         return user != null && (user.getRole() == UserRole.EMPLOYER || user.getRole() == UserRole.RECRUITER || user.getRole() == UserRole.ADMIN) && user.getCompany() != null;
@@ -48,39 +46,17 @@ public class EmployerDashboardController {
      */
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getEmployerDashboard(
-            @AuthenticationPrincipal User currentUser
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam(required = false) java.time.LocalDateTime from,
+            @RequestParam(required = false) java.time.LocalDateTime to,
+            @RequestParam(required = false) Integer limit
     ) {
         if (!isEmployer(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Chỉ employer/recruiter có công ty mới được truy cập"));
         }
 
         Long companyId = currentUser.getCompany().getId();
-
-        Map<String, Object> payload = new HashMap<>();
-
-        // Danh sách jobs ACTIVE còn hạn của công ty
-        List<JobPosting> activeJobs = jobPostingRepository.findActiveJobs(LocalDateTime.now())
-                .stream()
-                .filter(j -> j.getCompany() != null && j.getCompany().getId().equals(companyId))
-                .toList();
-
-        // Đếm ứng viên theo job
-        List<Map<String, Object>> jobsWithCounts = activeJobs.stream().map(job -> {
-            Map<String, Object> item = new HashMap<>();
-            item.put("jobId", job.getId());
-            item.put("title", job.getTitle());
-            item.put("status", job.getStatus().name());
-            item.put("applications", applicationRepository.countByJobPostingId(job.getId()));
-            return item;
-        }).toList();
-        payload.put("activeJobs", jobsWithCounts);
-
-        // Conversion rate basic = HIRED / tổng ứng viên của công ty
-        long totalApplications = applicationRepository.countByCompanyId(companyId);
-        long hired = applicationRepository.countByCompanyIdAndStatus(companyId, com.recruitment.system.enums.ApplicationStatus.HIRED);
-        double conversionRate = totalApplications == 0 ? 0.0 : (double) hired / (double) totalApplications;
-        payload.put("conversionRate", conversionRate);
-
+        Map<String, Object> payload = dashboardService.buildEmployerMetrics(companyId, from, to, limit);
         return ResponseEntity.ok(ApiResponse.success("Employer dashboard", payload));
     }
 

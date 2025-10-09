@@ -17,14 +17,14 @@ public class CacheConfig {
     @Bean
     public Caffeine<Object, Object> caffeineConfig() {
         return Caffeine.newBuilder()
-                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .expireAfterWrite(15, TimeUnit.MINUTES)
                 .maximumSize(5_000);
     }
 
     @Bean
     @Primary
     public CacheManager cacheManager(Caffeine<Object, Object> caffeine) {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("companyPublic", "companyJobs");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("companyPublic", "companyJobs", "employerDashboard", "adminDashboard");
         cacheManager.setCaffeine(caffeine);
         return cacheManager;
     }

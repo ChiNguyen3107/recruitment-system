@@ -1,16 +1,15 @@
 package com.recruitment.system.controller;
 
 import com.recruitment.system.dto.response.ApiResponse;
-import com.recruitment.system.enums.ApplicationStatus;
-import com.recruitment.system.enums.JobStatus;
-import com.recruitment.system.repository.ApplicationRepository;
-import com.recruitment.system.repository.JobPostingRepository;
-import com.recruitment.system.repository.UserRepository;
+// Removed unused imports of enums
+// Xoá bớt dependency không dùng trực tiếp tại controller
+import com.recruitment.system.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,9 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminDashboardController {
 
-    private final UserRepository userRepository;
-    private final JobPostingRepository jobPostingRepository;
-    private final ApplicationRepository applicationRepository;
+    private final DashboardService dashboardService;
 
     /**
      * GET /api/admin/dashboard
@@ -31,25 +28,15 @@ public class AdminDashboardController {
      * - Applications theo trạng thái
      */
     @GetMapping("/dashboard")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAdminDashboard() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAdminDashboard(
+            @RequestParam(required = false) java.time.LocalDateTime from,
+            @RequestParam(required = false) java.time.LocalDateTime to
+    ) {
         Map<String, Object> payload = new HashMap<>();
 
-        // Tổng users
-        payload.put("totalUsers", userRepository.count());
-
-        // Jobs theo trạng thái
-        Map<String, Long> jobsStatusCounts = new HashMap<>();
-        for (JobStatus status : JobStatus.values()) {
-            jobsStatusCounts.put(status.name(), jobPostingRepository.countByStatus(status));
-        }
-        payload.put("jobsByStatus", jobsStatusCounts);
-
-        // Applications theo trạng thái
-        Map<String, Long> applicationsStatusCounts = new HashMap<>();
-        for (ApplicationStatus status : ApplicationStatus.values()) {
-            applicationsStatusCounts.put(status.name(), applicationRepository.countByStatus(status));
-        }
-        payload.put("applicationsByStatus", applicationsStatusCounts);
+        payload.put("systemOverview", dashboardService.buildAdminOverview(from, to));
+        payload.put("performanceMetrics", dashboardService.buildAdminPerformance(from, to));
+        payload.put("growthTrends", dashboardService.buildAdminGrowth(from, to));
 
         return ResponseEntity.ok(ApiResponse.success("Admin dashboard", payload));
     }
