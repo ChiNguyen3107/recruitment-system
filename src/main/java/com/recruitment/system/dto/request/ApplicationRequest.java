@@ -1,5 +1,7 @@
 package com.recruitment.system.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -24,8 +26,23 @@ public class ApplicationRequest {
     private String resumeUrl;
 
     @Size(max = 1000, message = "Tài liệu bổ sung không được quá 1000 ký tự")
+    @JsonIgnore
     private String additionalDocuments;
+    
+    // Field để nhận Array từ client (sẽ được convert thành String)
+    @JsonProperty("additionalDocuments")
+    private java.util.List<String> additionalDocumentsList;
 
+    /**
+     * Getter cho additionalDocuments (sẽ được convert từ List)
+     */
+    public String getAdditionalDocuments() {
+        if (additionalDocumentsList != null && !additionalDocumentsList.isEmpty()) {
+            return String.join(", ", additionalDocumentsList);
+        }
+        return additionalDocuments;
+    }
+    
     /**
      * Sanitize input để tránh XSS và các vấn đề bảo mật
      */
@@ -33,6 +50,13 @@ public class ApplicationRequest {
         if (StringUtils.hasText(coverLetter)) {
             coverLetter = sanitizeText(coverLetter);
         }
+        
+        // Xử lý additionalDocuments từ Array hoặc String
+        if (additionalDocumentsList != null && !additionalDocumentsList.isEmpty()) {
+            // Convert Array thành String (join bằng dấu phẩy)
+            additionalDocuments = String.join(", ", additionalDocumentsList);
+        }
+        
         if (StringUtils.hasText(additionalDocuments)) {
             additionalDocuments = sanitizeText(additionalDocuments);
         }
