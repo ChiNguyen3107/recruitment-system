@@ -1,0 +1,1158 @@
+{
+	"info": {
+		"_postman_id": "additional-endpoints-2025",
+		"name": "Recruitment System API - Additional Endpoints",
+		"description": "# 🚀 RECRUITMENT SYSTEM API - ADDITIONAL ENDPOINTS\n\n## 📋 TỔNG QUAN\nCollection này bổ sung các endpoint còn thiếu từ phân tích code backend Spring Boot, được tổ chức theo role-based structure để dễ dàng test và quản lý.\n\n## 🎯 ENDPOINTS BỔ SUNG\n- **Company Management**: Cập nhật thông tin công ty cho employer/recruiter\n- **Job Search Advanced**: Tìm kiếm nâng cao với nhiều filter (salary, location, experience, etc.)\n- **Job Management**: CRUD jobs với validation đầy đủ\n- **Application Status Management**: Quản lý trạng thái đơn ứng tuyển theo workflow\n- **Interview Management**: Quản lý lịch phỏng vấn đầy đủ (schedule, reschedule, cancel, complete)\n- **Profile Documents**: Upload và quản lý tài liệu hồ sơ (CV, certificates, portfolio)\n- **Company Public Info**: Xem thông tin công ty công khai\n- **Dashboard Analytics**: Báo cáo chi tiết cho admin và employer\n\n## 📋 ROLE-BASED ORGANIZATION\n\n### 🔓 **PUBLIC ENDPOINTS** (Không cần authentication)\n- **Company Public Info**: Xem thông tin công ty và jobs của công ty\n- **Job Search Advanced**: Tìm kiếm việc làm với filter nâng cao\n- **Job Detail**: Xem chi tiết job công khai\n\n### 👤 **APPLICANT ENDPOINTS** (Cần Bearer token + role APPLICANT)\n- **Profile Documents**: Upload CV, certificates, portfolio\n- **My Applications**: Nộp đơn, xem đơn, rút đơn\n- **Job Recommendations**: Gợi ý việc làm dựa trên profile\n\n### 🧑‍💼 **EMPLOYER/RECRUITER ENDPOINTS** (Cần Bearer token + role EMPLOYER/RECRUITER)\n- **Company Management**: Cập nhật thông tin công ty\n- **Job Management**: CRUD jobs, quản lý trạng thái\n- **Application Management**: Xem và cập nhật trạng thái đơn ứng tuyển\n- **Interview Management**: Lên lịch, quản lý phỏng vấn\n- **Dashboard**: Báo cáo hiệu quả tuyển dụng\n\n### 🔧 **ADMIN ENDPOINTS** (Cần Bearer token + role ADMIN)\n- **Admin Dashboard**: Tổng quan hệ thống, analytics\n\n### 🔧 **DEBUG ENDPOINTS** (Chỉ dùng trong development)\n- **User Debug**: Kiểm tra thông tin user, password, tokens\n- **Test Tools**: Tạo user test, kiểm tra email verification\n\n## 🚀 SETUP & USAGE\n\n### 1. **Import Collection**\n```\nFile: Recruitment System API - Additional Endpoints.postman_collection.json\nImport vào Postman workspace\n```\n\n### 2. **Cấu hình Variables**\n```\nbaseUrl: http://localhost:8081\naccessToken: (lấy từ Auth/Login)\nadminToken: (token của admin user)\nrecruiterToken: (token của recruiter user)\ncompanyId: 1\njobId: 1\napplicationId: 1\ninterviewId: 1\ndocumentId: 1\n```\n\n### 3. **Test Flow theo Role**\n\n#### 🔓 **PUBLIC FLOW**\n```\n1. Search Jobs (Advanced) → Test filters\n2. Get Company Public Info → View company details\n3. Get Job Detail → View job information\n```\n\n#### 👤 **APPLICANT FLOW**\n```\n1. Register → Verify Email → Login\n2. Update Profile → Upload Documents (CV, certificates)\n3. Search Jobs → Apply to Job\n4. View My Applications → Track status\n5. Get Job Recommendations → Personalized suggestions\n```\n\n#### 🧑‍💼 **EMPLOYER FLOW**\n```\n1. Register as EMPLOYER → Login\n2. Update Company Info → Set company details\n3. Create Job → Update Status to ACTIVE\n4. View Applications → Review candidates\n5. Update Application Status → Move through workflow\n6. Schedule Interview → Manage interview process\n7. View Dashboard → Analytics and metrics\n```\n\n#### 🔧 **ADMIN FLOW**\n```\n1. Login as ADMIN\n2. View Admin Dashboard → System overview\n3. Monitor system metrics → Performance tracking\n```\n\n## 📊 ENDPOINT STATISTICS\n\n| Role | Endpoints | Description |\n|------|-----------|-------------|\n| 🔓 Public | 6 | Job search, company info, public access |\n| 👤 Applicant | 9 | Profile, applications, recommendations |\n| 🧑‍💼 Employer | 20 | Company, jobs, applications, interviews |\n| 🔧 Admin | 1 | System dashboard |\n| 🔧 Debug | 6 | Development tools |\n| **TOTAL** | **42** | **Complete API coverage** |\n\n## 🔐 AUTHENTICATION FLOW\n\n```\n1. POST /api/auth/register → Register new user\n2. POST /api/auth/verify-email → Verify email with token\n3. POST /api/auth/login → Get accessToken + refreshToken\n4. Set accessToken in collection variables\n5. Test authenticated endpoints with Bearer token\n```\n\n## 🎯 KEY FEATURES\n\n### ✅ **Complete CRUD Operations**\n- Create, Read, Update, Delete cho tất cả entities\n- Validation đầy đủ với error handling\n- Pagination và sorting support\n\n### ✅ **Advanced Search & Filtering**\n- Job search với multiple filters\n- Salary range, location, experience level\n- Company size, work mode, benefits\n- Posted within timeframe\n\n### ✅ **File Upload Support**\n- Upload CV (PDF only, max 5MB)\n- Upload documents (PDF/DOC/DOCX/JPG/PNG)\n- Magic number validation\n- File type và size validation\n\n### ✅ **Interview Management**\n- Schedule interview với conflict checking\n- Reschedule, cancel, complete interview\n- Add/remove participants\n- Email notifications với .ics attachment\n\n### ✅ **Status Workflow Management**\n- Application status: RECEIVED → REVIEWED → INTERVIEW → OFFER → HIRED/REJECTED\n- Job status: DRAFT → ACTIVE → CLOSED\n- Interview status: SCHEDULED → COMPLETED/CANCELLED/RESCHEDULED\n\n### ✅ **Dashboard Analytics**\n- Admin: System overview, user growth, job statistics\n- Employer: Company metrics, hiring trends, conversion rates\n- Real-time data với caching\n\n### ✅ **Security & Validation**\n- Role-based access control (RBAC)\n- JWT authentication\n- Input sanitization\n- Rate limiting\n- Audit logging\n\n## 📝 TESTING NOTES\n\n### **Validation Testing**\n- Test invalid input formats\n- Test file upload limits\n- Test authentication failures\n- Test role-based access\n\n### **Error Handling**\n- Consistent ApiResponse format\n- Proper HTTP status codes\n- Detailed error messages\n- No stack trace exposure\n\n### **Performance Testing**\n- Pagination limits (max 50 items)\n- Search optimization\n- Caching strategies\n- Database query efficiency\n\n## 🔧 DEBUGGING TOOLS\n\n### **User Debug**\n- Get user info by email\n- Test password matching\n- Check email verification status\n- Generate test tokens\n\n### **Development Support**\n- Create test users\n- Verify email tokens\n- Check system status\n- Monitor authentication flow\n\n## 📚 DOCUMENTATION\n\n### **Request/Response Examples**\n- Complete request bodies\n- Expected response formats\n- Error response examples\n- Status code explanations\n\n### **Variable Usage**\n- Environment variables\n- Collection variables\n- Dynamic values\n- Token management\n\n## 🚨 IMPORTANT NOTES\n\n1. **Debug endpoints** chỉ dùng trong development\n2. **File upload** có giới hạn kích thước theo loại\n3. **Authentication** bắt buộc cho hầu hết endpoints\n4. **Role-based access** được enforce nghiêm ngặt\n5. **Rate limiting** áp dụng cho auth endpoints\n6. **Email verification** bắt buộc trước khi login\n\n## 🎉 READY TO USE\n\nCollection này đã sẵn sàng để:\n- Import vào Postman\n- Test toàn bộ API\n- Validate business logic\n- Debug authentication issues\n- Monitor system performance",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 Auth Endpoints",
+			"description": "## 🔐 AUTH ENDPOINTS\n\n**Mô tả**: Các endpoint xác thực và quản lý người dùng.\n\n**Đặc điểm**:\n- Không cần authentication (public auth)\n- Đăng ký, đăng nhập, xác minh email\n- Reset password, refresh token\n- Quản lý session và tokens\n\n**Flow sử dụng**:\n1. Register → Verify Email → Login\n2. Forgot Password → Reset Password → Login\n3. Refresh Token → Get new access token\n4. Logout → Invalidate tokens\n\n**Lưu ý**:\n- Email verification bắt buộc trước khi login\n- Rate limiting áp dụng cho auth endpoints\n- JWT tokens có thời hạn\n- Refresh token để gia hạn access token",
+			"item": [
+				{
+					"name": "User Registration",
+					"description": "## 👤 USER REGISTRATION\n\n**Mô tả**: Đăng ký tài khoản người dùng mới.\n\n**Đặc điểm**:\n- Không cần authentication\n- Tạo user với role mặc định APPLICANT\n- Gửi email verification\n- Validation đầy đủ\n\n**Request Body**:\n- `email`: Email người dùng (unique)\n- `password`: Mật khẩu (min 8 chars)\n- `firstName`: Tên\n- `lastName`: Họ\n- `role`: Role (APPLICANT, EMPLOYER, ADMIN)\n\n**Response**:\n- User ID\n- Email verification required\n- Success message\n\n**Use cases**:\n- Đăng ký tài khoản ứng viên\n- Đăng ký tài khoản nhà tuyển dụng\n- Tạo admin account\n\n**Lưu ý**:\n- Email phải unique\n- Password phải đủ mạnh\n- Cần verify email trước khi login",
+					"item": [
+						{
+							"name": "Register User",
+							"description": "## 📝 REGISTER USER\n\n**Mô tả**: Đăng ký tài khoản người dùng mới.\n\n**Request Body**:\n```json\n{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"APPLICANT\"\n}\n```\n\n**Response**:\n```json\n{\n  \"success\": true,\n  \"message\": \"User registered successfully. Please check your email for verification.\",\n  \"data\": {\n    \"userId\": 1,\n    \"email\": \"user@example.com\",\n    \"role\": \"APPLICANT\",\n    \"emailVerified\": false\n  }\n}\n```\n\n**Use cases**:\n- Đăng ký tài khoản ứng viên\n- Đăng ký tài khoản nhà tuyển dụng\n- Tạo admin account",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json", "type": "text" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"APPLICANT\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/register",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "auth", "register"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Email Verification",
+					"description": "## 📧 EMAIL VERIFICATION\n\n**Mô tả**: Xác minh email người dùng.\n\n**Đặc điểm**:\n- Không cần authentication\n- Sử dụng token từ email\n- Kích hoạt tài khoản\n- Bắt buộc trước khi login\n\n**Use cases**:\n- Xác minh email sau khi đăng ký\n- Kích hoạt tài khoản\n- Resend verification email\n\n**Lưu ý**:\n- Token có thời hạn\n- Chỉ có thể verify một lần\n- Cần verify trước khi login",
+					"item": [
+						{
+							"name": "Verify Email",
+							"description": "## ✅ VERIFY EMAIL\n\n**Mô tả**: Xác minh email với token từ email.\n\n**Request Body**:\n```json\n{\n  \"token\": \"verification_token_from_email\"\n}\n```\n\n**Response**:\n```json\n{\n  \"success\": true,\n  \"message\": \"Email verified successfully\",\n  \"data\": {\n    \"email\": \"user@example.com\",\n    \"verified\": true\n  }\n}\n```\n\n**Use cases**:\n- Xác minh email sau khi đăng ký\n- Kích hoạt tài khoản\n- Hoàn tất quá trình đăng ký",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json", "type": "text" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"token\": \"verification_token_from_email\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/verify-email",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "auth", "verify-email"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Resend Verification Email",
+							"description": "## 📤 RESEND VERIFICATION EMAIL\n\n**Mô tả**: Gửi lại email xác minh.\n\n**Request Body**:\n```json\n{\n  \"email\": \"user@example.com\"\n}\n```\n\n**Response**:\n```json\n{\n  \"success\": true,\n  \"message\": \"Verification email sent successfully\"\n}\n```\n\n**Use cases**:\n- Gửi lại email xác minh\n- Khi email bị mất\n- Khi token hết hạn",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json", "type": "text" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"user@example.com\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/resend-verification",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "auth", "resend-verification"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "User Login",
+					"description": "## 🔑 USER LOGIN\n\n**Mô tả**: Đăng nhập người dùng.\n\n**Đặc điểm**:\n- Không cần authentication\n- Trả về access token và refresh token\n- Email phải đã verify\n- Rate limiting áp dụng\n\n**Request Body**:\n- `email`: Email người dùng\n- `password`: Mật khẩu\n\n**Response**:\n- Access token (JWT)\n- Refresh token\n- User info\n- Token expiry\n\n**Use cases**:\n- Đăng nhập ứng viên\n- Đăng nhập nhà tuyển dụng\n- Đăng nhập admin\n\n**Lưu ý**:\n- Email phải đã verify\n- Rate limiting: 5 attempts per minute\n- Tokens có thời hạn",
+					"item": [
+						{
+							"name": "Login",
+							"description": "## 🔑 LOGIN\n\n**Mô tả**: Đăng nhập người dùng.\n\n**Request Body**:\n```json\n{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}\n```\n\n**Response**:\n```json\n{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"refresh_token_here\",\n    \"user\": {\n      \"id\": 1,\n      \"email\": \"user@example.com\",\n      \"firstName\": \"John\",\n      \"lastName\": \"Doe\",\n      \"role\": \"APPLICANT\",\n      \"emailVerified\": true\n    },\n    \"expiresIn\": 3600\n  }\n}\n```\n\n**Use cases**:\n- Đăng nhập ứng viên\n- Đăng nhập nhà tuyển dụng\n- Đăng nhập admin\n\n**Lưu ý**:\n- Email phải đã verify\n- Rate limiting: 5 attempts per minute\n- Tokens có thời hạn",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json", "type": "text" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/login",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "auth", "login"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Password Management",
+					"description": "## 🔒 PASSWORD MANAGEMENT\n\n**Mô tả**: Quản lý mật khẩu người dùng.\n\n**Đặc điểm**:\n- Không cần authentication\n- Reset password qua email\n- Change password cần authentication\n- Rate limiting áp dụng\n\n**Use cases**:\n- Quên mật khẩu\n- Reset password\n- Thay đổi mật khẩu\n\n**Lưu ý**:\n- Reset password cần token từ email\n- Rate limiting: 3 attempts per hour\n- Password phải đủ mạnh",
+					"item": [
+						{
+							"name": "Forgot Password",
+							"description": "## 🔒 FORGOT PASSWORD\n\n**Mô tả**: Gửi email reset password.\n\n**Request Body**:\n```json\n{\n  \"email\": \"user@example.com\"\n}\n```\n\n**Response**:\n```json\n{\n  \"success\": true,\n  \"message\": \"Password reset email sent successfully\"\n}\n```\n\n**Use cases**:\n- Quên mật khẩu\n- Reset password\n- Gửi email reset\n\n**Lưu ý**:\n- Rate limiting: 3 attempts per hour\n- Email sẽ chứa reset token",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json", "type": "text" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"user@example.com\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/forgot-password",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "auth", "forgot-password"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reset Password",
+							"description": "## 🔑 RESET PASSWORD\n\n**Mô tả**: Reset password với token từ email.\n\n**Request Body**:\n```json\n{\n  \"token\": \"reset_token_from_email\",\n  \"newPassword\": \"newpassword123\"\n}\n```\n\n**Response**:\n```json\n{\n  \"success\": true,\n  \"message\": \"Password reset successfully\"\n}\n```\n\n**Use cases**:\n- Reset password với token\n- Thay đổi mật khẩu\n- Hoàn tất quá trình reset\n\n**Lưu ý**:\n- Token có thời hạn\n- Password phải đủ mạnh\n- Chỉ có thể dùng một lần",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json", "type": "text" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"token\": \"reset_token_from_email\",\n  \"newPassword\": \"newpassword123\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/reset-password",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "auth", "reset-password"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Token Management",
+					"description": "## 🎫 TOKEN MANAGEMENT\n\n**Mô tả**: Quản lý JWT tokens.\n\n**Đặc điểm**:\n- Refresh token để gia hạn access token\n- Logout để invalidate tokens\n- Token có thời hạn\n- JWT format\n\n**Use cases**:\n- Gia hạn access token\n- Logout người dùng\n- Quản lý session\n\n**Lưu ý**:\n- Refresh token có thời hạn dài hơn\n- Logout invalidate tất cả tokens\n- Tokens được lưu trong database",
+					"item": [
+						{
+							"name": "Refresh Token",
+							"description": "## 🔄 REFRESH TOKEN\n\n**Mô tả**: Gia hạn access token.\n\n**Request Body**:\n```json\n{\n  \"refreshToken\": \"refresh_token_here\"\n}\n```\n\n**Response**:\n```json\n{\n  \"success\": true,\n  \"message\": \"Token refreshed successfully\",\n  \"data\": {\n    \"accessToken\": \"new_access_token\",\n    \"refreshToken\": \"new_refresh_token\",\n    \"expiresIn\": 3600\n  }\n}\n```\n\n**Use cases**:\n- Gia hạn access token\n- Duy trì session\n- Tránh login lại\n\n**Lưu ý**:\n- Refresh token phải hợp lệ\n- Trả về token mới\n- Có thể refresh nhiều lần",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json", "type": "text" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"refreshToken\": \"refresh_token_here\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/refresh",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "auth", "refresh"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Logout",
+							"description": "## 🚪 LOGOUT\n\n**Mô tả**: Đăng xuất người dùng.\n\n**Request Body**:\n```json\n{\n  \"refreshToken\": \"refresh_token_here\"\n}\n```\n\n**Response**:\n```json\n{\n  \"success\": true,\n  \"message\": \"Logout successful\"\n}\n```\n\n**Use cases**:\n- Đăng xuất người dùng\n- Invalidate tokens\n- Kết thúc session\n\n**Lưu ý**:\n- Invalidate refresh token\n- Cần access token để logout\n- Tokens sẽ không còn hợp lệ",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json", "type": "text" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"refreshToken\": \"refresh_token_here\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/logout",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "auth", "logout"]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "🔓 Public Endpoints",
+			"description": "## 🔓 PUBLIC ENDPOINTS\n\n**Mô tả**: Các endpoint công khai không cần authentication, dành cho tất cả người dùng.\n\n**Đặc điểm**:\n- Không cần Bearer token\n- Truy cập tự do\n- Chủ yếu để tìm kiếm và xem thông tin\n\n**Flow sử dụng**:\n1. Tìm kiếm việc làm với filter nâng cao\n2. Xem thông tin công ty công khai\n3. Xem chi tiết job và danh sách jobs của công ty\n\n**Lưu ý**:\n- Có thể sử dụng pagination\n- Hỗ trợ sorting và filtering\n- Chỉ hiển thị jobs ACTIVE và còn hạn",
+			"item": [
+				{
+					"name": "Company Public Info",
+					"description": "## 🏢 COMPANY PUBLIC INFO\n\n**Mô tả**: Xem thông tin công ty công khai và danh sách jobs của công ty.\n\n**Đặc điểm**:\n- Không cần authentication\n- Hiển thị thông tin cơ bản của công ty\n- Chỉ hiển thị jobs ACTIVE và còn hạn\n- Có thể sử dụng pagination\n\n**Use cases**:\n- Ứng viên xem thông tin công ty trước khi apply\n- Tìm hiểu về văn hóa và quy mô công ty\n- Xem danh sách việc làm hiện tại của công ty",
+					"item": [
+						{
+							"name": "Get Company Public Profile",
+							"description": "## 🏢 GET COMPANY PUBLIC PROFILE\n\n**Mô tả**: Lấy thông tin công khai của công ty theo ID.\n\n**Đặc điểm**:\n- Không cần authentication\n- Hiển thị thông tin cơ bản: tên, mô tả, website, địa chỉ\n- Không hiển thị thông tin nhạy cảm\n- Trả về thông tin company profile public\n\n**Response**:\n- Company name, description, website\n- Company size, industry\n- Location, contact info\n- Logo URL (nếu có)\n\n**Use cases**:\n- Ứng viên xem thông tin công ty trước khi apply\n- Tìm hiểu về văn hóa công ty\n- Kiểm tra tính hợp lệ của công ty",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/companies/{{companyId}}/public",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "companies", "{{companyId}}", "public"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Company Jobs",
+							"description": "## 💼 GET COMPANY JOBS\n\n**Mô tả**: Lấy danh sách jobs của công ty (chỉ jobs ACTIVE và còn hạn).\n\n**Đặc điểm**:\n- Không cần authentication\n- Chỉ hiển thị jobs ACTIVE và còn hạn\n- Hỗ trợ pagination (page, size)\n- Hỗ trợ sorting (sortBy, sortDir)\n- Có thể filter theo job type, work mode\n\n**Query Parameters**:\n- `page`: Số trang (default: 0)\n- `size`: Số items per page (default: 10, max: 50)\n- `sortBy`: Sắp xếp theo field (title, createdAt, salary)\n- `sortDir`: Hướng sắp xếp (ASC, DESC)\n- `jobType`: Filter theo loại job (FULL_TIME, PART_TIME, etc.)\n- `workMode`: Filter theo chế độ làm việc (REMOTE, ONSITE, HYBRID)\n\n**Response**:\n- Danh sách jobs với thông tin cơ bản\n- Pagination info (total, page, size)\n- Job details: title, description, salary, location\n\n**Use cases**:\n- Ứng viên xem tất cả việc làm của công ty\n- Tìm kiếm việc làm theo loại hoặc chế độ\n- Khám phá cơ hội việc làm tại công ty",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/companies/{{companyId}}/jobs?page=0&size=10",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "companies", "{{companyId}}", "jobs"],
+									"query": [
+										{ "key": "page", "value": "0" },
+										{ "key": "size", "value": "10" }
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Job Search Advanced",
+					"description": "## 🔍 JOB SEARCH ADVANCED\n\n**Mô tả**: Tìm kiếm việc làm với filter nâng cao và nhiều tiêu chí.\n\n**Đặc điểm**:\n- Không cần authentication\n- Hỗ trợ nhiều filter cùng lúc\n- Tìm kiếm theo text, location, salary range\n- Filter theo experience level, job type, work mode\n- Hỗ trợ pagination và sorting\n\n**Filter Options**:\n- **Text Search**: Tìm kiếm trong title, description, company name\n- **Location**: Tìm kiếm theo địa điểm\n- **Salary Range**: Min/max salary\n- **Experience Level**: ENTRY, MID, SENIOR, LEAD\n- **Job Type**: FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP\n- **Work Mode**: REMOTE, ONSITE, HYBRID\n- **Company Size**: STARTUP, SMALL, MEDIUM, LARGE, ENTERPRISE\n- **Posted Within**: Jobs posted trong X ngày gần đây\n\n**Use cases**:\n- Ứng viên tìm kiếm việc làm phù hợp\n- Filter theo yêu cầu cụ thể\n- Tìm kiếm việc làm mới nhất\n- Khám phá cơ hội việc làm",
+					"item": [
+						{
+							"name": "Advanced Job Search",
+							"description": "## 🔍 ADVANCED JOB SEARCH\n\n**Mô tả**: Tìm kiếm việc làm với filter nâng cao, hỗ trợ nhiều tiêu chí cùng lúc.\n\n**Đặc điểm**:\n- Không cần authentication\n- Hỗ trợ nhiều filter cùng lúc\n- Tìm kiếm theo text, location, salary range\n- Filter theo experience level, job type, work mode\n- Hỗ trợ pagination và sorting\n\n**Query Parameters**:\n- `keyword`: Từ khóa tìm kiếm (title, description, company)\n- `location`: Địa điểm làm việc\n- `minSalary`: Mức lương tối thiểu\n- `maxSalary`: Mức lương tối đa\n- `experienceLevel`: ENTRY, MID, SENIOR, LEAD\n- `jobType`: FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP\n- `workMode`: REMOTE, ONSITE, HYBRID\n- `companySize`: STARTUP, SMALL, MEDIUM, LARGE, ENTERPRISE\n- `postedWithin`: Số ngày gần đây (7, 30, 90)\n- `page`: Số trang (default: 0)\n- `size`: Số items per page (default: 10, max: 50)\n- `sortBy`: Sắp xếp theo field (title, createdAt, salary)\n- `sortDir`: Hướng sắp xếp (ASC, DESC)\n\n**Response**:\n- Danh sách jobs phù hợp với filter\n- Pagination info (total, page, size)\n- Job details: title, description, salary, location, company\n- Highlighted search results\n\n**Use cases**:\n- Ứng viên tìm kiếm việc làm phù hợp\n- Filter theo yêu cầu cụ thể\n- Tìm kiếm việc làm mới nhất\n- Khám phá cơ hội việc làm",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/search?keyword=java&location=Hanoi&jobType=FULL_TIME&salaryRange=10000000-20000000&postedWithin=30&experienceLevel=SENIOR&companySize=MEDIUM&workMode=REMOTE&benefits=bonus,insurance&page=0&size=10&sortBy=createdAt&sortDir=DESC",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "search"],
+									"query": [
+										{ "key": "keyword", "value": "java" },
+										{ "key": "location", "value": "Hanoi" },
+										{ "key": "jobType", "value": "FULL_TIME" },
+										{ "key": "salaryRange", "value": "10000000-20000000" },
+										{ "key": "postedWithin", "value": "30" },
+										{ "key": "experienceLevel", "value": "SENIOR" },
+										{ "key": "companySize", "value": "MEDIUM" },
+										{ "key": "workMode", "value": "REMOTE" },
+										{ "key": "benefits", "value": "bonus,insurance" },
+										{ "key": "page", "value": "0" },
+										{ "key": "size", "value": "10" },
+										{ "key": "sortBy", "value": "createdAt" },
+										{ "key": "sortDir", "value": "DESC" }
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Job Detail (Public)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/public/{{jobId}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "public", "{{jobId}}"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Latest Jobs",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/latest?page=0&size=10",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "latest"],
+									"query": [
+										{ "key": "page", "value": "0" },
+										{ "key": "size", "value": "10" }
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "👤 Applicant Endpoints",
+			"description": "## 👤 APPLICANT ENDPOINTS\n\n**Mô tả**: Các endpoint dành cho ứng viên (role APPLICANT), cần authentication.\n\n**Đặc điểm**:\n- Cần Bearer token (role APPLICANT)\n- Quản lý hồ sơ cá nhân\n- Nộp đơn ứng tuyển\n- Theo dõi trạng thái đơn\n- Upload tài liệu hồ sơ\n\n**Flow sử dụng**:\n1. Register → Verify Email → Login\n2. Update Profile → Upload Documents (CV, certificates)\n3. Search Jobs → Apply to Job\n4. View My Applications → Track status\n5. Get Job Recommendations → Personalized suggestions\n\n**Lưu ý**:\n- Cần authentication với role APPLICANT\n- File upload có giới hạn kích thước\n- Chỉ có thể xem và quản lý đơn của mình",
+			"item": [
+				{
+					"name": "Profile Documents",
+					"description": "## 📄 PROFILE DOCUMENTS\n\n**Mô tả**: Quản lý tài liệu hồ sơ cá nhân (CV, certificates, portfolio).\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Hỗ trợ nhiều loại file: PDF, DOC, DOCX, JPG, PNG\n- Giới hạn kích thước file theo loại\n- Magic number validation\n- File type validation\n\n**Supported File Types**:\n- **PDF**: CV, certificates (max 5MB)\n- **DOC/DOCX**: Documents (max 10MB)\n- **JPG/PNG**: Images (max 2MB)\n\n**Use cases**:\n- Upload CV mới nhất\n- Upload certificates, diplomas\n- Upload portfolio, projects\n- Quản lý tài liệu hồ sơ\n\n**Lưu ý**:\n- File upload có giới hạn kích thước\n- Chỉ có thể upload file của mình\n- File được lưu trong thư mục uploads/resumes/{userId}/",
+					"item": [
+						{
+							"name": "Upload Document",
+							"description": "## 📄 UPLOAD DOCUMENT\n\n**Mô tả**: Upload tài liệu hồ sơ cá nhân (CV, certificates, portfolio).\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Hỗ trợ nhiều loại file: PDF, DOC, DOCX, JPG, PNG\n- Giới hạn kích thước file theo loại\n- Magic number validation\n- File type validation\n\n**Request Body**:\n- `file`: File cần upload (multipart/form-data)\n- `documentType`: Loại tài liệu (CV, CERTIFICATE, PORTFOLIO, OTHER)\n- `description`: Mô tả tài liệu (optional)\n\n**Supported File Types**:\n- **PDF**: CV, certificates (max 5MB)\n- **DOC/DOCX**: Documents (max 10MB)\n- **JPG/PNG**: Images (max 2MB)\n\n**Response**:\n- Document ID\n- File name, size, type\n- Upload timestamp\n- File URL\n\n**Use cases**:\n- Upload CV mới nhất\n- Upload certificates, diplomas\n- Upload portfolio, projects\n- Quản lý tài liệu hồ sơ\n\n**Lưu ý**:\n- File upload có giới hạn kích thước\n- Chỉ có thể upload file của mình\n- File được lưu trong thư mục uploads/resumes/{userId}/",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{ "key": "file", "type": "file", "src": "" },
+										{ "key": "documentType", "value": "RESUME", "type": "text" }
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/profiles/my/documents",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "profiles", "my", "documents"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List My Documents",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/profiles/my/documents",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "profiles", "my", "documents"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Document",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/profiles/my/documents/{{documentId}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "profiles", "my", "documents", "{{documentId}}"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Upload Resume (PDF)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{ "key": "file", "type": "file", "src": "" }
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/profiles/my/resume",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "profiles", "my", "resume"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "My Applications",
+					"item": [
+						{
+							"name": "Apply to Job",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"jobPostingId\": {{jobId}},\n  \"coverLetter\": \"Tôi rất quan tâm đến vị trí này và tin rằng kinh nghiệm của tôi phù hợp với yêu cầu công việc.\",\n  \"resumeUrl\": \"https://example.com/cv.pdf\",\n  \"additionalDocuments\": [\"https://example.com/certificate.pdf\"]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/my",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "my"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List My Applications",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/my?page=0&size=10&sortBy=createdAt&sortDir=DESC&status=RECEIVED",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "my"],
+									"query": [
+										{ "key": "page", "value": "0" },
+										{ "key": "size", "value": "10" },
+										{ "key": "sortBy", "value": "createdAt" },
+										{ "key": "sortDir", "value": "DESC" },
+										{ "key": "status", "value": "RECEIVED" }
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Withdraw Application",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/my/{{applicationId}}/withdraw",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "my", "{{applicationId}}", "withdraw"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Job Recommendations",
+					"item": [
+						{
+							"name": "Get Recommended Jobs",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/recommended?limit=10",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "recommended"],
+									"query": [
+										{ "key": "limit", "value": "10" }
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "🧑‍💼 Employer/Recruiter Endpoints",
+			"description": "## 🧑‍💼 EMPLOYER/RECRUITER ENDPOINTS\n\n**Mô tả**: Các endpoint dành cho nhà tuyển dụng (role EMPLOYER/RECRUITER), cần authentication.\n\n**Đặc điểm**:\n- Cần Bearer token (role EMPLOYER/RECRUITER)\n- Quản lý thông tin công ty\n- CRUD jobs và quản lý trạng thái\n- Xem và cập nhật trạng thái đơn ứng tuyển\n- Lên lịch và quản lý phỏng vấn\n- Dashboard và báo cáo\n\n**Flow sử dụng**:\n1. Register as EMPLOYER → Login\n2. Update Company Info → Set company details\n3. Create Job → Update Status to ACTIVE\n4. View Applications → Review candidates\n5. Update Application Status → Move through workflow\n6. Schedule Interview → Manage interview process\n7. View Dashboard → Analytics and metrics\n\n**Lưu ý**:\n- Cần authentication với role EMPLOYER/RECRUITER\n- Chỉ có thể quản lý jobs của công ty mình\n- Chỉ có thể xem applications của jobs mình\n- Có thể schedule interview cho candidates",
+			"item": [
+				{
+					"name": "Company Management",
+					"item": [
+						{
+							"name": "Update My Company",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Công ty ABC\",\n  \"description\": \"Công ty công nghệ hàng đầu Việt Nam\",\n  \"website\": \"https://abc.com\",\n  \"industry\": \"Technology\",\n  \"companySize\": \"MEDIUM\",\n  \"address\": \"123 Đường ABC, Quận 1\",\n  \"city\": \"TP.HCM\",\n  \"country\": \"Việt Nam\",\n  \"phoneNumber\": \"0900000000\",\n  \"contactEmail\": \"contact@abc.com\",\n  \"logoUrl\": \"https://abc.com/logo.png\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/companies/my",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "companies", "my"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Job Management",
+					"item": [
+						{
+							"name": "Create Job",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Java Backend Developer\",\n  \"description\": \"Phát triển API cho hệ thống tuyển dụng\",\n  \"requirements\": \"3+ năm Java, Spring Boot, SQL\",\n  \"benefits\": \"Bảo hiểm, thưởng, hybrid\",\n  \"jobType\": \"FULL_TIME\",\n  \"status\": \"DRAFT\",\n  \"location\": \"Hanoi\",\n  \"salaryMin\": 15000000,\n  \"salaryMax\": 30000000,\n  \"salaryCurrency\": \"VND\",\n  \"experienceRequired\": \"3+ years\",\n  \"educationRequired\": \"Bachelor\",\n  \"skillsRequired\": \"Java, Spring, SQL\",\n  \"numberOfPositions\": 2,\n  \"applicationDeadline\": \"2099-12-31T23:59:59\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/manage",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "manage"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Job",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Java Backend Developer (Updated)\",\n  \"description\": \"Cập nhật mô tả công việc\",\n  \"requirements\": \"3+ năm Java, Spring Boot, Docker\",\n  \"benefits\": \"Bảo hiểm, thưởng, hybrid\",\n  \"jobType\": \"FULL_TIME\",\n  \"status\": \"DRAFT\",\n  \"location\": \"Hanoi\",\n  \"salaryMin\": 18000000,\n  \"salaryMax\": 35000000,\n  \"salaryCurrency\": \"VND\",\n  \"experienceRequired\": \"3+ years\",\n  \"educationRequired\": \"Bachelor\",\n  \"skillsRequired\": \"Java, Spring, Docker\",\n  \"numberOfPositions\": 2,\n  \"applicationDeadline\": \"2099-12-31T23:59:59\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/manage/{{jobId}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "manage", "{{jobId}}"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Job Status",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"status\": \"ACTIVE\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/manage/{{jobId}}/status",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "manage", "{{jobId}}", "status"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Job (Soft)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/manage/{{jobId}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "manage", "{{jobId}}"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Job (Hard)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/manage/{{jobId}}?hard=true",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "manage", "{{jobId}}"],
+									"query": [
+										{ "key": "hard", "value": "true" }
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List My Jobs",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/jobs/manage?page=0&size=10&sortBy=createdAt&sortDir=DESC&status=ACTIVE",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "jobs", "manage"],
+									"query": [
+										{ "key": "page", "value": "0" },
+										{ "key": "size", "value": "10" },
+										{ "key": "sortBy", "value": "createdAt" },
+										{ "key": "sortDir", "value": "DESC" },
+										{ "key": "status", "value": "ACTIVE" }
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Application Management",
+					"item": [
+						{
+							"name": "List Applications",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/manage?page=0&size=10&status=RECEIVED&jobPostingId={{jobId}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "manage"],
+									"query": [
+										{ "key": "page", "value": "0" },
+										{ "key": "size", "value": "10" },
+										{ "key": "status", "value": "RECEIVED" },
+										{ "key": "jobPostingId", "value": "{{jobId}}" }
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Application Detail",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/manage/{{applicationId}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "manage", "{{applicationId}}"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Application Status - REVIEWED",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"status\": \"REVIEWED\",\n  \"notes\": \"Đã xem hồ sơ\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/manage/{{applicationId}}/status",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "manage", "{{applicationId}}", "status"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Application Status - INTERVIEW",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"status\": \"INTERVIEW\",\n  \"notes\": \"Mời phỏng vấn tuần tới\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/manage/{{applicationId}}/status",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "manage", "{{applicationId}}", "status"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Application Status - OFFER",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"status\": \"OFFER\",\n  \"notes\": \"Offer 20tr gross\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/manage/{{applicationId}}/status",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "manage", "{{applicationId}}", "status"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Application Status - HIRED",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"status\": \"HIRED\",\n  \"notes\": \"Ứng viên nhận offer\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/manage/{{applicationId}}/status",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "manage", "{{applicationId}}", "status"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Application Status - REJECTED",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"status\": \"REJECTED\",\n  \"notes\": \"Không phù hợp yêu cầu\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/applications/manage/{{applicationId}}/status",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "applications", "manage", "{{applicationId}}", "status"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Interview Management",
+					"item": [
+						{
+							"name": "Schedule Interview",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"applicationId\": {{applicationId}},\n  \"scheduledAt\": \"2099-12-31T10:00:00\",\n  \"durationMinutes\": 60,\n  \"interviewType\": \"VIDEO\",\n  \"location\": null,\n  \"meetingLink\": \"https://meet.example.com/abc\",\n  \"notes\": \"Buổi phỏng vấn kỹ thuật\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/interviews/schedule",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "interviews", "schedule"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "My Interviews",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/interviews/my?start=2025-01-01T00:00:00&end=2099-12-31T23:59:59&status=SCHEDULED&page=0&size=10",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "interviews", "my"],
+									"query": [
+										{ "key": "start", "value": "2025-01-01T00:00:00" },
+										{ "key": "end", "value": "2099-12-31T23:59:59" },
+										{ "key": "status", "value": "SCHEDULED" },
+										{ "key": "page", "value": "0" },
+										{ "key": "size", "value": "10" }
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reschedule Interview",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"newScheduledAt\": \"2099-12-31T11:00:00\",\n  \"reason\": \"Dời 1 tiếng do bận họp\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/reschedule",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "interviews", "{{interviewId}}", "reschedule"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel Interview",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"reason\": \"Ứng viên báo bận\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/cancel",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "interviews", "{{interviewId}}", "cancel"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Complete Interview",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"notes\": \"Phỏng vấn xong, chờ đánh giá\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/complete",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "interviews", "{{interviewId}}", "complete"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Participants",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userIds\": [21, 20],\n  \"role\": \"INTERVIEWER\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/participants",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "interviews", "{{interviewId}}", "participants"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Participants",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userIds\": [21]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/interviews/{{interviewId}}/participants",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "interviews", "{{interviewId}}", "participants"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Dashboard",
+					"item": [
+						{
+							"name": "Employer Dashboard",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/employer/dashboard?from=2025-01-01T00:00:00&to=2025-12-31T23:59:59&limit=10",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "employer", "dashboard"],
+									"query": [
+										{ "key": "from", "value": "2025-01-01T00:00:00" },
+										{ "key": "to", "value": "2025-12-31T23:59:59" },
+										{ "key": "limit", "value": "10" }
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Company Jobs",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/employer/jobs?page=0&size=10&sortBy=createdAt&sortDir=DESC&status=ACTIVE",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "employer", "jobs"],
+									"query": [
+										{ "key": "page", "value": "0" },
+										{ "key": "size", "value": "10" },
+										{ "key": "sortBy", "value": "createdAt" },
+										{ "key": "sortDir", "value": "DESC" },
+										{ "key": "status", "value": "ACTIVE" }
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "🔧 Admin Endpoints",
+			"description": "## 🔧 ADMIN ENDPOINTS\n\n**Mô tả**: Các endpoint dành cho admin (role ADMIN), cần authentication.\n\n**Đặc điểm**:\n- Cần Bearer token (role ADMIN)\n- Toàn quyền quản lý hệ thống\n- Xem dashboard tổng quan\n- Theo dõi metrics và analytics\n- Quản lý users, companies, jobs\n\n**Flow sử dụng**:\n1. Login as ADMIN\n2. View Admin Dashboard → System overview\n3. Monitor system metrics → Performance tracking\n4. Manage users and companies\n5. View system analytics\n\n**Lưu ý**:\n- Cần authentication với role ADMIN\n- Có quyền truy cập tất cả dữ liệu\n- Có thể xem analytics toàn hệ thống\n- Có thể quản lý tất cả entities",
+			"item": [
+				{
+					"name": "Admin Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/dashboard?from=2025-01-01T00:00:00&to=2025-12-31T23:59:59",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "dashboard"],
+							"query": [
+								{ "key": "from", "value": "2025-01-01T00:00:00" },
+								{ "key": "to", "value": "2025-12-31T23:59:59" }
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🔧 Debug Endpoints",
+			"description": "## 🔧 DEBUG ENDPOINTS\n\n**Mô tả**: Các endpoint debug và development tools, chỉ dùng trong development.\n\n**Đặc điểm**:\n- Không cần authentication (public debug)\n- Chỉ dùng trong development environment\n- Hỗ trợ debug authentication flow\n- Kiểm tra user info, password, tokens\n- Tạo test users và verify email\n\n**Use cases**:\n- Debug authentication issues\n- Kiểm tra user info và password\n- Test email verification flow\n- Tạo test users cho development\n- Monitor authentication flow\n\n**Lưu ý**:\n- **CHỈ DÙNG TRONG DEVELOPMENT**\n- Không nên sử dụng trong production\n- Có thể expose sensitive information\n- Dùng để debug và test\n\n**Security Warning**:\n- Các endpoint này có thể expose thông tin nhạy cảm\n- Chỉ nên enable trong development\n- Cần disable trong production",
+			"item": [
+				{
+					"name": "Get User Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/debug/auth/user/{{email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "debug", "auth", "user", "{{email}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/debug/auth/test-password?email={{email}}&password={{password}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "debug", "auth", "test-password"],
+							"query": [
+								{ "key": "email", "value": "{{email}}" },
+								{ "key": "password", "value": "{{password}}" }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Refresh Token",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/debug/auth/test-refresh-token/{{email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "debug", "auth", "test-refresh-token", "{{email}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Test User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/debug/auth/create-test-user?email={{testEmail}}&password={{testPassword}}&firstName={{firstName}}&lastName={{lastName}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "debug", "auth", "create-test-user"],
+							"query": [
+								{ "key": "email", "value": "{{testEmail}}" },
+								{ "key": "password", "value": "{{testPassword}}" },
+								{ "key": "firstName", "value": "{{firstName}}" },
+								{ "key": "lastName", "value": "{{lastName}}" }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Verification Token",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/debug/auth/verification-token/{{email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "debug", "auth", "verification-token", "{{email}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Email Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/debug/auth/email-status/{{email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "debug", "auth", "email-status", "{{email}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081"
+		},
+		{
+			"key": "accessToken",
+			"value": ""
+		},
+		{
+			"key": "refreshToken",
+			"value": ""
+		},
+		{
+			"key": "adminToken",
+			"value": ""
+		},
+		{
+			"key": "recruiterToken",
+			"value": ""
+		},
+		{
+			"key": "companyId",
+			"value": "1"
+		},
+		{
+			"key": "jobId",
+			"value": "1"
+		},
+		{
+			"key": "applicationId",
+			"value": "1"
+		},
+		{
+			"key": "interviewId",
+			"value": "1"
+		},
+		{
+			"key": "documentId",
+			"value": "1"
+		},
+		{
+			"key": "email",
+			"value": "user@example.com"
+		},
+		{
+			"key": "password",
+			"value": "Password@123"
+		},
+		{
+			"key": "testEmail",
+			"value": "test@example.com"
+		},
+		{
+			"key": "testPassword",
+			"value": "Password@123"
+		},
+		{
+			"key": "firstName",
+			"value": "Test"
+		},
+		{
+			"key": "lastName",
+			"value": "User"
+		}
+	]
+}
