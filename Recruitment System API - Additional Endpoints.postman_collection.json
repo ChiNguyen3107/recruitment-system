@@ -317,12 +317,55 @@
 			"description": "## 👤 APPLICANT ENDPOINTS\n\n**Mô tả**: Các endpoint dành cho ứng viên (role APPLICANT), cần authentication.\n\n**Đặc điểm**:\n- Cần Bearer token (role APPLICANT)\n- Quản lý hồ sơ cá nhân\n- Nộp đơn ứng tuyển\n- Theo dõi trạng thái đơn\n- Upload tài liệu hồ sơ\n\n**Flow sử dụng**:\n1. Register → Verify Email → Login\n2. Update Profile → Upload Documents (CV, certificates)\n3. Search Jobs → Apply to Job\n4. View My Applications → Track status\n5. Get Job Recommendations → Personalized suggestions\n\n**Lưu ý**:\n- Cần authentication với role APPLICANT\n- File upload có giới hạn kích thước\n- Chỉ có thể xem và quản lý đơn của mình",
 			"item": [
 				{
+					"name": "Profile Management",
+					"description": "## 👤 PROFILE MANAGEMENT\n\n**Mô tả**: Quản lý hồ sơ cá nhân của ứng viên.\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Tạo và cập nhật hồ sơ cá nhân\n- Quản lý thông tin cá nhân, kỹ năng, kinh nghiệm\n- Upload và quản lý tài liệu hồ sơ\n\n**Use cases**:\n- Tạo hồ sơ cá nhân sau khi đăng ký\n- Cập nhật thông tin cá nhân\n- Quản lý kỹ năng và kinh nghiệm\n- Upload CV và tài liệu khác\n\n**Lưu ý**:\n- Chỉ có thể quản lý hồ sơ của mình\n- Thông tin hồ sơ ảnh hưởng đến job recommendations\n- Có thể set profile là public hoặc private",
+					"item": [
+						{
+							"name": "Create/Update Profile",
+							"description": "## 👤 CREATE/UPDATE PROFILE\n\n**Mô tả**: Tạo hoặc cập nhật hồ sơ cá nhân của ứng viên.\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Tạo hồ sơ mới hoặc cập nhật hồ sơ hiện có\n- Quản lý thông tin cá nhân, kỹ năng, kinh nghiệm\n- Ảnh hưởng đến job recommendations\n\n**Request Body**:\n- `firstName`, `lastName`: Họ tên\n- `phoneNumber`: Số điện thoại\n- `address`: Địa chỉ\n- `bio`: Giới thiệu bản thân\n- `skills`: Danh sách kỹ năng\n- `experience`: Kinh nghiệm làm việc\n- `education`: Học vấn\n- `certifications`: Chứng chỉ\n- `languages`: Ngôn ngữ\n- `desiredSalaryMin/Max`: Mức lương mong muốn\n- `desiredJobType`: Loại công việc mong muốn\n- `desiredLocation`: Địa điểm làm việc mong muốn\n- `availability`: Tình trạng sẵn sàng\n- `isPublic`: Có cho phép công khai hồ sơ\n\n**Response**:\n- Profile ID\n- Thông tin hồ sơ đã tạo/cập nhật\n- Timestamp\n\n**Use cases**:\n- Tạo hồ sơ sau khi đăng ký\n- Cập nhật thông tin cá nhân\n- Quản lý kỹ năng và kinh nghiệm\n- Set preferences cho job search\n\n**Lưu ý**:\n- Chỉ có thể quản lý hồ sơ của mình\n- Thông tin hồ sơ ảnh hưởng đến job recommendations\n- Có thể set profile là public hoặc private",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"dateOfBirth\": \"1990-01-15\",\n  \"gender\": \"Nam\",\n  \"address\": \"456 Lê Lợi, Quận 3, TP.HCM\",\n  \"city\": \"TP. Hồ Chí Minh\",\n  \"country\": \"Việt Nam\",\n  \"summary\": \"Lập trình viên Java có kinh nghiệm 6 năm trong phát triển phần mềm doanh nghiệp. Có kinh nghiệm với Spring Boot, microservices và các công nghệ cloud hiện đại.\",\n  \"experience\": \"6 năm kinh nghiệm phát triển phần mềm\",\n  \"education\": \"Cử nhân Khoa học Máy tính - Đại học Bách Khoa TP.HCM\",\n  \"skills\": [\"Java\", \"Spring Boot\", \"Spring Security\", \"Microservices\", \"Docker\", \"Kubernetes\", \"MySQL\", \"PostgreSQL\", \"Redis\", \"RabbitMQ\"],\n  \"certifications\": [\"Oracle Certified Professional Java SE 8\", \"AWS Certified Developer\", \"Spring Professional Certification\"],\n  \"languages\": \"Tiếng Việt (bản ngữ), Tiếng Anh (TOEIC 750)\",\n  \"linkedinUrl\": \"https://linkedin.com/in/tranvana\",\n  \"githubUrl\": \"https://github.com/tranvana\",\n  \"portfolioUrl\": \"https://tranvana.dev\",\n  \"desiredSalaryMin\": 25000000,\n  \"desiredSalaryMax\": 35000000,\n  \"desiredJobType\": \"FULL_TIME\",\n  \"desiredLocation\": \"TP. Hồ Chí Minh\",\n  \"availability\": \"Có thể bắt đầu ngay\",\n  \"isPublic\": true\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/profiles/my",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "profiles", "my"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get My Profile",
+							"description": "## 👤 GET MY PROFILE\n\n**Mô tả**: Lấy thông tin hồ sơ cá nhân của ứng viên.\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Trả về thông tin hồ sơ đầy đủ\n- Bao gồm tất cả thông tin cá nhân, kỹ năng, kinh nghiệm\n\n**Response**:\n- Thông tin hồ sơ đầy đủ\n- Skills, experience, education\n- Certifications, languages\n- Desired preferences\n- Public/private status\n\n**Use cases**:\n- Xem thông tin hồ sơ hiện tại\n- Kiểm tra thông tin trước khi apply job\n- Review profile completeness\n\n**Lưu ý**:\n- Chỉ có thể xem hồ sơ của mình\n- Thông tin được trả về đầy đủ",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/profiles/my",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "profiles", "my"]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Profile Documents",
-					"description": "## 📄 PROFILE DOCUMENTS\n\n**Mô tả**: Quản lý tài liệu hồ sơ cá nhân (CV, certificates, portfolio).\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Hỗ trợ nhiều loại file: PDF, DOC, DOCX, JPG, PNG\n- Giới hạn kích thước file theo loại\n- Magic number validation\n- File type validation\n\n**Supported File Types**:\n- **PDF**: CV, certificates (max 5MB)\n- **DOC/DOCX**: Documents (max 10MB)\n- **JPG/PNG**: Images (max 2MB)\n\n**Use cases**:\n- Upload CV mới nhất\n- Upload certificates, diplomas\n- Upload portfolio, projects\n- Quản lý tài liệu hồ sơ\n\n**Lưu ý**:\n- File upload có giới hạn kích thước\n- Chỉ có thể upload file của mình\n- File được lưu trong thư mục uploads/resumes/{userId}/",
+					"description": "Profile Documents Management - Upload and manage CV, certificates, portfolio files",
 					"item": [
 						{
 							"name": "Upload Document",
-							"description": "## 📄 UPLOAD DOCUMENT\n\n**Mô tả**: Upload tài liệu hồ sơ cá nhân (CV, certificates, portfolio).\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Hỗ trợ nhiều loại file: PDF, DOC, DOCX, JPG, PNG\n- Giới hạn kích thước file theo loại\n- Magic number validation\n- File type validation\n\n**Request Body**:\n- `file`: File cần upload (multipart/form-data)\n- `documentType`: Loại tài liệu (CV, CERTIFICATE, PORTFOLIO, OTHER)\n- `description`: Mô tả tài liệu (optional)\n\n**Supported File Types**:\n- **PDF**: CV, certificates (max 5MB)\n- **DOC/DOCX**: Documents (max 10MB)\n- **JPG/PNG**: Images (max 2MB)\n\n**Response**:\n- Document ID\n- File name, size, type\n- Upload timestamp\n- File URL\n\n**Use cases**:\n- Upload CV mới nhất\n- Upload certificates, diplomas\n- Upload portfolio, projects\n- Quản lý tài liệu hồ sơ\n\n**Lưu ý**:\n- File upload có giới hạn kích thước\n- Chỉ có thể upload file của mình\n- File được lưu trong thư mục uploads/resumes/{userId}/",
+							"description": "Upload document files (CV, certificates, portfolio) to profile",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -345,6 +388,7 @@
 						},
 						{
 							"name": "List My Documents",
+							"description": "Get list of uploaded documents for current user",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -360,6 +404,7 @@
 						},
 						{
 							"name": "Delete Document",
+							"description": "Delete a document from user profile",
 							"request": {
 								"method": "DELETE",
 								"header": [
@@ -375,6 +420,7 @@
 						},
 						{
 							"name": "Upload Resume (PDF)",
+							"description": "Upload PDF resume file to profile",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -398,9 +444,11 @@
 				},
 				{
 					"name": "My Applications",
+					"description": "## 📝 MY APPLICATIONS\n\n**Mô tả**: Quản lý đơn ứng tuyển của ứng viên.\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Nộp đơn ứng tuyển cho job\n- Theo dõi trạng thái đơn\n- Rút đơn ứng tuyển\n- Xem lịch sử applications\n\n**Use cases**:\n- Nộp đơn ứng tuyển cho job phù hợp\n- Theo dõi trạng thái đơn ứng tuyển\n- Rút đơn khi không còn quan tâm\n- Xem lịch sử applications\n\n**Lưu ý**:\n- Chỉ có thể quản lý đơn của mình\n- Không thể nộp đơn trùng lặp cho cùng 1 job\n- Có thể rút đơn khi status chưa là HIRED/REJECTED",
 					"item": [
 						{
 							"name": "Apply to Job",
+							"description": "## 📝 APPLY TO JOB\n\n**Mô tả**: Nộp đơn ứng tuyển cho một job.\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Nộp đơn ứng tuyển với cover letter\n- Upload CV và tài liệu bổ sung\n- Không thể nộp đơn trùng lặp\n\n**Request Body**:\n- `jobPostingId`: ID của job muốn apply\n- `coverLetter`: Thư xin việc\n- `resumeUrl`: URL của CV (từ upload)\n- `additionalDocuments`: Danh sách tài liệu bổ sung\n\n**Response**:\n- Application ID\n- Status: RECEIVED\n- Timestamp\n- Job và applicant info\n\n**Use cases**:\n- Nộp đơn ứng tuyển cho job phù hợp\n- Gửi cover letter cá nhân hóa\n- Đính kèm CV và tài liệu bổ sung\n\n**Lưu ý**:\n- Không thể nộp đơn trùng lặp cho cùng 1 job\n- Cover letter nên cá nhân hóa cho từng job\n- Resume URL phải từ file đã upload",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -409,7 +457,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"jobPostingId\": {{jobId}},\n  \"coverLetter\": \"Tôi rất quan tâm đến vị trí này và tin rằng kinh nghiệm của tôi phù hợp với yêu cầu công việc.\",\n  \"resumeUrl\": \"https://example.com/cv.pdf\",\n  \"additionalDocuments\": [\"https://example.com/certificate.pdf\"]\n}"
+									"raw": "{\n  \"jobPostingId\": {{jobId}},\n  \"coverLetter\": \"Kính gửi Ban tuyển dụng,\\n\\nTôi rất quan tâm đến vị trí này và tin rằng kinh nghiệm của tôi phù hợp với yêu cầu công việc. Với 6 năm kinh nghiệm phát triển phần mềm Java và thành thạo các công nghệ Spring Boot, microservices, tôi tin rằng mình có thể đóng góp tích cực vào dự án của công ty.\\n\\nTrong quá trình làm việc, tôi đã có kinh nghiệm phát triển các ứng dụng enterprise với Spring Boot, thiết kế kiến trúc microservices, và làm việc với Docker, Kubernetes. Tôi cũng có chứng chỉ Oracle Java và AWS Developer.\\n\\nTôi mong muốn được đóng góp vào sự phát triển của công ty và học hỏi thêm các công nghệ mới. Cảm ơn quý công ty đã xem xét hồ sơ của tôi.\",\n  \"resumeUrl\": \"/uploads/resumes/{userId}/cv_tran_van_a.pdf\",\n  \"additionalDocuments\": [\"chung_chi_java.pdf\", \"chung_chi_aws.pdf\", \"portfolio.pdf\"]\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/api/applications/my",
@@ -421,6 +469,7 @@
 						},
 						{
 							"name": "List My Applications",
+							"description": "## 📋 LIST MY APPLICATIONS\n\n**Mô tả**: Lấy danh sách đơn ứng tuyển của ứng viên.\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Hỗ trợ pagination và sorting\n- Có thể filter theo status\n- Trả về thông tin job và status\n\n**Query Parameters**:\n- `page`: Số trang (default: 0)\n- `size`: Số items per page (default: 10, max: 50)\n- `sortBy`: Sắp xếp theo field (createdAt, status)\n- `sortDir`: Hướng sắp xếp (ASC, DESC)\n- `status`: Filter theo status (RECEIVED, REVIEWED, INTERVIEW, OFFER, HIRED, REJECTED)\n\n**Response**:\n- Danh sách applications với thông tin đầy đủ\n- Job details, status, timestamps\n- Pagination info\n\n**Use cases**:\n- Xem lịch sử đơn ứng tuyển\n- Theo dõi trạng thái các đơn\n- Filter theo status cụ thể\n\n**Lưu ý**:\n- Chỉ có thể xem đơn của mình\n- Có thể filter và sort theo nhiều tiêu chí",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -443,6 +492,7 @@
 						},
 						{
 							"name": "Withdraw Application",
+							"description": "## 🚫 WITHDRAW APPLICATION\n\n**Mô tả**: Rút đơn ứng tuyển.\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Rút đơn ứng tuyển\n- Chỉ có thể rút khi status chưa là HIRED/REJECTED\n- Không thể hoàn tác sau khi rút\n\n**Use cases**:\n- Rút đơn khi không còn quan tâm\n- Thay đổi ý định về job\n- Rút đơn trước khi employer xem xét\n\n**Lưu ý**:\n- Chỉ có thể rút đơn của mình\n- Không thể rút khi đã HIRED/REJECTED\n- Không thể hoàn tác sau khi rút",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -460,9 +510,11 @@
 				},
 				{
 					"name": "Job Recommendations",
+					"description": "## 🎯 JOB RECOMMENDATIONS\n\n**Mô tả**: Gợi ý việc làm dựa trên hồ sơ cá nhân.\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Gợi ý dựa trên skills, experience, preferences\n- Personalized recommendations\n- Có thể set limit số lượng gợi ý\n\n**Use cases**:\n- Tìm việc làm phù hợp với profile\n- Khám phá cơ hội việc làm mới\n- Personalized job suggestions\n\n**Lưu ý**:\n- Gợi ý dựa trên thông tin hồ sơ\n- Cần có profile đầy đủ để có gợi ý tốt\n- Có thể set limit số lượng",
 					"item": [
 						{
 							"name": "Get Recommended Jobs",
+							"description": "## 🎯 GET RECOMMENDED JOBS\n\n**Mô tả**: Lấy danh sách việc làm được gợi ý dựa trên hồ sơ cá nhân.\n\n**Đặc điểm**:\n- Cần authentication (role APPLICANT)\n- Gợi ý dựa trên skills, experience, preferences\n- Personalized recommendations\n- Có thể set limit số lượng\n\n**Query Parameters**:\n- `limit`: Số lượng gợi ý (default: 10, max: 50)\n\n**Response**:\n- Danh sách jobs được gợi ý\n- Job details với match score\n- Lý do được gợi ý\n- Company information\n\n**Use cases**:\n- Tìm việc làm phù hợp với profile\n- Khám phá cơ hội việc làm mới\n- Personalized job suggestions\n\n**Lưu ý**:\n- Gợi ý dựa trên thông tin hồ sơ\n- Cần có profile đầy đủ để có gợi ý tốt\n- Match score cho biết độ phù hợp",
 							"request": {
 								"method": "GET",
 								"header": [

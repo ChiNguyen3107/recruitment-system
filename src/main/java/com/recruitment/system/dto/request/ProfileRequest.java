@@ -1,5 +1,7 @@
 package com.recruitment.system.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -35,10 +37,18 @@ public class ProfileRequest {
     private String education;
 
     @Size(max = 2000, message = "Kỹ năng không được vượt quá 2000 ký tự")
+    @JsonIgnore
     private String skills;
 
+    @JsonProperty("skills")
+    private java.util.List<String> skillsList;
+
     @Size(max = 2000, message = "Chứng chỉ không được vượt quá 2000 ký tự")
+    @JsonIgnore
     private String certifications;
+
+    @JsonProperty("certifications")
+    private java.util.List<String> certificationsList;
 
     @Size(max = 1000, message = "Ngôn ngữ không được vượt quá 1000 ký tự")
     private String languages;
@@ -66,4 +76,19 @@ public class ProfileRequest {
     private String availability;
 
     private Boolean isPublic = false;
+
+    // Getter methods để xử lý chuyển đổi giữa array và string
+    public String getSkills() {
+        if (skillsList != null && !skillsList.isEmpty()) {
+            return String.join(", ", skillsList);
+        }
+        return skills;
+    }
+
+    public String getCertifications() {
+        if (certificationsList != null && !certificationsList.isEmpty()) {
+            return String.join(", ", certificationsList);
+        }
+        return certifications;
+    }
 }
