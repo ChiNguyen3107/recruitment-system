@@ -1,5 +1,7 @@
 package com.recruitment.system.controller;
 
+import com.recruitment.system.enums.NotificationType;
+import com.recruitment.system.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -53,6 +55,8 @@ public class InterviewController {
     private final NotificationRepository notificationRepository;
     private final MailService mailService;
     private final InterviewParticipantRepository interviewParticipantRepository;
+
+    private final NotificationService notificationService;
 
     private boolean isEmployerOrRecruiter(User user) {
         return user != null && (user.getRole().name().equals("EMPLOYER") || user.getRole().name().equals("RECRUITER") || user.getRole().name().equals("ADMIN")) && user.getCompany() != null;
@@ -239,13 +243,14 @@ public class InterviewController {
         tl.setChangedAt(LocalDateTime.now());
         applicationTimelineRepository.save(tl);
 
-        // Tạo notification cho applicant
-        Notification n = new Notification();
-        n.setRecipientId(application.getApplicant().getId());
-        n.setType("INTERVIEW_SCHEDULED");
-        n.setTitle("Bạn có lịch phỏng vấn mới");
-        n.setContent("Thời gian: " + saved.getScheduledAt());
-        notificationRepository.save(n);
+        //  Gửi notification bằng service để đồng bộ logic enum & audit
+        notificationService.createNotification(
+                application.getApplicant().getId(),
+                NotificationType.INTERVIEW_SCHEDULED,
+                "Bạn có lịch phỏng vấn mới",
+                "Thời gian: " + saved.getScheduledAt(),
+                "/interviews/my"
+        );
 
         // Gửi email + .ics cho applicant và interviewer
         try {
@@ -436,8 +441,6 @@ public class InterviewController {
             log.warn("Gửi email đổi lịch phỏng vấn thất bại: {}", ex.getMessage());
         }
 
-        
-
         InterviewResponse resp = toResponse(saved);
         resp.setStatus(InterviewStatus.RESCHEDULED);
         return ResponseEntity.ok(ApiResponse.success(resp));
@@ -477,13 +480,14 @@ public class InterviewController {
         tl.setChangedAt(LocalDateTime.now());
         applicationTimelineRepository.save(tl);
 
-        // thông báo
-        Notification n = new Notification();
-        n.setRecipientId(application.getApplicant().getId());
-        n.setType("INTERVIEW_CANCELLED");
-        n.setTitle("Lịch phỏng vấn đã bị hủy");
-        n.setContent(request.getReason());
-        notificationRepository.save(n);
+        //  Thông báo hủy lịch phỏng vấn
+        notificationService.createNotification(
+                application.getApplicant().getId(),
+                NotificationType.INTERVIEW_CANCELLED,
+                "Lịch phỏng vấn đã bị hủy",
+                request.getReason(),
+                "/interviews/my"
+        );
 
         // email (không kèm .ics)
         try {
@@ -532,12 +536,14 @@ public class InterviewController {
         tl.setChangedAt(LocalDateTime.now());
         applicationTimelineRepository.save(tl);
 
-        Notification n = new Notification();
-        n.setRecipientId(application.getApplicant().getId());
-        n.setType("INTERVIEW_COMPLETED");
-        n.setTitle("Phỏng vấn đã hoàn tất");
-        n.setContent(request.getNotes());
-        notificationRepository.save(n);
+        // Thông báo phỏng vấn hoàn tất
+        notificationService.createNotification(
+                application.getApplicant().getId(),
+                NotificationType.INTERVIEW_COMPLETED,
+                "Phỏng vấn đã hoàn tất",
+                request.getNotes(),
+                "/interviews/my"
+        );
 
         InterviewResponse resp = toResponse(saved);
         resp.setStatus(InterviewStatus.COMPLETED);

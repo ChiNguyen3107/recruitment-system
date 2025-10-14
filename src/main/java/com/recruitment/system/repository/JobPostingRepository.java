@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -181,4 +182,8 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     // Số công ty hiện có job ACTIVE còn hạn
     @Query(value = "SELECT COUNT(DISTINCT jp.company_id) FROM job_postings jp WHERE jp.status = 'ACTIVE' AND jp.application_deadline > NOW()", nativeQuery = true)
     Long countDistinctCompaniesWithActiveJobs();
+
+    //Danh sách các tin tuyển dụng (JobPosting) có thời hạn nộp hồ sơ (applicationDeadline) nằm trong khoảng từ ngày from đến ngày to
+    List<JobPosting> findByApplicationDeadlineBetween(LocalDateTime from, LocalDateTime to);
+
 }
