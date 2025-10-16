@@ -182,6 +182,7 @@ public class PublicJobController {
         response.setStatus(jobPosting.getStatus());
         response.setCreatedAt(jobPosting.getCreatedAt());
         response.setUpdatedAt(jobPosting.getUpdatedAt());
+        
         // Set company information
         if (jobPosting.getCompany() != null) {
             com.recruitment.system.entity.Company company = jobPosting.getCompany();
