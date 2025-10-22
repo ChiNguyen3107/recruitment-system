@@ -189,10 +189,10 @@ public class ManageApplicationController {
 
             if (applicant != null && job != null) {
                 notificationService.notifyApplicationStatusChanged(
-                        applicant.getId(),               // ứng viên
-                        job.getTitle(),                  // tên job
-                        saved.getStatus(),               // trạng thái mới (enum)
-                        "/applications/my"               // link khi click vào thông báo
+                        applicant.getId(),
+                        job.getTitle(),
+                        saved.getStatus(),
+                        "/applicant/applications/" + saved.getId()
                 );
             }
 

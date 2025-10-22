@@ -2,6 +2,7 @@ package com.recruitment.system.controller;
 
 import com.recruitment.system.dto.request.ApplicationRequest;
 import com.recruitment.system.config.AuditLogger;
+import com.recruitment.system.enums.NotificationType;
 import com.recruitment.system.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import com.recruitment.system.dto.response.ApiResponse;
@@ -97,6 +98,21 @@ public class ApplicationController {
         // Lưu
         Application saved = applicationRepository.save(application);
 
+        // Gửi notification cho ứng viên xác nhận nộp đơn thành công
+        try {
+            notificationService.createNotification(
+                    currentUser.getId(),
+                    NotificationType.APPLICATION_STATUS_CHANGED,
+                    "Đã nộp đơn thành công",
+                    "Đơn ứng tuyển của bạn cho vị trí '" + jobPosting.getTitle() + "' đã được gửi thành công.",
+                    "/applicant/applications/" + saved.getId()
+            );
+            log.info(" Đã gửi thông báo xác nhận nộp đơn thành công cho applicant {}", currentUser.getId());
+        } catch (Exception e) {
+            log.warn("Không thể tạo thông báo cho applicant: {}", e.getMessage());
+        }
+
+
         // Tăng bộ đếm ứng tuyển cho JobPosting
         jobPosting.incrementApplicationsCount();
         jobPostingRepository.save(jobPosting);
@@ -122,10 +138,10 @@ public class ApplicationController {
             User employer = jobPosting.getCreatedBy();
             if (employer != null) {
                 notificationService.notifyNewApplication(
-                        employer.getId(),                                // employerId
-                        jobPosting.getTitle(),                           // job title
-                        currentUser.getFullName(),                       // applicant name
-                        "/employer/jobs/" + jobPosting.getId() // link trang quản lý
+                        employer.getId(),
+                        jobPosting.getTitle(),
+                        currentUser.getFullName(),
+                        "/employer/applications"
                 );
             }
         } catch (Exception e) {
