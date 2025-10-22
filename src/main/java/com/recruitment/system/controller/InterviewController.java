@@ -249,7 +249,7 @@ public class InterviewController {
                 NotificationType.INTERVIEW_SCHEDULED,
                 "Bạn có lịch phỏng vấn mới",
                 "Thời gian: " + saved.getScheduledAt(),
-                "/interviews/my"
+                "/applicant/interviews"
         );
 
         // Gửi email + .ics cho applicant và interviewer
@@ -486,7 +486,7 @@ public class InterviewController {
                 NotificationType.INTERVIEW_CANCELLED,
                 "Lịch phỏng vấn đã bị hủy",
                 request.getReason(),
-                "/interviews/my"
+                "/applicant/interviews"
         );
 
         // email (không kèm .ics)
@@ -542,7 +542,7 @@ public class InterviewController {
                 NotificationType.INTERVIEW_COMPLETED,
                 "Phỏng vấn đã hoàn tất",
                 request.getNotes(),
-                "/interviews/my"
+                "/applicant/interviews"
         );
 
         InterviewResponse resp = toResponse(saved);
