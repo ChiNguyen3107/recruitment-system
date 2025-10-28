@@ -549,6 +549,24 @@ public class InterviewController {
         resp.setStatus(InterviewStatus.COMPLETED);
         return ResponseEntity.ok(ApiResponse.success(resp));
     }
+    
+    @GetMapping("/{id}/participants")
+    @Operation(summary = "Lấy danh sách người tham gia phỏng vấn")
+    public ResponseEntity<ApiResponse<List<InterviewParticipant>>> getParticipants(@PathVariable Long id) {
+        List<InterviewParticipant> list = interviewParticipantRepository.findByInterviewId(id);
+        return ResponseEntity.ok(ApiResponse.success(list));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Lấy chi tiết buổi phỏng vấn theo ID")
+    public ResponseEntity<ApiResponse<Interview>> getInterviewById(@PathVariable Long id) {
+        return interviewRepository.findById(id)
+            .map(interview -> ResponseEntity.ok(ApiResponse.success(interview)))
+            .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error("Không tìm thấy buổi phỏng vấn.")));
+}
+
+
 }
 
 
