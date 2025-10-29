@@ -58,13 +58,30 @@ public class ManageJobController {
                     Set.of("createdAt", "title", "status", "applicationDeadline")
             );
 
-            Long companyId = currentUser.getCompany().getId();
+
             Page<JobPosting> jobs;
 
-            if (status != null) {
-                jobs = jobPostingRepository.findByCompanyIdAndStatus(companyId, status, pageable);
-            } else {
-                jobs = jobPostingRepository.findByCompanyId(companyId, pageable);
+
+            if (currentUser.isAdmin()) {
+                if (status != null) {
+                    jobs = jobPostingRepository.findByStatus(status, pageable);
+                } else {
+                    jobs = jobPostingRepository.findAll(pageable);
+                }
+            }
+            // ✅ Employer chỉ xem job thuộc công ty họ
+            else {
+                if (currentUser.getCompany() == null) {
+                    throw new RuntimeException("Tài khoản chưa liên kết công ty");
+                }
+
+                Long companyId = currentUser.getCompany().getId();
+
+                if (status != null) {
+                    jobs = jobPostingRepository.findByCompanyIdAndStatus(companyId, status, pageable);
+                } else {
+                    jobs = jobPostingRepository.findByCompanyId(companyId, pageable);
+                }
             }
 
             List<JobPostingResponse> jobResponses = jobs.getContent().stream()
