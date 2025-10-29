@@ -70,6 +70,7 @@ public class ManageJobController {
                 }
             }
             // ✅ Employer chỉ xem job thuộc công ty họ
+            
             else {
                 if (currentUser.getCompany() == null) {
                     throw new RuntimeException("Tài khoản chưa liên kết công ty");
